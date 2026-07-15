@@ -5,6 +5,7 @@ return an empty list: a news outage should never stop the cycle.
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import xml.etree.ElementTree as ET
@@ -28,19 +29,33 @@ def parse_rss(xml_text: str, limit: int = 3) -> list[str]:
     return [t for t in titles if t][:limit]
 
 
-def headlines_for(query: str, limit: int = 3) -> list[str]:
-    """Today's headlines for a query, cached per day."""
-    CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    key = f"{date.today().isoformat()}_{quote(query)[:80]}"
-    cache_file = CACHE_DIR / f"{key}.json"
-    if cache_file.exists():
-        return json.loads(cache_file.read_text())
+def _fetch_xml(url: str) -> str:
+    """Grab raw RSS text from the network. Split out so tests can fake it."""
+    import requests
 
+    return requests.get(url, timeout=15).text
+
+
+def headlines_for(query: str, limit: int = 3) -> list[str]:
+    """Today's headlines for a query, cached per day.
+
+    Never raises: any problem (network, disk, bad cache) returns [].
+    """
     try:
-        import requests
-        url = f"https://news.google.com/rss/search?q={quote(query)}&hl=en-US"
-        heads = parse_rss(requests.get(url, timeout=15).text, limit)
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        # Hash the query so no user text ends up in the filename.
+        digest = hashlib.sha256(query.encode()).hexdigest()[:16]
+        key = f"{date.today().isoformat()}_{digest}"
+        cache_file = CACHE_DIR / f"{key}.json"
+        if cache_file.exists():
+            return json.loads(cache_file.read_text())
+
+        try:
+            url = f"https://news.google.com/rss/search?q={quote(query)}&hl=en-US"
+            heads = parse_rss(_fetch_xml(url), limit)
+        except Exception:
+            heads = []
+        cache_file.write_text(json.dumps(heads))
+        return heads
     except Exception:
-        heads = []
-    cache_file.write_text(json.dumps(heads))
-    return heads
+        return []
