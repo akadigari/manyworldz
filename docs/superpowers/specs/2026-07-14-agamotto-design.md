@@ -1,4 +1,4 @@
-# manyworlds — design doc (formerly "manyworlds")
+# manyworlds — design doc (formerly "Agamotto")
 
 **RENAMED 2026-07-15 (owner call):** the project is now **manyworlds** — after
 the many-worlds interpretation of quantum mechanics, where every possibility

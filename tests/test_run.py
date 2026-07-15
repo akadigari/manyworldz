@@ -39,6 +39,23 @@ def test_one_cycle_saves_a_snapshot_for_the_dashboard(tmp_path, monkeypatch):
     assert market["verdict"] is not None        # pass / no_quorum / pick
 
 
+def test_snapshot_records_no_quorum_verdict(tmp_path, monkeypatch):
+    # When the whole crowd gives junk, the snapshot must record "no_quorum"
+    # (never a fabricated pick) so the dashboard shows the honest truth.
+    import json
+    monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
+    cards = parse_events(json.loads(FIXTURE.read_text()))
+    snap_file = tmp_path / "snap.json"
+    out = runner.one_cycle(cards=cards,
+                           ask_fn=lambda p, model=None, max_tokens=400: "garbage",
+                           now_iso="2026-07-15T00:00:00Z",
+                           snapshot_path=snap_file)
+    assert out["picks"] == 0
+    snap = json.loads(snap_file.read_text())
+    assert snap["markets"]
+    assert all(m["verdict"] == "no_quorum" for m in snap["markets"])
+
+
 def test_one_cycle_offline_logs_a_pick(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
     cards = parse_events(json.loads(FIXTURE.read_text()))

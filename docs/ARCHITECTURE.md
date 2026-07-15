@@ -160,17 +160,22 @@ A static site, and deliberately dumb: it renders JSON exported by
 `report.py`, which reads the same ledger the gates read. The dashboard
 *cannot* show a rosier number than the report.
 
-- **Front door — the Multiverse Map:** tonight's events as branching futures
-  trees. Branch thickness = share of futures that agree; the leading
-  storyline glows; the what-if chip re-grows the tree live.
-- **The War Room:** the consensus dial vs the market price, the agent
-  constellation (dots grow with earned voice), the lessons feed, and the
-  bench — suspended agents shown dimmed with their shadow records.
-- **The Receipts:** gate lights (pass/fail, verbatim), calibration curve,
-  track record, every pick with its story.
-- **Theme:** "Immortal Weapon" — black `#0a0806`, gold chrome
-  `#d9a13b→#f5c542`, crimson ember energy `#c22030→#ff9d2e`, ivory text
-  `#efe6d8`.
+The shipped site (`web/index.html`) is one self-contained file with two tabs:
+
+- **THE WORLDS (front door):** each market as a branching-worlds tree over a
+  starfield — every future the crowd imagined is a light-trail ending in a
+  star (gold = resolves YES, crimson = NO), the root is "NOW," and the big
+  number is the crowd's folded answer vs the market price.
+- **THE RECEIPTS:** stat tiles (picks, open, settled, win–loss record, average
+  CLV, spend) plus the full pick-by-pick table, colored by CLV.
+- **Theme — "Deep Space":** space-black `#060913` with a twinkling starfield,
+  star-white text `#e8ecf5`, starlight-gold `#f5c542` (wordmark, chosen
+  worlds, YES), nebula-crimson `#e0435c` (NO branches), faint violet
+  `#8b7ff0` (secondary).
+
+(The War Room tab — an agent constellation showing earned voice and the
+bench — belongs with the M2 learning loop, which isn't built yet. The site
+ships with the two tabs above and grows a third when M2 lands.)
 
 ## Repo map
 

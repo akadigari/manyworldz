@@ -36,3 +36,17 @@ def test_empty_ledger_reports_zeros_not_crash():
     s = r["stats"]
     assert s["total_picks"] == 0 and s["avg_clv_cents"] == 0.0
     assert r["cycle"]["markets"] == []
+
+
+def test_write_outputs_produces_valid_dashboard_json(tmp_path, monkeypatch):
+    # The website loads web/data.json — make sure write_outputs actually
+    # writes valid JSON and a REPORT.md, and doesn't crash on real shapes.
+    import json
+    import config
+    import report as report_mod
+    monkeypatch.setattr(config, "ROOT", tmp_path)
+    r = build_report([pick("settled", "YES", "yes", clv=10)], None, {"est_usd": 0.5})
+    report_mod.write_outputs(r)
+    data = json.loads((tmp_path / "web" / "data.json").read_text())
+    assert data["stats"]["total_picks"] == 1
+    assert (tmp_path / "REPORT.md").read_text().startswith("# manyworlds")

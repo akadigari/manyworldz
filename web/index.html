@@ -207,7 +207,7 @@ function renderFutures(data) {
   el.innerHTML = markets.map(m => {
     const worlds = (m.futures || []).length || (m.votes || []).length;
     const stories = (m.futures || []).slice(0, 6).map(f =>
-      `<div class="story"><b class="${f.resolves === 'YES' ? 'y' : 'n'}">${f.resolves}</b> — ${esc(f.story)} <span class="mono">(${esc(f.agent)})</span></div>`
+      `<div class="story"><b class="${f.resolves === 'YES' ? 'y' : 'n'}">${esc(f.resolves)}</b> — ${esc(f.story)} <span class="mono">(${esc(f.agent)})</span></div>`
     ).join('');
     return `<div class="market">
       <div class="q">${esc(m.question)}</div>
@@ -288,9 +288,15 @@ const SAMPLE = {
 
 fetch('data.json')
   .then(r => { if (!r.ok) throw 0; return r.json(); })
-  .then(d => { // an empty real file still shows something worth looking at
-    const has = d && d.cycle && d.cycle.markets && d.cycle.markets.length;
-    render(has ? d : Object.assign({}, SAMPLE, { _sample: true }));
+  .then(d => {
+    // Never hide real data behind the sample. If the real file has ANY
+    // picks or ANY cycle markets, it's real — show it exactly as it is,
+    // even if one of the two tabs happens to be empty this run. Only fall
+    // back to the sample when the whole file is genuinely empty (before
+    // the first run).
+    const hasReal = d && ((d.picks && d.picks.length) ||
+                          (d.cycle && d.cycle.markets && d.cycle.markets.length));
+    render(hasReal ? d : Object.assign({}, SAMPLE, { _sample: true }));
   })
   .catch(() => render(Object.assign({}, SAMPLE, { _sample: true })));
 
