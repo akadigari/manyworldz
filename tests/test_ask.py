@@ -42,6 +42,26 @@ def test_ask_question_returns_a_crowd_result_offline():
     assert result["skipped"] == 0
 
 
+def test_simulate_mode_works_without_a_market_price():
+    # The --simulate path must also tell the crowd the truth (no fake price).
+    seen = []
+    payload = ('{"futures": ['
+               '{"story": "a", "resolves": "YES"},'
+               '{"story": "b", "resolves": "NO"},'
+               '{"story": "c", "resolves": "YES"},'
+               '{"story": "d", "resolves": "YES"}], "reason": "r"}')
+
+    def ask(prompt, model=None, max_tokens=400):
+        seen.append(prompt)
+        return payload
+
+    result = ask_question("Will the show get renewed?", mode="simulate", k=4,
+                          n_agents=2, with_news=False, ask_fn=ask)
+    assert result["futures"]                      # rollouts came through
+    assert all("no market price" in p for p in seen)
+    assert all("% chance" not in p for p in seen)
+
+
 def test_ask_question_whatif_reports_shift_offline():
     def ask(prompt, model=None, max_tokens=400):
         if "WHAT-IF" in prompt:

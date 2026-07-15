@@ -40,10 +40,13 @@ def ask_question(question: str, whatif: str | None = None, mode: str = "vote",
     before/after/shift dict from run_whatif.
     """
     card = {"ticker": "ASK", "question": question, "mid": None}
-    crowd = build_crowd(n_agents or config.ENGINE_N_AGENTS, config.SEED)
+    if n_agents is None:
+        n_agents = config.ENGINE_N_AGENTS
+    if k is None:
+        k = config.SIM_ROLLOUTS_K
+    crowd = build_crowd(n_agents, config.SEED)
     headlines = news.headlines_for(question) if with_news else []
     ask = ask_fn or llm.ask
-    k = k or config.SIM_ROLLOUTS_K
     if whatif:
         return run_whatif(card, headlines, crowd, whatif, mode, k,
                           config.DELIBERATION, ask)

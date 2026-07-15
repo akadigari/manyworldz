@@ -14,7 +14,9 @@
 #
 # Cost control: the engine has its own hard budget cap (ENGINE_BUDGET_USD in
 # config.py, $10). The spending meter (data/spend.json) is committed back
-# after every run, so the cap holds across cloud runs. When it's hit, runs
+# after every run, so the CAP holds across cloud runs. (The answer cache is
+# per-run in the cloud — each run starts fresh — but a full cycle costs
+# pennies, so the cap still gives months of runway.) When it's hit, runs
 # stop making new calls until you raise the cap.
 
 name: agamotto
@@ -52,6 +54,7 @@ jobs:
         run: |
           git config user.name "agamotto-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/ledger.csv data/spend.json
+          # || true: a cycle with no new picks/spend may leave a file untouched
+          git add data/ledger.csv data/spend.json 2>/dev/null || true
           git diff --staged --quiet || git commit -m "cloud run: ledger + spend update"
           git push

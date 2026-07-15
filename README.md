@@ -37,9 +37,9 @@ export ANTHROPIC_API_KEY=your-key        # get one at console.anthropic.com
 venv/bin/python ask.py "Will it snow in DC this December?" --simulate
 ```
 
-A typical question costs about a cent. Every answer is cached — asking the
-same thing twice is free. A hard budget cap (`ENGINE_BUDGET_USD` in
-`config.py`, default $10) means it can never surprise you.
+A typical question costs about a cent. Answers are cached on your machine —
+asking the same thing twice is free. A hard budget cap (`ENGINE_BUDGET_USD`
+in `config.py`, default $10) means it can never surprise you.
 
 ## What's in the box
 
