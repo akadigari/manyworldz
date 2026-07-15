@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>knaves · manyworlds</title>
+<style>
+  /* ---- Deep Space theme ----------------------------------------- */
+  :root {
+    --space:   #060913;   /* the void */
+    --panel:   #0b1020;   /* card background */
+    --line:    #1a2340;   /* faint borders */
+    --star:    #e8ecf5;   /* text: star-white */
+    --dim:     #7b86a3;   /* secondary text */
+    --gold:    #f5c542;   /* starlight: chosen worlds, YES */
+    --crimson: #e0435c;   /* nebula: NO branches */
+    --violet:  #8b7ff0;   /* secondary worlds */
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--space); color: var(--star); min-height: 100vh;
+    font: 15px/1.6 -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+  .mono { font-family: "SF Mono", Menlo, Consolas, monospace; }
+
+  /* starfield */
+  #sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .s { position: absolute; background: var(--star); border-radius: 50%;
+       animation: tw 4s ease-in-out infinite; }
+  @keyframes tw { 0%,100% { opacity: .15 } 50% { opacity: .8 } }
+
+  main { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  /* header */
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  .wordmark { font-family: Georgia, serif; font-size: 26px; letter-spacing: 8px; color: var(--gold); }
+  .sub { color: var(--dim); font-size: 13px; letter-spacing: 2px; }
+  .paper { margin-left: auto; font-size: 11px; letter-spacing: 1px; color: var(--crimson);
+           border: 1px solid var(--crimson); border-radius: 3px; padding: 2px 9px; }
+  .tagline { color: var(--dim); margin-bottom: 22px; font-size: 14px; }
+
+  /* tabs */
+  nav { display: flex; gap: 22px; border-bottom: 1px solid var(--line); margin-bottom: 26px; }
+  nav button {
+    background: none; border: none; color: var(--dim); cursor: pointer;
+    font: 12px "SF Mono", Menlo, monospace; letter-spacing: 2px;
+    padding: 10px 2px; border-bottom: 2px solid transparent;
+  }
+  nav button.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* market cards */
+  .market { background: var(--panel); border: 1px solid var(--line);
+            border-radius: 10px; padding: 18px 20px; margin-bottom: 22px; }
+  .q { font-size: 16px; margin-bottom: 4px; }
+  .meta { color: var(--dim); font-size: 12px; margin-bottom: 12px; }
+  .readout { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 6px; }
+  .bigp { font-size: 34px; font-weight: 700; color: var(--gold); }
+  .vs { color: var(--dim); font-size: 13px; }
+  .chip { font-size: 11px; letter-spacing: 1px; border-radius: 3px; padding: 3px 10px; }
+  .chip.pick { background: var(--gold); color: var(--space); font-weight: 700; }
+  .chip.pass { border: 1px solid var(--line); color: var(--dim); }
+  .chip.noq  { border: 1px solid var(--crimson); color: var(--crimson); }
+  svg.tree { width: 100%; height: auto; display: block; }
+  .stories { margin-top: 10px; }
+  .story { font-size: 13px; color: var(--dim); padding: 2px 0; }
+  .story b.y { color: var(--gold); } .story b.n { color: var(--crimson); }
+
+  /* receipts */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+           gap: 12px; margin-bottom: 26px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+          padding: 14px 16px; }
+  .tile .n { font-size: 26px; font-weight: 700; color: var(--gold); }
+  .tile .l { font-size: 11px; letter-spacing: 1px; color: var(--dim); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; color: var(--dim); font-weight: 400; font-size: 11px;
+       letter-spacing: 1px; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .pos { color: var(--gold); } .neg { color: var(--crimson); }
+  .empty { color: var(--dim); text-align: center; padding: 46px 0; }
+
+  footer { margin-top: 44px; color: var(--dim); font-size: 12px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div id="sky"></div>
+<main>
+  <header>
+    <span class="wordmark">KNAVES</span>
+    <span class="sub">manyworlds · a crowd of AI forecasters</span>
+    <span class="paper mono">PAPER ONLY</span>
+  </header>
+  <p class="tagline">Every question splits into many worlds. The engine watches them all — and keeps score.</p>
+
+  <nav>
+    <button id="tab-futures" class="on" onclick="show('futures')">THE WORLDS</button>
+    <button id="tab-receipts" onclick="show('receipts')">THE RECEIPTS</button>
+  </nav>
+
+  <section id="futures"></section>
+  <section id="receipts" style="display:none"></section>
+
+  <footer>
+    Paper picks only — a person makes any real decision, and only if the
+    pre-registered gates ever pass. The dashboard reads the exact same
+    ledger the gates read; it cannot show a rosier number than reality.
+  </footer>
+</main>
+
+<script>
+'use strict';
+
+/* ---- starfield -------------------------------------------------- */
+(function sky() {
+  const sky = document.getElementById('sky');
+  for (let i = 0; i < 140; i++) {
+    const s = document.createElement('div');
+    s.className = 's';
+    const size = Math.random() < 0.85 ? 1 : 2;
+    s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;` +
+      `width:${size}px;height:${size}px;animation-delay:${(Math.random()*4).toFixed(2)}s`;
+    sky.appendChild(s);
+  }
+})();
+
+/* ---- tabs -------------------------------------------------------- */
+function show(which) {
+  for (const name of ['futures', 'receipts']) {
+    document.getElementById(name).style.display = name === which ? '' : 'none';
+    document.getElementById('tab-' + name).classList.toggle('on', name === which);
+  }
+}
+
+/* ---- the branching worlds map ------------------------------------ */
+// Each market becomes a tree: one root (the question, now) branching into
+// the worlds the crowd saw. Simulate mode -> each imagined future is a
+// branch ending in a star (gold = resolves YES, crimson = NO). Vote mode ->
+// each agent's probability is a branch reaching toward YES (top) or NO
+// (bottom). The big number is the crowd's folded-together answer.
+function tree(market) {
+  const W = 900, H = 240, rootX = 26, rootY = H / 2;
+  let branches = [];
+
+  if (market.futures && market.futures.length) {
+    branches = market.futures.map(f => ({
+      yes: f.resolves === 'YES',
+      label: '', tip: f.story,
+    }));
+  } else {
+    branches = (market.votes || []).map(v => ({
+      yes: v.probability >= 0.5,
+      label: Math.round(v.probability * 100) + '% ' + v.agent,
+      tip: v.reason, p: v.probability,
+    }));
+  }
+  if (!branches.length) return '';
+
+  const n = branches.length;
+  let svg = `<svg class="tree" viewBox="0 0 ${W} ${H}" role="img" aria-label="branching futures">`;
+  svg += `<defs><filter id="glow"><feGaussianBlur stdDeviation="2.2" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>`;
+
+  branches.forEach((b, i) => {
+    // spread endpoints down the right edge; YES worlds drift high, NO low
+    const endX = W - 120;
+    const jitter = (i / Math.max(n - 1, 1)) * (H - 50) + 25;
+    const pull = b.p !== undefined ? (1 - b.p) * (H - 50) + 25 : (b.yes ? jitter * 0.55 : H - jitter * 0.55);
+    const endY = b.p !== undefined ? pull : (b.yes ? Math.min(jitter, H/2 - 12) : Math.max(H - jitter, H/2 + 12));
+    const c = b.yes ? 'var(--gold)' : 'var(--crimson)';
+    const midX = rootX + (endX - rootX) * 0.55;
+    svg += `<path d="M${rootX} ${rootY} C ${midX} ${rootY}, ${midX} ${endY}, ${endX} ${endY}"
+            stroke="${c}" stroke-width="1.6" fill="none" opacity="0.75"><title>${esc(b.tip || '')}</title></path>`;
+    svg += `<circle cx="${endX}" cy="${endY}" r="3" fill="${c}" filter="url(#glow)">
+            <title>${esc(b.tip || '')}</title></circle>`;
+    if (b.label) svg += `<text x="${endX + 8}" y="${endY + 3}" fill="var(--dim)"
+            font-size="10" font-family="Menlo,monospace">${esc(b.label)}</text>`;
+  });
+
+  // the root: where all worlds begin
+  svg += `<circle cx="${rootX}" cy="${rootY}" r="7" fill="none" stroke="var(--gold)"
+          stroke-width="2" filter="url(#glow)"/>
+          <circle cx="${rootX}" cy="${rootY}" r="2.5" fill="var(--gold)"/>
+          <text x="${rootX - 8}" y="${rootY + 24}" fill="var(--dim)" font-size="9"
+          font-family="Menlo,monospace">NOW</text>`;
+  svg += `</svg>`;
+  return svg;
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+}
+
+function chip(verdict) {
+  if (verdict && verdict.side) return `<span class="chip pick mono">PICK ${verdict.side} +${verdict.edge_cents}c</span>`;
+  if (verdict === 'no_quorum') return `<span class="chip noq mono">NO QUORUM</span>`;
+  return `<span class="chip pass mono">NO EDGE — PASS</span>`;
+}
+
+function renderFutures(data) {
+  const el = document.getElementById('futures');
+  const markets = (data.cycle && data.cycle.markets) || [];
+  if (!markets.length) {
+    el.innerHTML = `<p class="empty">No cycle data yet — the worlds appear after the engine's first cloud run.</p>`;
+    return;
+  }
+  el.innerHTML = markets.map(m => {
+    const worlds = (m.futures || []).length || (m.votes || []).length;
+    const stories = (m.futures || []).slice(0, 6).map(f =>
+      `<div class="story"><b class="${f.resolves === 'YES' ? 'y' : 'n'}">${f.resolves}</b> — ${esc(f.story)} <span class="mono">(${esc(f.agent)})</span></div>`
+    ).join('');
+    return `<div class="market">
+      <div class="q">${esc(m.question)}</div>
+      <div class="meta mono">${esc(m.category || '')} · ${worlds} worlds seen · disagreement ${m.spread}</div>
+      <div class="readout">
+        <span class="bigp">${Math.round(m.probability * 100)}%</span>
+        <span class="vs mono">crowd says YES · market says ${m.mid}%</span>
+        ${chip(m.verdict)}
+      </div>
+      ${tree(m)}
+      ${stories ? `<div class="stories">${stories}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderReceipts(data) {
+  const el = document.getElementById('receipts');
+  const s = data.stats || {};
+  const tiles = [
+    [s.total_picks ?? 0, 'PICKS'], [s.open ?? 0, 'OPEN'],
+    [s.settled ?? 0, 'SETTLED'], [`${s.wins ?? 0}–${s.losses ?? 0}`, 'RECORD'],
+    [(s.avg_clv_cents >= 0 ? '+' : '') + (s.avg_clv_cents ?? 0) + 'c', 'AVG CLV'],
+    ['$' + (s.spend_usd ?? 0).toFixed(2), 'SPEND'],
+  ].map(([n, l]) => `<div class="tile"><div class="n mono">${n}</div><div class="l">${l}</div></div>`).join('');
+
+  const rows = (data.picks || []).slice().reverse().map(p => {
+    const clv = parseInt(p.clv_cents || 0, 10);
+    return `<tr>
+      <td class="mono">${esc((p.logged_at || '').slice(0, 10))}</td>
+      <td>${esc(p.question)}</td>
+      <td class="mono">${esc(p.side)}</td>
+      <td class="mono">${p.entry_mid}c</td>
+      <td class="mono ${clv >= 0 ? 'pos' : 'neg'}">${clv >= 0 ? '+' : ''}${clv}c</td>
+      <td class="mono">${esc(p.status)}${p.result ? ' · ' + esc(p.result) : ''}</td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div class="tiles">${tiles}</div>` + (rows
+    ? `<table><tr><th>DATE</th><th>QUESTION</th><th>SIDE</th><th>ENTRY</th><th>CLV</th><th>STATUS</th></tr>${rows}</table>`
+    : `<p class="empty">No picks yet — the scorecard fills in as the crowd finds edges.</p>`);
+}
+
+/* ---- data: real file first, embedded sample as the fallback ------ */
+const SAMPLE = {
+  stats: { total_picks: 3, open: 2, settled: 1, wins: 1, losses: 0, avg_clv_cents: 6.3, spend_usd: 0.42 },
+  picks: [
+    { logged_at: '2026-07-15T13:41:00Z', question: 'Will CPI come in above 3.0%? (above 3.0)', side: 'NO', entry_mid: 43, clv_cents: 9, status: 'settled', result: 'no' },
+    { logged_at: '2026-07-15T19:41:00Z', question: 'Will the album drop this month? (in July)', side: 'YES', entry_mid: 43, clv_cents: 6, status: 'open', result: '' },
+    { logged_at: '2026-07-15T19:41:00Z', question: 'More tech layoffs in 2026 than in 2025? (Yes)', side: 'YES', entry_mid: 71, clv_cents: 4, status: 'open', result: '' },
+  ],
+  cycle: { at: '2026-07-15T19:41:00Z', markets: [
+    { ticker: 'SAMPLE-1', question: 'Will the album drop this month? (in July)', category: 'Entertainment',
+      mid: 43, probability: 0.62, spread: 0.11, skipped: 0, verdict: { side: 'YES', edge_cents: 19 },
+      votes: [], futures: [
+        { story: 'Surprise midnight drop after the tour announcement', resolves: 'YES', agent: 'Ava' },
+        { story: 'Label pushes it to August for a bigger rollout', resolves: 'NO', agent: 'Ben' },
+        { story: 'Lead single lands first, album follows July 30', resolves: 'YES', agent: 'Cleo' },
+        { story: 'Deluxe edition drops July 25 with the film', resolves: 'YES', agent: 'Dev' },
+        { story: 'A leak forces an early official release', resolves: 'YES', agent: 'Ember' },
+        { story: 'Sample clearance drama delays everything', resolves: 'NO', agent: 'Finn' },
+        { story: 'Album arrives with a surprise feature list', resolves: 'YES', agent: 'Gia' },
+        { story: 'Tour rehearsals eat the finish date', resolves: 'NO', agent: 'Hugo' },
+      ] },
+    { ticker: 'SAMPLE-2', question: 'Will the Fed cut rates in September?', category: 'Economics',
+      mid: 54, probability: 0.58, spread: 0.14, skipped: 0, verdict: 'pass',
+      futures: [], votes: [
+        { probability: 0.7, agent: 'Ava', archetype: 'stats nerd', reason: 'futures pricing leans cut' },
+        { probability: 0.45, agent: 'Ben', archetype: 'contrarian', reason: 'consensus is exactly what slips' },
+        { probability: 0.65, agent: 'Cleo', archetype: 'sharp-money tracker', reason: 'flow says cut' },
+        { probability: 0.5, agent: 'Dev', archetype: 'oddsmaker', reason: 'coin flip at this data' },
+        { probability: 0.6, agent: 'Ember', archetype: 'narrative fan', reason: 'the story wants a cut' },
+        { probability: 0.55, agent: 'Finn', archetype: 'insider brain', reason: 'committee sounds split' },
+        { probability: 0.62, agent: 'Gia', archetype: 'stats nerd', reason: 'inflation trend supports it' },
+        { probability: 0.58, agent: 'Hugo', archetype: 'contrarian', reason: 'mild lean, low conviction' },
+      ] },
+  ]},
+};
+
+fetch('data.json')
+  .then(r => { if (!r.ok) throw 0; return r.json(); })
+  .then(d => { // an empty real file still shows something worth looking at
+    const has = d && d.cycle && d.cycle.markets && d.cycle.markets.length;
+    render(has ? d : Object.assign({}, SAMPLE, { _sample: true }));
+  })
+  .catch(() => render(Object.assign({}, SAMPLE, { _sample: true })));
+
+function render(d) {
+  if (d._sample) {
+    document.querySelector('.tagline').innerHTML +=
+      ' <span class="mono" style="color:var(--violet)">· sample data — the real scorecard appears after the first cloud run</span>';
+  }
+  renderFutures(d);
+  renderReceipts(d);
+}
+</script>
+</body>
+</html>
