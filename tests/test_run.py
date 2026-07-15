@@ -20,6 +20,25 @@ def test_pick_side_needs_edge_plus_buffer():
     assert runner.pick_side(0.50, 43) is None
 
 
+def test_one_cycle_saves_a_snapshot_for_the_dashboard(tmp_path, monkeypatch):
+    # The website draws from latest_cycle.json — make sure a cycle writes it.
+    import json
+    monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
+    cards = parse_events(json.loads(FIXTURE.read_text()))
+    confident = '{"probability": 0.75, "reason": "sure thing"}'
+    snap_file = tmp_path / "snap.json"
+    runner.one_cycle(cards=cards,
+                     ask_fn=lambda p, model=None, max_tokens=400: confident,
+                     now_iso="2026-07-15T00:00:00Z",
+                     snapshot_path=snap_file)
+    snap = json.loads(snap_file.read_text())
+    assert snap["markets"], "snapshot should hold the markets the crowd saw"
+    market = snap["markets"][0]
+    assert market["votes"]                      # every vote is preserved
+    assert market["probability"] == 0.75
+    assert market["verdict"] is not None        # pass / no_quorum / pick
+
+
 def test_one_cycle_offline_logs_a_pick(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
     cards = parse_events(json.loads(FIXTURE.read_text()))

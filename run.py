@@ -7,12 +7,23 @@ this only writes CSV rows.
 """
 from __future__ import annotations
 
+import json
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
+
+
+def _save_cycle_snapshot(markets: list[dict], now: str, path: Path) -> None:
+    """Save everything the crowd just saw and said, for the dashboard.
+
+    The website draws its branching-futures map from this file — every
+    vote, every imagined future, every verdict from the latest cycle.
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"at": now, "markets": markets}, indent=1))
 import ledger
 from adapters import kalshi_events as kalshi
 from engine import llm, news
@@ -37,7 +48,8 @@ def pick_side(crowd_prob: float, mid: int) -> tuple[str, int] | None:
 
 
 def one_cycle(cards: list[dict] | None = None, ask_fn=None,
-             now_iso: str | None = None) -> dict:
+             now_iso: str | None = None,
+             snapshot_path: Path | None = None) -> dict:
     """Run one full round of the engine: grade old picks, then make new ones.
 
     Pass in `cards` (fake market data) and `ask_fn` (a fake crowd) to run
@@ -72,14 +84,23 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
     mode = config.SIM_MODE
 
     picks = 0
+    snapshot = []          # what the crowd saw + said, market by market
     for card in targets:
         headlines = news.headlines_for(card["question"]) if live else []
         result = run_crowd(card, headlines, crowd, mode=mode,
                            k=config.SIM_ROLLOUTS_K,
                            deliberation=config.DELIBERATION, ask_fn=ask)
+        snap = {"ticker": card["ticker"], "question": card["question"],
+                "category": card.get("category", ""), "mid": card["mid"],
+                "probability": result["probability"],
+                "spread": result["spread"], "skipped": result["skipped"],
+                "votes": result["votes"], "futures": result["futures"],
+                "verdict": None}
+        snapshot.append(snap)
         if not result["votes"]:
             # Nobody gave a usable answer — a fake 0.5 "consensus" would
             # fabricate a pick out of nothing. Skip the market instead.
+            snap["verdict"] = "no_quorum"
             print(f'  no quorum (all {result["skipped"]} answers unusable) '
                   f'| {card["question"]}')
             continue
@@ -90,9 +111,11 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
                 f'(spread {result["spread"]:.2f}, {result["skipped"]} skipped) '
                 f'| {card["question"][:60]}')
         if verdict is None:
+            snap["verdict"] = "pass"
             print(f"  pass  {line}")
             continue
         side, edge = verdict
+        snap["verdict"] = {"side": side, "edge_cents": edge}
         ledger.log_pick({
             "logged_at": now, "ticker": card["ticker"],
             "question": card["question"], "side": side,
@@ -103,6 +126,13 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
         })
         picks += 1
         print(f"  PICK  {side} +{edge}c {line}")
+
+    # Save the snapshot: always when a path is given (tests), and on live
+    # runs by default (the dashboard reads it via report.py).
+    if snapshot_path is None and live:
+        snapshot_path = config.DATA / "latest_cycle.json"
+    if snapshot_path is not None:
+        _save_cycle_snapshot(snapshot, now, snapshot_path)
 
     print(f"cycle done: {len(targets)} markets considered, {picks} picks, "
           f"{graded['settled']} settled, ${llm.spent_usd():.2f} total spend")
