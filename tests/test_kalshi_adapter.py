@@ -36,3 +36,14 @@ def test_tradeable_sorts_by_volume():
     got = tradeable(cards(), now_iso="2026-07-15T00:00:00Z")
     volumes = [c["volume"] for c in got]
     assert volumes == sorted(volumes, reverse=True)
+
+
+def test_live_dollars_schema_normalized():
+    # Live API shape (verified 2026-07-15): yes_bid_dollars/yes_ask_dollars
+    # as dollar strings, volume_fp as a float string. No plain yes_bid/
+    # yes_ask/volume on this market at all.
+    got = cards()
+    fed = next(c for c in got if c["ticker"] == "FED-CUT-Q3")
+    assert fed["yes_bid"] == 12 and fed["yes_ask"] == 14
+    assert fed["mid"] == 13
+    assert fed["volume"] == 112505

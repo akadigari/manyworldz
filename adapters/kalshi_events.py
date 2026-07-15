@@ -2,7 +2,11 @@
 
 Read-only public API, non-sports only, paper trading only. Known venue
 quirk: prices usually arrive as cents (43) but sometimes as dollar
-strings ("0.43") — _cents() accepts both.
+strings ("0.43") — _cents() accepts both. Live responses (verified
+2026-07-15) use yes_bid_dollars/yes_ask_dollars ("0.1200" = 12 cents)
+and volume_fp (a float string) instead of the plain yes_bid/yes_ask/
+volume fields the old fixture used — we read the dollars/fp fields
+first and fall back to the plain ones so both shapes work.
 """
 from __future__ import annotations
 
@@ -38,7 +42,8 @@ def parse_events(payload: dict) -> list[dict]:
         for market in event.get("markets", []) or []:
             if market.get("status") not in (None, "active", "open"):
                 continue
-            bid, ask = _cents(market.get("yes_bid")), _cents(market.get("yes_ask"))
+            bid = _cents(market.get("yes_bid_dollars", market.get("yes_bid")))
+            ask = _cents(market.get("yes_ask_dollars", market.get("yes_ask")))
             sub = market.get("yes_sub_title") or ""
             question = event.get("title", "")
             if sub:
@@ -51,7 +56,7 @@ def parse_events(payload: dict) -> list[dict]:
                 "yes_ask": ask,
                 "mid": round((bid + ask) / 2) if (bid and ask) else 0,
                 "close_time": market.get("close_time", ""),
-                "volume": int(market.get("volume") or 0),
+                "volume": int(float(market.get("volume_fp") or market.get("volume") or 0)),
             })
     return cards
 
@@ -103,7 +108,8 @@ def fetch_market(ticker: str) -> dict:
     resp = requests.get(f"{BASE}/markets/{ticker}", timeout=30)
     resp.raise_for_status()
     m = resp.json().get("market", {})
-    bid, ask = _cents(m.get("yes_bid")), _cents(m.get("yes_ask"))
+    bid = _cents(m.get("yes_bid_dollars", m.get("yes_bid")))
+    ask = _cents(m.get("yes_ask_dollars", m.get("yes_ask")))
     return {
         "ticker": ticker,
         "mid": round((bid + ask) / 2) if (bid and ask) else 0,

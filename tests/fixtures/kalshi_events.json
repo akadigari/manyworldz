@@ -23,6 +23,14 @@
        {"ticker": "CPI-STR-3", "yes_sub_title": "above 3.0",
         "yes_bid": "0.22", "yes_ask": "0.28", "volume": 1500,
         "close_time": "2026-07-15T18:00:00Z", "status": "active"}
+     ]},
+    {"event_ticker": "FED-CUT", "title": "Will the Fed cut rates this quarter?",
+     "category": "Economics",
+     "markets": [
+       {"ticker": "FED-CUT-Q3", "yes_sub_title": "by September",
+        "yes_bid_dollars": "0.1200", "yes_ask_dollars": "0.1400",
+        "volume_fp": "112505.83",
+        "close_time": "2026-12-31T23:59:00Z", "status": "active"}
      ]}
   ]
 }
