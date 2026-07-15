@@ -6,7 +6,9 @@ market move toward our pick after we made it?
 from __future__ import annotations
 
 import csv
+import os
 import sys
+import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -29,11 +31,27 @@ def load(path: Path | None = None) -> list[dict]:
 
 
 def _write_all(rows: list[dict], path: Path) -> None:
+    """Write the whole ledger out without ever leaving it half-written.
+
+    We write to a temp file in the same folder first, then swap it into
+    the real path with one atomic rename (os.replace). If the process
+    dies mid-write, the old ledger file is still sitting there intact —
+    a crash can never truncate it.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=LEDGER_COLUMNS)
-        writer.writeheader()
-        writer.writerows(rows)
+    fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=".ledger-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=LEDGER_COLUMNS)
+            writer.writeheader()
+            writer.writerows(rows)
+        os.replace(tmp_name, path)
+    except Exception:
+        try:
+            os.remove(tmp_name)
+        except OSError:
+            pass
+        raise
 
 
 def log_pick(row: dict, path: Path | None = None) -> None:
@@ -58,10 +76,11 @@ def grade(latest_by_ticker: dict[str, dict], path: Path | None = None) -> dict:
         if r["status"] != "open" or r["ticker"] not in latest_by_ticker:
             continue
         latest = latest_by_ticker[r["ticker"]]
-        entry = int(r["entry_mid"])
-        mid = int(latest.get("mid") or entry)
-        r["latest_mid"] = mid
-        r["clv_cents"] = (mid - entry) if r["side"] == "YES" else (entry - mid)
+        mid = latest.get("mid")
+        if mid:                    # None or 0 means "price unknown" — keep old values
+            entry = int(r["entry_mid"])
+            r["latest_mid"] = mid
+            r["clv_cents"] = (mid - entry) if r["side"] == "YES" else (entry - mid)
         updated += 1
         if latest.get("status") == "settled" and latest.get("result"):
             r["status"] = "settled"

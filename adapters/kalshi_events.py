@@ -21,14 +21,29 @@ BASE = "https://api.elections.kalshi.com/trade-api/v2"
 
 
 def _cents(value) -> int:
-    """Turn 43, "43", or "0.43" into 43 cents. Unknown -> 0."""
+    """Turn 43, "43", "0.43", or "1.0000" into cents. Unknown -> 0.
+
+    Kalshi sends prices two ways: plain cents (43 or "43") or dollar
+    strings ("0.43", "1.0000"). A dollar string always has a "." in it,
+    so any string with a "." is always dollars, no matter how big the
+    number is. That fixes a bug where "1.0000" (the top of the book,
+    100 cents) was misread as 1 cent because 1.0 doesn't satisfy the old
+    "0 < num < 1" dollar-string guess. Numeric (non-string) inputs keep
+    the old guess: a bare 0.43 is treated as dollars, everything else as
+    already-cents.
+    """
     if value is None:
         return 0
+    if isinstance(value, str) and "." in value:
+        try:
+            return round(float(value) * 100)
+        except ValueError:
+            return 0
     try:
         num = float(value)
     except (TypeError, ValueError):
         return 0
-    if 0 < num < 1:          # dollar string like "0.43"
+    if 0 < num < 1:          # bare float like 0.43
         return round(num * 100)
     return round(num)
 
@@ -67,7 +82,7 @@ def tradeable(cards: list[dict], now_iso: str) -> list[dict]:
     now = datetime.fromisoformat(now_iso.replace("Z", "+00:00"))
     keep = []
     for c in cards:
-        if not (0 < c["yes_bid"] and c["yes_ask"] < 100):
+        if not (0 < c["yes_bid"] and c["yes_ask"] < 100 and c["mid"] > 0):
             continue                                  # need a two-sided book
         if c["yes_ask"] - c["yes_bid"] > 10:
             continue                                  # spread too wide
@@ -75,8 +90,8 @@ def tradeable(cards: list[dict], now_iso: str) -> list[dict]:
             continue                                  # too thin to matter
         try:
             close = datetime.fromisoformat(c["close_time"].replace("Z", "+00:00"))
-        except ValueError:
-            continue
+        except (ValueError, AttributeError, TypeError):
+            continue                                  # missing/bad close_time — skip, don't crash
         if close < now + timedelta(hours=24):
             continue                                  # about to settle
         keep.append(c)
@@ -110,9 +125,13 @@ def fetch_market(ticker: str) -> dict:
     m = resp.json().get("market", {})
     bid = _cents(m.get("yes_bid_dollars", m.get("yes_bid")))
     ask = _cents(m.get("yes_ask_dollars", m.get("yes_ask")))
+    # A one-sided book (no real bid, or no real ask — Kalshi shows a
+    # missing ask as either 0 or 100) means we don't actually know a
+    # price. Say so with None instead of making one up.
+    one_sided = bid == 0 or ask in (0, 100)
     return {
         "ticker": ticker,
-        "mid": round((bid + ask) / 2) if (bid and ask) else 0,
+        "mid": None if one_sided else round((bid + ask) / 2),
         "status": m.get("status", ""),
         "result": m.get("result", ""),
     }

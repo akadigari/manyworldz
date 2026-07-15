@@ -31,6 +31,14 @@
         "yes_bid_dollars": "0.1200", "yes_ask_dollars": "0.1400",
         "volume_fp": "112505.83",
         "close_time": "2026-12-31T23:59:00Z", "status": "active"}
+     ]},
+    {"event_ticker": "NEAR-CERTAIN", "title": "Will the near-certain thing happen?",
+     "category": "Economics",
+     "markets": [
+       {"ticker": "NEAR-CERTAIN-99", "yes_sub_title": "no real ask left",
+        "yes_bid_dollars": "0.9900", "yes_ask_dollars": "1.0000",
+        "volume_fp": "50000",
+        "close_time": "2026-12-31T23:59:00Z", "status": "active"}
      ]}
   ]
 }

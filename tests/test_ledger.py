@@ -43,3 +43,18 @@ def test_grade_updates_clv_and_settles(tmp_path):
     assert rows["T2"]["status"] == "settled" and rows["T2"]["result"] == "no"
     assert int(rows["T2"]["clv_cents"]) == 13          # NO: 43 - 30
     assert stats == {"updated": 2, "settled": 1}
+
+
+def test_grade_keeps_old_values_when_mid_is_unknown(tmp_path):
+    # A one-sided book means fetch_market() couldn't report a real price
+    # and sends mid=None. grade() must leave latest_mid/clv_cents alone
+    # instead of overwriting them with a made-up number.
+    path = tmp_path / "ledger.csv"
+    ledger.log_pick(pick("T1", "YES"), path=path)   # starts at latest_mid 43, clv 0
+    latest = {"T1": {"ticker": "T1", "mid": None, "status": "active", "result": ""}}
+    stats = ledger.grade(latest, path=path)
+    rows = {r["ticker"]: r for r in ledger.load(path=path)}
+    assert int(rows["T1"]["latest_mid"]) == 43
+    assert int(rows["T1"]["clv_cents"]) == 0
+    assert rows["T1"]["status"] == "open"
+    assert stats["updated"] == 1

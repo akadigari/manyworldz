@@ -31,17 +31,26 @@ def pick_side(crowd_prob: float, mid: int) -> tuple[str, int] | None:
     return None
 
 
-def one_cycle(cards: list[dict] | None = None, ask_fn=None) -> dict:
+def one_cycle(cards: list[dict] | None = None, ask_fn=None,
+             now_iso: str | None = None) -> dict:
     live = cards is None
     ask = ask_fn or llm.ask
-    now = datetime.now(timezone.utc).isoformat()
+    now = now_iso or datetime.now(timezone.utc).isoformat()
 
     # 1. Grade open picks (live only — needs per-ticker fetches).
     graded = {"updated": 0, "settled": 0}
     if live:
         open_tickers = {r["ticker"] for r in ledger.load()
                         if r["status"] == "open"}
-        latest = {t: kalshi.fetch_market(t) for t in open_tickers}
+        latest = {}
+        fetch_failures = 0
+        for t in open_tickers:
+            try:
+                latest[t] = kalshi.fetch_market(t)
+            except Exception:
+                fetch_failures += 1        # one bad ticker shouldn't kill the cycle
+        if fetch_failures:
+            print(f"note: could not refresh {fetch_failures} open pick(s)")
         graded = ledger.grade(latest)
         cards = kalshi.fetch_open_markets()
 
@@ -56,6 +65,12 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None) -> dict:
         result = run_crowd(card, heads, crowd, mode=mode,
                            k=config.SIM_ROLLOUTS_K,
                            deliberation=config.DELIBERATION, ask_fn=ask)
+        if not result["votes"]:
+            # Nobody gave a usable answer — a fake 0.5 "consensus" would
+            # fabricate a pick out of nothing. Skip the market instead.
+            print(f'  no quorum (all {result["skipped"]} answers unusable) '
+                  f'| {card["question"]}')
+            continue
         verdict = pick_side(result["probability"], card["mid"])
         line = (f'{card["mid"]:>3}c market | {result["probability"]:.2f} crowd '
                 f'(spread {result["spread"]:.2f}, {result["skipped"]} skipped) '
