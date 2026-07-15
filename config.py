@@ -30,3 +30,15 @@ MODEL_CUTOFF_DATE = "2025-08-01"
 REID_DEMOTION_RATE = 0.10   # both-teams-named rate that demotes the backtest
 GO_MIN_GAMES = 350          # post-cutoff games with a verified close
 GO_MAX_JOIN_ERROR = 0.01    # allowed error rate in the 50-row hand audit
+
+# ---- M1 engine knobs (the "go harder" dials) ----
+
+ENGINE_MODEL = "claude-haiku-4-5"  # cheap crowd voices; raise tier here to go harder
+ENGINE_N_AGENTS = 8       # agents per market
+SIM_ROLLOUTS_K = 5        # futures each agent imagines in simulate mode
+DELIBERATION = False      # one round of agents seeing each other's takes
+MIN_EDGE_CENTS = 10       # crowd must differ from market by this much...
+FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
+MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
+ENGINE_BUDGET_USD = 10.00 # hard stop for cumulative engine spend
+EXCLUDED_CATEGORIES = {"Sports"}  # non-sports only (MD-legal lane)
