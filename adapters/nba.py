@@ -68,6 +68,52 @@ def fetch_season_results(season: str) -> list[dict]:
     return games
 
 
+def team_history(games: list[dict], team: str, before_date: str) -> list[dict]:
+    """Every game this team played strictly before the date, oldest first."""
+    return [g for g in games
+            if g["date"] < before_date and team in (g["home"], g["away"])]
+
+
+def _days_between(d1: str, d2: str) -> int:
+    from datetime import date
+    a = date(*map(int, d1.split("-")))
+    b = date(*map(int, d2.split("-")))
+    return (b - a).days
+
+
+def _form(history: list[dict], team: str) -> dict:
+    """Last-10 record and scoring averages, from that team's point of view."""
+    last10 = history[-10:]
+    wins, pts_for, pts_against = 0, [], []
+    for g in last10:
+        we_are_home = g["home"] == team
+        our_pts = g["home_pts"] if we_are_home else g["away_pts"]
+        their_pts = g["away_pts"] if we_are_home else g["home_pts"]
+        pts_for.append(our_pts)
+        pts_against.append(their_pts)
+        if (our_pts > their_pts):
+            wins += 1
+    n = max(len(last10), 1)
+    return {"last10_wins": wins,
+            "avg_pts_for": round(sum(pts_for) / n, 1) if pts_for else 0.0,
+            "avg_pts_against": round(sum(pts_against) / n, 1) if pts_against else 0.0}
+
+
+def build_statsheet(games: list[dict], idx: int) -> dict:
+    """Everything an agent may know about a game — from BEFORE tipoff only."""
+    game = games[idx]
+    sheet = {"date": game["date"], "home": game["home"], "away": game["away"]}
+    for side in ("home", "away"):
+        team = game[side]
+        hist = team_history(games, team, game["date"])
+        sheet[f"{side}_form"] = _form(hist, team)
+        # Rest days capped at 9: "well rested" reads the same for a season
+        # opener and a long break, so the number can't fingerprint the date.
+        rest = _days_between(hist[-1]["date"], game["date"]) if hist else 9
+        sheet[f"{side}_rest_days"] = min(rest, 9)
+    return sheet
+
+
 if __name__ == "__main__":
     # CLI: venv/bin/python adapters/nba.py 2024-25
     season = sys.argv[1]
