@@ -218,6 +218,37 @@ pre-registered test: ≥150 strict trade-through fills across a stratified
 Brier ≤ market-mid Brier on in-window resolutions. Any failure = kill or
 re-scope. This lane is legal in MD regardless of the 4th Circuit.
 
+## The face (knaves.ai — the Multiverse Map)
+
+Agamotto gets a public dashboard at **knaves.ai** (owner's existing domain,
+repointed from the old horse-betting use). Decided 2026-07-15 via visual
+mockups:
+
+- **Front door — the Multiverse Map:** tonight's events rendered as branching
+  futures trees built from the crowd's simulate-mode rollouts. Branch
+  thickness = share of futures that agree; the winning storyline glows. A
+  **what-if chip** ("star player OUT") re-runs the swarm and animates the tree
+  re-growing — the 14,000,605 experience in a browser.
+- **Tab: the Sanctum War Room** — the Eye as a consensus dial vs the market
+  price, the crowd as a constellation where each agent's dot grows as it earns
+  voice (the learning loop, visible), and the lessons feed.
+- **Tab: the Receipts Board** — gate lights (pass/fail, verbatim), calibration
+  curve, CLV track record, every pick with its story.
+
+Rules that keep it honest and cheap:
+
+- **Single source of truth:** the site is a static page reading JSON exported
+  by `report.py` — the same ledger the gates read. The dashboard can never
+  show a rosier number than REPORT.md.
+- **$0 to run:** static hosting (GitHub Pages or Vercel), no backend, no
+  accounts, no API keys in the browser. Live mode = the hourly Action rewrites
+  the JSON.
+- **No funnels:** gate fails display as fails; no copy-trading, no
+  "join my picks" anything. It's a lab window, not a tip service.
+- **Milestone M-viz** (after M1, needs real backtest output): build the three
+  views on exported JSON. A mock-data version can be built anytime for demos.
+- Repointing the domain's DNS is a human step (owner's registrar), not code.
+
 ## The gates (pre-registered — locked before results exist)
 
 - **G-leak:** if the re-ID probe correctly names both teams on **≥10%** of
