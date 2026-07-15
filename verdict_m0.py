@@ -44,7 +44,7 @@ if __name__ == "__main__":
     table = pd.read_csv(config.DATA / "scoring_table.csv")
     probe = json.loads((config.DATA / "probe_results.json").read_text())
     # AUDIT.md line format (human writes it): "errors: 0 of 50"
-    audit_line = next(l for l in Path("AUDIT.md").read_text().splitlines()
+    audit_line = next(l for l in (config.ROOT / "AUDIT.md").read_text().splitlines()
                       if l.startswith("errors:"))
     parts = audit_line.replace("errors:", "").split("of")
     audit_errors, audit_n = int(parts[0]), int(parts[1])
@@ -56,5 +56,5 @@ if __name__ == "__main__":
              ("engine work may start." if v["go"]
               else "fix the data before any engine code."), ""]
     lines += [f"- {r}" for r in v["reasons"]]
-    Path("M0_VERDICT.md").write_text("\n".join(lines) + "\n")
+    (config.ROOT / "M0_VERDICT.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

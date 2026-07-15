@@ -6,6 +6,7 @@ file names differ, edit COLUMN_MAP and nothing else.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -24,6 +25,12 @@ COLUMN_MAP = {
 }
 
 _FULLNAME_TO_ABBREV = {f"{t[1]} {t[2]}".lower(): t[0] for t in NBA_TEAMS}
+# Some datasets write the Clippers with the official league city ("LA"
+# Clippers) even though the more common way people write it is "Los
+# Angeles Clippers" — accept that spelling too.
+_FULLNAME_TO_ABBREV["los angeles clippers"] = "LAC"
+
+_DATE_FORMAT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
 def american_to_prob(ml: int) -> float:
@@ -55,18 +62,54 @@ def load_kaggle_closes(csv_path: Path) -> pd.DataFrame:
     """Return one clean row per game: date, home, away, home_close_prob."""
     raw = pd.read_csv(csv_path)
     validate_schema(raw)
+
+    # Catch a wrong date format early and loudly, instead of silently
+    # producing garbage "date" strings later (a "03/05/2025"-style column
+    # would slice down to "03/05/2" and nobody would notice).
+    date_col = raw[COLUMN_MAP["date"]].dropna()
+    if len(date_col):
+        first_date = str(date_col.iloc[0])
+        if not _DATE_FORMAT_RE.match(first_date):
+            raise ValueError(
+                f"column '{COLUMN_MAP['date']}' doesn't look like YYYY-MM-DD. "
+                f"First value found: {first_date!r}. Dates must be in "
+                f"YYYY-MM-DD format — reformat the CSV before loading.")
+
     rows = []
+    dropped = 0
+    bad_team_names: list[str] = []
+
+    def _note_bad_name(raw_name) -> None:
+        name_str = str(raw_name).strip()
+        if name_str and name_str.lower() != "nan" and name_str not in bad_team_names \
+                and len(bad_team_names) < 10:
+            bad_team_names.append(name_str)
+
     for _, r in raw.iterrows():
-        home, away = _to_abbrev(r[COLUMN_MAP["home"]]), _to_abbrev(r[COLUMN_MAP["away"]])
+        home_name, away_name = r[COLUMN_MAP["home"]], r[COLUMN_MAP["away"]]
+        home, away = _to_abbrev(home_name), _to_abbrev(away_name)
+        odds_ok = True
         try:
             p_home = devig(american_to_prob(r[COLUMN_MAP["home_ml"]]),
                            american_to_prob(r[COLUMN_MAP["away_ml"]]))
         except (ValueError, TypeError):
-            home = None  # bad odds -> drop below
-        if home is None or away is None:
+            odds_ok = False
+
+        if home is None:
+            _note_bad_name(home_name)
+        if away is None:
+            _note_bad_name(away_name)
+
+        if home is None or away is None or not odds_ok:
+            dropped += 1
             continue
         rows.append({"date": str(r[COLUMN_MAP["date"]])[:10], "home": home,
                      "away": away, "home_close_prob": round(p_home, 4),
                      "provenance": "kaggle"})
+
+    if dropped:
+        print(f"kept {len(rows)} rows, dropped {dropped} "
+              f"(unmatched team names: {bad_team_names})")
+
     return pd.DataFrame(rows, columns=["date", "home", "away",
                                        "home_close_prob", "provenance"])

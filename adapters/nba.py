@@ -25,12 +25,15 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
         by_id.setdefault(r["GAME_ID"], []).append(r)
 
     games = []
+    dropped = 0
     for gid, pair in by_id.items():
         if len(pair) != 2:
+            dropped += 1
             continue
         home = next((r for r in pair if "vs." in r["MATCHUP"]), None)
         away = next((r for r in pair if "@" in r["MATCHUP"]), None)
         if home is None or away is None:
+            dropped += 1
             continue
         games.append({
             "game_id": gid,
@@ -42,6 +45,8 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
             "home_won": int(home["PTS"]) > int(away["PTS"]),
         })
     games.sort(key=lambda g: (g["date"], g["game_id"]))
+    if dropped:
+        print(f"note: dropped {dropped} incomplete game(s) missing a home or away row")
     return games
 
 
@@ -100,7 +105,12 @@ def _form(history: list[dict], team: str) -> dict:
 
 
 def build_statsheet(games: list[dict], idx: int) -> dict:
-    """Everything an agent may know about a game — from BEFORE tipoff only."""
+    """Everything an agent may know about a game — from BEFORE tipoff only.
+
+    Assumes `games` is already sorted by date (parse_gamefinder_rows always
+    sorts it) — team_history() relies on that order, and hist[-1] below only
+    grabs the most recent prior game if the list is in date order.
+    """
     game = games[idx]
     sheet = {"date": game["date"], "home": game["home"], "away": game["away"]}
     for side in ("home", "away"):

@@ -26,3 +26,25 @@ def test_loader_normalizes_names_and_drops_bad_rows():
     assert set(df["home"]) == {"BOS", "LAL"}  # full names became abbrevs
     assert ((df["home_close_prob"] > 0) & (df["home_close_prob"] < 1)).all()
     assert (df["provenance"] == "kaggle").all()
+
+
+def test_los_angeles_clippers_full_name_resolves_to_lac(tmp_path):
+    # Datasets often write "Los Angeles Clippers" even though the league's
+    # own city field for that team is just "LA" — both must resolve to LAC.
+    csv_path = tmp_path / "clippers.csv"
+    csv_path.write_text(
+        "game_date,home_team,away_team,home_ml_close,away_ml_close\n"
+        "2025-03-05,Los Angeles Clippers,Boston Celtics,-150,+130\n"
+    )
+    df = load_kaggle_closes(csv_path)
+    assert list(df["home"]) == ["LAC"]
+
+
+def test_wrong_date_format_raises_value_error(tmp_path):
+    csv_path = tmp_path / "bad_dates.csv"
+    csv_path.write_text(
+        "game_date,home_team,away_team,home_ml_close,away_ml_close\n"
+        "03/05/2025,Boston Celtics,New York Knicks,-220,+180\n"
+    )
+    with pytest.raises(ValueError, match="YYYY-MM-DD"):
+        load_kaggle_closes(csv_path)

@@ -74,6 +74,23 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parent))
 import config as _config
 
 _NICK_TO_ABBREV = {t[2].lower(): t[0] for t in NBA_TEAMS}
+_ABBREVS = {t[0] for t in NBA_TEAMS}
+
+# City name -> every team abbreviation that city could mean. Most cities
+# only have one team, so this ends up being a size-1 set almost everywhere.
+_CITY_TO_ABBREVS: dict[str, set[str]] = {}
+for _abbrev, _city, _nick in NBA_TEAMS:
+    _CITY_TO_ABBREVS.setdefault(_city.lower(), set()).add(_abbrev)
+# "LA" and "Los Angeles" both mean "one of the two LA teams" in normal
+# speech, even though our team list only spells one of them per team. Mark
+# both spellings ambiguous on purpose so a bare "Los Angeles" never gets
+# credited as either the Lakers or the Clippers.
+_CITY_TO_ABBREVS.setdefault("la", set()).update({"LAC", "LAL"})
+_CITY_TO_ABBREVS.setdefault("los angeles", set()).update({"LAC", "LAL"})
+
+# Check longer nicknames before shorter ones, so a two-word nickname like
+# "Trail Blazers" is tried before any shorter word that might be part of it.
+_NICKNAMES_LONGEST_FIRST = sorted(_NICK_TO_ABBREV, key=len, reverse=True)
 
 _PROBE_PROMPT = (
     "Below is an anonymized description of a real NBA game from the 2024-25 "
@@ -82,12 +99,38 @@ _PROBE_PROMPT = (
 )
 
 
+def _word_in(word: str, low_text: str) -> bool:
+    """True if `word` appears in `low_text` as a whole word, not just a substring.
+
+    This is what stops "nets" from matching inside "hornets" — plain
+    substring checks can't tell the difference, but a word-boundary regex can.
+    """
+    return _re.search(rf"\b{_re.escape(word)}\b", low_text) is not None
+
+
 def _abbrev_from_answer(text: str) -> str | None:
-    """Pull a team out of free text by its nickname, if any."""
+    """Pull a team out of free text: nickname first, then abbreviation, then city.
+
+    A nickname (like "Celtics") always wins if one is there. A 3-letter
+    abbreviation (like "BOS") or a plain city name (like "Boston") also
+    counts, but only when that city belongs to exactly one team — "Los
+    Angeles" or "LA" alone could mean the Lakers or the Clippers, so those
+    never count on their own.
+    """
     low = text.lower()
-    for nick, ab in _NICK_TO_ABBREV.items():
-        if nick in low:
-            return ab
+
+    for nick in _NICKNAMES_LONGEST_FIRST:
+        if _word_in(nick, low):
+            return _NICK_TO_ABBREV[nick]
+
+    for abbrev in _ABBREVS:
+        if _word_in(abbrev.lower(), low):
+            return abbrev
+
+    for city, abbrevs in _CITY_TO_ABBREVS.items():
+        if len(abbrevs) == 1 and _word_in(city, low):
+            return next(iter(abbrevs))
+
     return None
 
 
