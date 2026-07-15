@@ -1,0 +1,28 @@
+{
+  "events": [
+    {"event_ticker": "ALBUM-DROP", "title": "Will the album drop this month?",
+     "category": "Entertainment",
+     "markets": [
+       {"ticker": "ALBUM-DROP-JUL", "yes_sub_title": "in July",
+        "yes_bid": 40, "yes_ask": 46, "volume": 5200,
+        "close_time": "2026-07-31T23:59:00Z", "status": "active"},
+       {"ticker": "ALBUM-DROP-THIN", "yes_sub_title": "thin book",
+        "yes_bid": 0, "yes_ask": 99, "volume": 3,
+        "close_time": "2026-07-31T23:59:00Z", "status": "active"}
+     ]},
+    {"event_ticker": "GAME-7", "title": "Will the home team win game 7?",
+     "category": "Sports",
+     "markets": [
+       {"ticker": "GAME-7-YES", "yes_sub_title": "",
+        "yes_bid": 55, "yes_ask": 57, "volume": 90000,
+        "close_time": "2026-07-16T23:00:00Z", "status": "active"}
+     ]},
+    {"event_ticker": "CPI-STR", "title": "Will CPI come in above 3.0%?",
+     "category": "Economics",
+     "markets": [
+       {"ticker": "CPI-STR-3", "yes_sub_title": "above 3.0",
+        "yes_bid": "0.22", "yes_ask": "0.28", "volume": 1500,
+        "close_time": "2026-07-15T18:00:00Z", "status": "active"}
+     ]}
+  ]
+}
