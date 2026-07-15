@@ -307,6 +307,25 @@ Rules that keep it honest and cheap:
 - One recorded end-to-end fixture game so the whole pipeline replays in CI
   without API keys.
 
+## Public framing (README + knaves.ai rules)
+
+The GitHub repo and the site tell **Agamotto's own story**, on its own terms:
+
+- Lead with what it is: a multi-agent outcome-simulation engine — a crowd of
+  AI forecasters, simulated futures, a what-if god's-eye, a learning loop, and
+  an honest evaluation lab with pre-registered gates.
+- **No MiroFish mentions** in the README or site — no comparisons, no debunk
+  content. That research stays in the private wiki. (Nothing dishonest about
+  this: zero shared code, and the underlying idea is decades-old public
+  research. Related-work credits go to academic papers, which read stronger
+  anyway.)
+- **Don't frame it as a betting product.** Sports is "the first evaluation
+  domain" (rich data, hard benchmark), not the identity. It's a paper-only
+  research lab that scores itself against real-world outcomes and market
+  prices — that framing is also the recruiting-friendly one.
+- The internal spec (this doc) keeps the full evidence trail; public docs
+  keep the receipts about *our own* results.
+
 ## Code style
 
 Plain, simple English in comments, docstrings, and output — high-school level,
