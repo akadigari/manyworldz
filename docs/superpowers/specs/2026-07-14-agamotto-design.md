@@ -108,7 +108,9 @@ or market category = one new adapter file.
   families* (Claude, GPT, Gemini, one open model), each shown a *different
   slice* of the evidence, combined with a trimmed mean. Diversity from
   genuinely different brains and different information, not one brain in
-  costumes.
+  costumes. **Key fallback:** if only an Anthropic key is available, ensemble
+  mode runs on different Claude tiers (Haiku / Sonnet / Opus) with partitioned
+  evidence — weaker diversity, and the report says so explicitly.
 
 The backtest runs the **ablation** that answers, head-to-head:
 persona crowd vs ensemble crowd vs one strong model prompted once vs the
@@ -152,10 +154,10 @@ re-scope. This lane is legal in MD regardless of the 4th Circuit.
 
 ## The gates (pre-registered — locked before results exist)
 
-- **G-leak:** if the re-ID probe shows the masker leaks (rate meaningfully
-  above chance), the pre-cutoff backtest is **demoted to calibration-training
-  only** and every accuracy claim rests on post-cutoff games. The re-ID rate
-  is published either way.
+- **G-leak:** if the re-ID probe correctly names both teams on **≥10%** of
+  masked games (chance is well under 1%), the pre-cutoff backtest is
+  **demoted to calibration-training only** and every accuracy claim rests on
+  post-cutoff games. The re-ID rate is published either way.
 - **G0 (power):** ≥300 graded games in the held-out set before judging.
 - **G1 (the Dr Strange test):** crowd's Brier beats the **market close** on
   held-out games.
