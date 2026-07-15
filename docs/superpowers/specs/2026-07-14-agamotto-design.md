@@ -214,16 +214,26 @@ these comparisons is a publishable result on its own.
   hand audit shows ≤1% join errors.
 - **NO-GO:** re-scope the closing-price source before writing anything else.
 
-**M1 — engine + backtest (weeks 3–5).** Swarm (both modes), baseline,
-calibration (train on earlier seasons, test only on held-out/post-cutoff),
-sampled backtest sized to budget (~300–500 games at v1), full ablation.
+**RESEQUENCED 2026-07-15 (owner call: "NBA is over — build the Dr Strange
+predictor now, add the lab later").** The engine comes first, pointed at
+live markets; the NBA backtest lab plugs back in whenever its data arrives
+(M0's code is complete and waiting on the closes CSV + probe run).
 
-**M2 — verdict (week 6).** `backtest.py` output vs GATES.md, REPORT.md and
-README updated, result published either way.
+**M1 — the engine, live (now).** The crowd core: personas + ensemble modes,
+vote + simulate (K rollouts), one deliberation round, the what-if god's-eye,
+paper ledger with CLV grading, and a **live Kalshi non-sports adapter** —
+the crowd votes on real open markets (entertainment, econ, culture; MD-legal
+year-round) and logs paper picks when the edge clears fees. No leak risk:
+live events post-date every model's training.
 
-**M3 — live NBA paper arm (late October, opening night).** Only if gates
-allow. Real names permitted going forward (no leak risk on future games).
-Hourly GitHub Actions + Telegram, patterns lifted from kayfabe.
+**M2 — the learning loop (as picks settle).** Earned voice, the bench +
+shadow picks + retirement, lessons memory, calibration refit — all
+walk-forward on the growing live ledger, plus REPORT.md.
+
+**M-lab — the NBA backtest lab (deferred; resumes when data lands or by
+October).** M0's pilot (closes CSV join, 50-row audit, re-ID probe, GO/NO-GO)
+then the sampled backtest + full ablation vs the boring baseline and the
+market close. This is where the headline accuracy claims get their evidence.
 
 **M-viz — the knaves.ai dashboard (after M1; mock-data demo anytime).** The
 Multiverse Map front door + War Room and Receipts tabs, reading `report.py`'s
