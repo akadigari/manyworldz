@@ -1,14 +1,85 @@
-# Agamotto
+# 🟡 Agamotto
 
-A crowd of AI forecasters that simulates futures. Each agent imagines how
-an event could play out; the crowd's futures become a probability; a
-what-if mode re-runs every future with a fact forced true. The crowd
-learns from every settled event — agents that keep being wrong lose their
-voice, get benched, and can be retired.
+**A crowd of AI forecasters that simulates futures — and keeps score.**
 
-Everything is measured against real-world outcomes and market closing
-prices, with pass/fail gates written down before any results exist
-(see GATES.md). Paper-only research. Verdicts get published either way.
+Ask it anything about the future. Instead of one AI giving you one opinion,
+Agamotto builds a small crowd of AI characters — a stats nerd, a contrarian,
+a hype-follower, an oddsmaker — and each one independently works out the
+odds. In simulate mode, each agent *imagines the event playing out* several
+times and counts how the futures land. The crowd's views fold into one
+honest probability.
 
-**Status: the engine is live — crowd votes on real open markets (paper only).
-NBA evaluation lab: built, deferred until its data arrives.**
+Then the part almost nobody ships: **it grades itself.** On real prediction
+markets, every paper pick is logged and scored against what actually
+happened — with pass/fail rules written down *before* any results existed.
+
+```
+$ python ask.py "Will the Fed cut rates in September?"
+
+  THE CROWD SAYS: 62% chance of YES
+  (disagreement spread 0.11, 0 unusable answers skipped)
+
+   70%  Ava    (stats nerd): futures pricing implies a cut is likelier than not
+   55%  Ben    (contrarian): everyone expects it, which is exactly when it slips
+   ...
+
+$ python ask.py "Will the album drop this month?" --whatif "the label confirmed the date"
+
+  THE FACT MOVES THE ODDS UP 34% (+34%)
+```
+
+## Quickstart (5 minutes)
+
+```bash
+git clone <this repo> && cd agamotto
+python3 -m venv venv && venv/bin/pip install -r requirements.txt
+export ANTHROPIC_API_KEY=your-key        # get one at console.anthropic.com
+venv/bin/python ask.py "Will it snow in DC this December?" --simulate
+```
+
+A typical question costs about a cent. Every answer is cached — asking the
+same thing twice is free. A hard budget cap (`ENGINE_BUDGET_USD` in
+`config.py`, default $10) means it can never surprise you.
+
+## What's in the box
+
+| Piece | What it does |
+|---|---|
+| `ask.py` | Ask the crowd anything; `--whatif` re-runs with a fact forced true |
+| `run.py` | The live loop: crowd votes on real open prediction markets, logs paper picks |
+| `engine/` | The crowd: personas, voting, simulated futures, deliberation, what-if |
+| `ledger.py` | The scorecard — every pick graded against real closing prices (CLV) |
+| `GATES.md` | The pre-registered rules for what would count as real skill |
+| `docs/OWNERS_TOUR.md` | The whole project explained in plain English |
+
+## The honesty rules
+
+1. **Paper only.** The machine writes CSV rows; it cannot spend money or
+   place bets. Any real-world decision belongs to a human.
+2. **Pre-registered gates.** To ever claim "edge," the crowd must beat the
+   market's closing price, beat a boring statistics baseline, survive a
+   luck test, survive fees, and have enough depth to matter — rules locked
+   before results existed. Failures get published too.
+3. **Never fabricate.** Junk model answers are skipped and counted. If the
+   whole crowd fails on a question, there is no answer — not a made-up one.
+4. **Honest prompts.** Questions without a market price say so — the crowd
+   is never fed a fake anchor.
+
+## Run it in the cloud (laptop off)
+
+The included GitHub Action (`.github/workflows/agamotto.yml`) runs the live
+loop four times a day on GitHub's servers and commits the scorecard back to
+the repo. Setup: push to GitHub, add `ANTHROPIC_API_KEY` as a repository
+secret (Settings → Secrets and variables → Actions), done.
+
+## Why this exists
+
+Multi-agent "prediction" demos are everywhere; published, graded track
+records are almost nowhere. Agamotto is built backwards from that gap: the
+crowd is the show, but the scorecard is the product. Expectations are set
+honestly — published research says AI forecasters roughly match human
+crowds at best — and the gates exist to find out, not to assume.
+
+Research-lab project. Not financial advice, not a betting product.
+
+MIT licensed. Built by [@akadigari](https://github.com/akadigari).
