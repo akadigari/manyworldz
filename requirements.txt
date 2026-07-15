@@ -1,0 +1,4 @@
+nba_api>=1.4
+anthropic>=0.40
+pandas>=2.2
+pytest>=8.0
