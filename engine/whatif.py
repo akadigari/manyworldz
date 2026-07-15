@@ -1,4 +1,4 @@
-"""The god's-eye: force a fact to be true and watch the crowd's number move.
+"""The Eye: force a fact to be true and watch the crowd's number move.
 
 We don't touch the agents — we edit the world they see. The injected fact
 is prepended to the market question so every prompt (vote or simulate)

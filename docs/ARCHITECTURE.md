@@ -89,7 +89,7 @@ ledger the gates read.
 7. **The pick.** Only if the calibrated number differs from the market price
    by more than fees + a buffer does a paper pick go in the ledger, sized by
    fractional Kelly. No edge, no pick.
-8. **The what-if (god's-eye).** Inject a fact — "star player is OUT" — and
+8. **The what-if (the Eye).** Inject a fact — "star player is OUT" — and
    the futures re-run with that fact forced true. The dashboard animates the
    futures tree re-growing.
 
