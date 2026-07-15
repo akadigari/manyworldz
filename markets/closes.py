@@ -34,7 +34,12 @@ _DATE_FORMAT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}")
 
 
 def american_to_prob(ml: int) -> float:
-    """American moneyline -> raw implied probability (still has vig)."""
+    """Turn American moneyline odds (like -150 or +130) into a raw implied
+    probability between 0 and 1.
+
+    "Raw" means it still has the bookmaker's profit margin (the "vig")
+    baked in — see devig() below for how that gets stripped out.
+    """
     ml = int(ml)
     if ml < 0:
         return -ml / (-ml + 100)
@@ -42,11 +47,17 @@ def american_to_prob(ml: int) -> float:
 
 
 def devig(p_home_raw: float, p_away_raw: float) -> float:
-    """Strip the bookmaker's margin: scale the pair to sum to 1."""
+    """Remove the bookmaker's profit margin (the "vig") so the home and
+    away probabilities add up to exactly 1, the way fair odds should.
+    """
     return p_home_raw / (p_home_raw + p_away_raw)
 
 
 def validate_schema(df: pd.DataFrame) -> None:
+    """Make sure the CSV actually has the columns we expect, and fail
+    loudly with a clear message if it doesn't — instead of quietly
+    producing garbage further down the line.
+    """
     missing = [v for v in COLUMN_MAP.values() if v not in df.columns]
     if missing:
         raise ValueError(
@@ -55,11 +66,20 @@ def validate_schema(df: pd.DataFrame) -> None:
 
 
 def _to_abbrev(name: str) -> str | None:
+    """Look up a team's 3-letter abbreviation from its full "City Nickname"
+    name. Returns None if the name isn't recognized.
+    """
     return _FULLNAME_TO_ABBREV.get(str(name).strip().lower())
 
 
 def load_kaggle_closes(csv_path: Path) -> pd.DataFrame:
-    """Return one clean row per game: date, home, away, home_close_prob."""
+    """Load the Kaggle CSV of NBA betting odds and turn it into one clean
+    row per game: date, home team, away team, and the closing home-win
+    probability (with the vig removed).
+
+    Rows with an unrecognized team name or broken odds are dropped rather
+    than guessed at — see the "dropped" count this prints when it runs.
+    """
     raw = pd.read_csv(csv_path)
     validate_schema(raw)
 
@@ -80,6 +100,10 @@ def load_kaggle_closes(csv_path: Path) -> pd.DataFrame:
     bad_team_names: list[str] = []
 
     def _note_bad_name(raw_name) -> None:
+        """Remember a team name we couldn't match, up to 10 of them, so
+        the final "dropped" message can show a few real examples instead
+        of just a count.
+        """
         name_str = str(raw_name).strip()
         if name_str and name_str.lower() != "nan" and name_str not in bad_team_names \
                 and len(bad_team_names) < 10:

@@ -6,6 +6,7 @@ how often models can un-hide the teams anyway. We publish that number.
 """
 from __future__ import annotations
 
+# Every NBA team as (abbreviation, city, nickname) — e.g. ("BOS", "Boston", "Celtics").
 NBA_TEAMS: list[tuple[str, str, str]] = [
     ("ATL", "Atlanta", "Hawks"), ("BOS", "Boston", "Celtics"),
     ("BKN", "Brooklyn", "Nets"), ("CHA", "Charlotte", "Hornets"),
@@ -24,9 +25,14 @@ NBA_TEAMS: list[tuple[str, str, str]] = [
     ("UTA", "Utah", "Jazz"), ("WAS", "Washington", "Wizards"),
 ]
 
+# Casual nicknames fans use that aren't the official team name (like
+# "Dubs" for the Warriors) — banned too, so they can't leak the team either.
 _SHORTHANDS = ["Sixers", "Cavs", "Mavs", "Wolves", "Blazers", "Lakeshow",
                "Dubs", "Nola", "OKC"]
 
+# Every word that could give away which team is playing: abbreviations
+# ("BOS"), city-name words ("Boston"), nickname words ("Celtics"), and
+# casual shorthands ("Dubs"). This is the full redaction list.
 BANNED_TOKENS: list[str] = sorted(
     {t[0] for t in NBA_TEAMS}
     | {word for t in NBA_TEAMS for word in t[1].split()}
@@ -36,18 +42,24 @@ BANNED_TOKENS: list[str] = sorted(
 
 
 def month_label(date: str) -> str:
-    """Coarsen an exact date to a month word, so the date can't be looked up."""
+    """Turn an exact date (like "2025-01-14") into a vague label like
+    "mid-season (January)", so nobody can look up that exact date and find
+    out which real game — and which teams — it was.
+    """
     months = ["January", "February", "March", "April", "May", "June", "July",
               "August", "September", "October", "November", "December"]
-    m = int(date.split("-")[1])
+    month_num = int(date.split("-")[1])
     phase = {10: "early-season", 11: "early-season", 12: "mid-season",
              1: "mid-season", 2: "mid-season", 3: "late-season",
-             4: "late-season"}.get(m, "off-calendar")
-    return f"{phase} ({months[m - 1]})"
+             4: "late-season"}.get(month_num, "off-calendar")
+    return f"{phase} ({months[month_num - 1]})"
 
 
 def mask_statsheet(sheet: dict) -> str:
-    """The anonymized text an agent (or the probe) gets to read."""
+    """Turn a stat-sheet into the plain-text description an agent (or the
+    re-ID probe below) actually reads — with real team names replaced by
+    "Team A" (home) and "Team B" (away).
+    """
     lines = [
         f"A professional basketball game, {month_label(sheet['date'])}.",
         "Team A is the home side. Team B is the visitor.",
@@ -135,7 +147,12 @@ def _abbrev_from_answer(text: str) -> str | None:
 
 
 def score_probe_answer(answer_text: str, truth: tuple[str, str]) -> bool:
-    """True only when BOTH the home and away guesses are right."""
+    """Check a model's un-masking guess against the real teams.
+
+    `answer_text` is the model's raw reply (expected to hold JSON with
+    "home"/"away" guesses); `truth` is the real (home, away) abbreviation
+    pair. Returns True only when BOTH guesses are right — no partial credit.
+    """
     try:
         guess = _json.loads(answer_text[answer_text.find("{"):answer_text.rfind("}") + 1])
         home_guess = _abbrev_from_answer(str(guess.get("home", "")))
@@ -189,6 +206,8 @@ def run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict:
 
     result = {"per_model": per_model, "n": n}
     (_config.DATA / "probe_results.json").write_text(_json.dumps(result, indent=1))
+    # Grade by the WORST model's rate, not the average — we'd rather be too
+    # cautious about leaks than too generous.
     worst = max(per_model.values())
     lines = ["# Re-identification probe — published either way", "",
              f"Masked games shown: {n} per model", ""]

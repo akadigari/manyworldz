@@ -49,7 +49,13 @@ def _cents(value) -> int:
 
 
 def parse_events(payload: dict) -> list[dict]:
-    """Flatten the /events response into one card per market."""
+    """Turn Kalshi's raw /events response into a flat list of "cards" —
+    one simple dict per tradeable market, with the fields we actually use.
+
+    An "event" can bundle several related markets together (e.g. one
+    event per election, one market per candidate), so this walks every
+    event and pulls out each of its markets as its own card.
+    """
     cards = []
     for event in payload.get("events", []):
         if event.get("category") in config.EXCLUDED_CATEGORIES:
@@ -59,17 +65,17 @@ def parse_events(payload: dict) -> list[dict]:
                 continue
             bid = _cents(market.get("yes_bid_dollars", market.get("yes_bid")))
             ask = _cents(market.get("yes_ask_dollars", market.get("yes_ask")))
-            sub = market.get("yes_sub_title") or ""
+            subtitle = market.get("yes_sub_title") or ""
             question = event.get("title", "")
-            if sub:
-                question = f"{question} ({sub})"
+            if subtitle:
+                question = f"{question} ({subtitle})"
             cards.append({
                 "ticker": market.get("ticker", ""),
                 "question": question,
                 "category": event.get("category", ""),
-                "yes_bid": bid,
-                "yes_ask": ask,
-                "mid": round((bid + ask) / 2) if (bid and ask) else 0,
+                "yes_bid": bid,      # highest price buyers are offering, in cents
+                "yes_ask": ask,      # lowest price sellers are asking, in cents
+                "mid": round((bid + ask) / 2) if (bid and ask) else 0,  # halfway between — the "market price"
                 "close_time": market.get("close_time", ""),
                 "volume": int(float(market.get("volume_fp") or market.get("volume") or 0)),
             })
@@ -77,13 +83,18 @@ def parse_events(payload: dict) -> list[dict]:
 
 
 def tradeable(cards: list[dict], now_iso: str) -> list[dict]:
-    """Keep markets a paper trader could actually act on."""
+    """Filter down to markets a real trader could actually get into.
+
+    Throws out anything with no real price, a spread too wide to be worth
+    it, too little trading activity, or a close time too soon to react to.
+    What's left is sorted by volume (busiest markets first).
+    """
     from datetime import datetime, timedelta
     now = datetime.fromisoformat(now_iso.replace("Z", "+00:00"))
     keep = []
     for c in cards:
         if not (0 < c["yes_bid"] and c["yes_ask"] < 100 and c["mid"] > 0):
-            continue                                  # need a two-sided book
+            continue                                  # need both a real buy price and a real sell price
         if c["yes_ask"] - c["yes_bid"] > 10:
             continue                                  # spread too wide
         if c["volume"] < 100:

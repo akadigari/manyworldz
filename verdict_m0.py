@@ -1,5 +1,8 @@
-"""Apply the pre-registered M0 gates. The rules live in GATES.md and
-config.py — this file only checks them, it never bends them.
+"""This file decides whether M0 (the first phase of the project) passed or
+failed, using rules that were written down in GATES.md and config.py
+BEFORE any results existed. That order matters: the rules can't be
+quietly loosened after the fact just because the numbers came out badly.
+This file only checks the rules — it never changes them.
 """
 from __future__ import annotations
 
@@ -13,6 +16,20 @@ import config
 
 def evaluate(n_games: int, audit_errors: int, audit_n: int,
              worst_reid_rate: float) -> dict:
+    """Check the three pre-registered gates and decide GO or NO-GO.
+
+    Gate 1: did we end up with enough games that have a verified market
+    price? Gate 2: when a person hand-checked a sample, was the error
+    rate low enough to trust the matching? Gate 3 (doesn't block GO by
+    itself, but matters): did the re-ID probe show the mask is leaky? If
+    so, the older ("pre-cutoff") games get downgraded to
+    "calibration-only" instead of counting as a real backtest, since a
+    model that can partly guess the teams isn't purely predicting them.
+
+    Returns a dict with the overall go/no-go call, whether the
+    pre-cutoff backtest gets demoted, and a plain-English reason for
+    each gate.
+    """
     reasons = []
     if n_games >= config.GO_MIN_GAMES:
         reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}) — pass")
@@ -49,12 +66,12 @@ if __name__ == "__main__":
     parts = audit_line.replace("errors:", "").split("of")
     audit_errors, audit_n = int(parts[0]), int(parts[1])
 
-    v = evaluate(len(table), audit_errors, audit_n,
+    verdict = evaluate(len(table), audit_errors, audit_n,
                  max(probe["per_model"].values()))
     lines = ["# M0 verdict", "",
-             f"**{'GO' if v['go'] else 'NO-GO'}** — " +
-             ("engine work may start." if v["go"]
+             f"**{'GO' if verdict['go'] else 'NO-GO'}** — " +
+             ("engine work may start." if verdict["go"]
               else "fix the data before any engine code."), ""]
-    lines += [f"- {r}" for r in v["reasons"]]
+    lines += [f"- {r}" for r in verdict["reasons"]]
     (config.ROOT / "M0_VERDICT.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))

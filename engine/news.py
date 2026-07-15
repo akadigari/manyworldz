@@ -20,7 +20,12 @@ CACHE_DIR = config.CACHE / "news"
 
 
 def parse_rss(xml_text: str, limit: int = 3) -> list[str]:
-    """Pull item titles out of an RSS feed. Bad XML -> empty list."""
+    """Pull headline titles out of an RSS feed.
+
+    RSS is just a simple XML format news sites use to list their recent
+    articles. Returns up to `limit` headline strings, or an empty list if
+    the XML is broken or empty.
+    """
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError:

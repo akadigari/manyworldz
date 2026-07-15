@@ -1,7 +1,11 @@
-"""The paper ledger: every pick the crowd makes, graded against reality.
+"""The paper ledger keeps a record of every pick the crowd makes, and later
+checks it against what really happened. Nothing here is real money — it's
+a spreadsheet-style CSV file we can grade over time.
 
-Append-only CSV. CLV (closing line value) is the honest score: did the
-market move toward our pick after we made it?
+The honest scorecard is CLV (closing line value): after we log a pick, did
+the market's price move toward our side or away from it? If the market
+kept drifting toward us, that's a sign the crowd was onto something real,
+not just lucky.
 """
 from __future__ import annotations
 
@@ -23,6 +27,11 @@ _DEFAULT = config.DATA / "ledger.csv"
 
 
 def load(path: Path | None = None) -> list[dict]:
+    """Read the ledger CSV into a list of plain dicts, one per row.
+
+    If the file doesn't exist yet (nothing has been logged), this returns
+    an empty list instead of crashing.
+    """
     path = path or _DEFAULT
     if not path.exists():
         return []
@@ -68,7 +77,15 @@ def log_pick(row: dict, path: Path | None = None) -> None:
 
 
 def grade(latest_by_ticker: dict[str, dict], path: Path | None = None) -> dict:
-    """Refresh open picks against the latest market state."""
+    """Update every open pick with fresh market prices, and close out any
+    that have settled.
+
+    Takes a dict of the latest known price/status for each ticker (from
+    the Kalshi adapter). For each open pick still in that dict, this
+    updates its CLV score, and if the market has actually resolved, marks
+    the pick "settled" with the real result. Returns a count of how many
+    rows were touched and how many got settled.
+    """
     path = path or _DEFAULT
     rows = load(path)
     updated = settled = 0
@@ -80,6 +97,8 @@ def grade(latest_by_ticker: dict[str, dict], path: Path | None = None) -> dict:
         if mid:                    # None or 0 means "price unknown" — keep old values
             entry = int(r["entry_mid"])
             r["latest_mid"] = mid
+            # CLV: cents the price moved in our favor since we logged the
+            # pick. Positive = the market is drifting toward us.
             r["clv_cents"] = (mid - entry) if r["side"] == "YES" else (entry - mid)
         updated += 1
         if latest.get("status") == "settled" and latest.get("result"):

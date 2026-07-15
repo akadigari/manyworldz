@@ -1,7 +1,11 @@
-"""Join game results to verified market closes — the table M0 stands on.
+"""This file matches up two separate lists — real NBA game results and the
+market's verified closing prices — into one clean table. That table is
+the foundation the whole M0 backtest is built on.
 
-Anything odd goes to a quarantine file with a reason. We never guess and
-never silently drop a post-cutoff game.
+If a game can't be matched cleanly (no verified price found, or more than
+one match), it goes into a separate "quarantine" file with a reason
+instead of being guessed at or silently dropped. We never fake a number
+just to fill a row.
 """
 from __future__ import annotations
 
@@ -16,29 +20,48 @@ import config
 
 def build_table(games: list[dict], closes: pd.DataFrame,
                 cutoff: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Match each post-cutoff game to exactly one verified closing price.
+
+    `games` is the full list of NBA results; `closes` is the table of
+    verified market prices; `cutoff` is the date where "post-cutoff"
+    starts (games on/after this date are the ones we actually score).
+    Returns two tables: the clean matches ready to score, and the
+    "quarantine" list of games that couldn't be matched cleanly (with a
+    reason for each).
+    """
     post = [g for g in games if g["date"] >= cutoff]
-    key = lambda d, h, a: f"{d}|{h}|{a}"
+    # A "key" strings a game's date + home team + away team together so we
+    # can look up "does this exact game exist in the closes table?" in one
+    # dictionary lookup instead of scanning the whole table each time.
+    key = lambda date, home, away: f"{date}|{home}|{away}"
     by_key: dict[str, list[dict]] = {}
     for _, r in closes.iterrows():
         by_key.setdefault(key(r["date"], r["home"], r["away"]), []).append(dict(r))
 
-    rows, bad = [], []
-    for g in post:
-        matches = by_key.get(key(g["date"], g["home"], g["away"]), [])
+    rows, quarantined = [], []
+    for game in post:
+        matches = by_key.get(key(game["date"], game["home"], game["away"]), [])
         if len(matches) == 1:
-            rows.append({"date": g["date"], "home": g["home"], "away": g["away"],
-                         "home_won": g["home_won"],
+            # Exactly one verified price for this game — a clean match.
+            rows.append({"date": game["date"], "home": game["home"], "away": game["away"],
+                         "home_won": game["home_won"],
                          "home_close_prob": matches[0]["home_close_prob"],
                          "provenance": matches[0]["provenance"]})
         else:
-            bad.append({"date": g["date"], "home": g["home"], "away": g["away"],
+            # Zero matches (no price found) or 2+ matches (which one is
+            # real?) — either way, we can't trust a single answer, so this
+            # game gets set aside instead of guessed at.
+            quarantined.append({"date": game["date"], "home": game["home"], "away": game["away"],
                         "reason": "no_close" if not matches else "duplicate_close"})
     cols = ["date", "home", "away", "home_won", "home_close_prob", "provenance"]
     return (pd.DataFrame(rows, columns=cols),
-            pd.DataFrame(bad, columns=["date", "home", "away", "reason"]))
+            pd.DataFrame(quarantined, columns=["date", "home", "away", "reason"]))
 
 
 def write_outputs(table: pd.DataFrame, quarantine: pd.DataFrame) -> None:
+    """Save the scoring table and quarantine list to CSV files in data/,
+    plus a random 50-row sample for a person to hand-check.
+    """
     config.DATA.mkdir(parents=True, exist_ok=True)
     table.to_csv(config.DATA / "scoring_table.csv", index=False)
     quarantine.to_csv(config.DATA / "quarantine.csv", index=False)

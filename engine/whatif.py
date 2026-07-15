@@ -17,6 +17,15 @@ from engine.swarm import run_crowd
 def run_whatif(card: dict, headlines: list[str], crowd: list[dict],
                inject: str, mode: str = "vote", k: int = 5,
                deliberation: bool = False, ask_fn=llm.ask) -> dict:
+    """Run the crowd twice — once normally, once with a fact forced true —
+    and measure how much that fact moves the crowd's number.
+
+    `inject` is the fact to force, e.g. "the star player is out injured."
+    We never change how the agents think; we only add a sentence to the
+    market question itself, so every prompt sees the forced fact as given.
+    Returns both runs plus the "shift": how many probability points the
+    forced fact moved the consensus.
+    """
     before = run_crowd(card, headlines, crowd, mode, k, deliberation, ask_fn)
 
     twisted = dict(card)

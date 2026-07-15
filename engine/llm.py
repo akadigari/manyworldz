@@ -14,16 +14,18 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
 
-CACHE_DIR = config.CACHE / "llm"
-SPEND_FILE = config.DATA / "spend.json"
+CACHE_DIR = config.CACHE / "llm"     # saved copies of past answers
+SPEND_FILE = config.DATA / "spend.json"   # running total of what we've spent
 
-# rough $ per 1M tokens (input, output) — used only for the safety meter
+# Rough price per 1 million "tokens" (roughly, chunks of a word) the model
+# reads (input) or writes (output). Used only to estimate spending so we
+# can enforce the budget cap — not an exact invoice.
 _PRICES = {
     "claude-haiku-4-5": (1.00, 5.00),
     "claude-sonnet-5": (3.00, 15.00),
     "claude-opus-4-8": (5.00, 25.00),
 }
-_DEFAULT_PRICE = (5.00, 25.00)  # unknown model -> assume expensive (safe side)
+_DEFAULT_PRICE = (5.00, 25.00)  # unknown model -> assume it's expensive (the safe guess)
 
 
 def _call_api(prompt: str, model: str, max_tokens: int):
@@ -40,12 +42,23 @@ def _call_api(prompt: str, model: str, max_tokens: int):
 
 
 def spent_usd() -> float:
+    """How much money we estimate has been spent on API calls so far.
+
+    Reads the running total from disk and returns it in dollars. Returns
+    0.0 if nothing has been spent yet.
+    """
     if SPEND_FILE.exists():
         return json.loads(SPEND_FILE.read_text()).get("est_usd", 0.0)
     return 0.0
 
 
 def _record_spend(model: str, tokens_in: int, tokens_out: int) -> None:
+    """Add one API call's estimated cost to the running total saved on disk.
+
+    Turns the token counts into a dollar estimate using the rough prices
+    above, then updates the running total so spent_usd() can read it back
+    next time.
+    """
     price_in, price_out = _PRICES.get(model, _DEFAULT_PRICE)
     cost = tokens_in * price_in / 1e6 + tokens_out * price_out / 1e6
     state = {"calls": 0, "est_usd": 0.0}
@@ -58,7 +71,13 @@ def _record_spend(model: str, tokens_in: int, tokens_out: int) -> None:
 
 
 def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
-    """Ask the model one question. Cached forever; budget-capped."""
+    """Ask the model one question and return its plain-text answer.
+
+    The same prompt+model combo is only ever paid for once — repeat calls
+    return the cached answer instantly and for free. Before any new call,
+    this checks the running total against ENGINE_BUDGET_USD and refuses to
+    call the API at all once the budget is used up.
+    """
     model = model or config.ENGINE_MODEL
     key = hashlib.sha256(f"{model}\n{prompt}".encode()).hexdigest()
     CACHE_DIR.mkdir(parents=True, exist_ok=True)

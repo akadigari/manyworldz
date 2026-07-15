@@ -26,7 +26,7 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
 
     games = []
     dropped = 0
-    for gid, pair in by_id.items():
+    for game_id, pair in by_id.items():
         if len(pair) != 2:
             dropped += 1
             continue
@@ -36,7 +36,7 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
             dropped += 1
             continue
         games.append({
-            "game_id": gid,
+            "game_id": game_id,
             "date": home["GAME_DATE"][:10],
             "home": home["TEAM_ABBREVIATION"],
             "away": away["TEAM_ABBREVIATION"],
@@ -80,6 +80,7 @@ def team_history(games: list[dict], team: str, before_date: str) -> list[dict]:
 
 
 def _days_between(d1: str, d2: str) -> int:
+    """How many days sit between two "YYYY-MM-DD" date strings (d2 - d1)."""
     from datetime import date
     a = date(*map(int, d1.split("-")))
     b = date(*map(int, d2.split("-")))
@@ -87,7 +88,10 @@ def _days_between(d1: str, d2: str) -> int:
 
 
 def _form(history: list[dict], team: str) -> dict:
-    """Last-10 record and scoring averages, from that team's point of view."""
+    """Summarize a team's last 10 games: wins, and average points scored
+    and allowed, all seen from that team's own point of view (not home
+    vs. away).
+    """
     last10 = history[-10:]
     wins, pts_for, pts_against = 0, [], []
     for g in last10:

@@ -21,7 +21,12 @@ from engine.swarm import run_crowd
 
 
 def pick_side(crowd_prob: float, mid: int) -> tuple[str, int] | None:
-    """Which side (if any) does the crowd's number justify, after costs?"""
+    """Decide whether the crowd disagrees with the market by enough to bet.
+
+    Takes the crowd's probability (0 to 1) and the market's mid price (in
+    cents). Returns ("YES", edge) or ("NO", edge) if the gap is wide enough
+    to clear fees, or None if the two are too close to call.
+    """
     need = config.MIN_EDGE_CENTS + config.FEE_BUFFER_CENTS
     yes_edge = round(crowd_prob * 100) - mid
     if yes_edge >= need:
@@ -33,7 +38,14 @@ def pick_side(crowd_prob: float, mid: int) -> tuple[str, int] | None:
 
 def one_cycle(cards: list[dict] | None = None, ask_fn=None,
              now_iso: str | None = None) -> dict:
-    live = cards is None
+    """Run one full round of the engine: grade old picks, then make new ones.
+
+    Pass in `cards` (fake market data) and `ask_fn` (a fake crowd) to run
+    the whole cycle in tests, with no network or API calls. Leave both
+    blank for a real run. Returns a small summary: how many markets were
+    looked at, how many new picks got logged, and how grading went.
+    """
+    live = cards is None            # no fake cards given -> this is a real, live run
     ask = ask_fn or llm.ask
     now = now_iso or datetime.now(timezone.utc).isoformat()
 
@@ -44,9 +56,9 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
                         if r["status"] == "open"}
         latest = {}
         fetch_failures = 0
-        for t in open_tickers:
+        for ticker in open_tickers:
             try:
-                latest[t] = kalshi.fetch_market(t)
+                latest[ticker] = kalshi.fetch_market(ticker)
             except Exception:
                 fetch_failures += 1        # one bad ticker shouldn't kill the cycle
         if fetch_failures:
@@ -61,8 +73,8 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
 
     picks = 0
     for card in targets:
-        heads = news.headlines_for(card["question"]) if live else []
-        result = run_crowd(card, heads, crowd, mode=mode,
+        headlines = news.headlines_for(card["question"]) if live else []
+        result = run_crowd(card, headlines, crowd, mode=mode,
                            k=config.SIM_ROLLOUTS_K,
                            deliberation=config.DELIBERATION, ask_fn=ask)
         if not result["votes"]:
@@ -72,6 +84,8 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
                   f'| {card["question"]}')
             continue
         verdict = pick_side(result["probability"], card["mid"])
+        # "mid" = the mid price: halfway between what buyers will pay and
+        # sellers will take, in cents — the market's best guess at "fair."
         line = (f'{card["mid"]:>3}c market | {result["probability"]:.2f} crowd '
                 f'(spread {result["spread"]:.2f}, {result["skipped"]} skipped) '
                 f'| {card["question"][:60]}')

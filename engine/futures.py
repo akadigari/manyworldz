@@ -29,6 +29,14 @@ Give exactly {k} futures, each with "resolves" as "YES" or "NO"."""
 
 def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
                   ask_fn=llm.ask) -> dict | None:
+    """Ask one agent to imagine k different ways a market could play out.
+
+    Each imagined "future" is a short story plus a YES/NO resolution. The
+    agent's probability is just the share of its own stories that ended
+    YES — if it imagined 5 futures and 3 resolved YES, that's 0.6. Returns
+    None if the model didn't actually give at least half of the requested
+    futures in a usable shape (a sign it didn't really play along).
+    """
     prompt = _SIM_PROMPT.format(
         name=agent["name"], archetype=agent["archetype"], style=agent["style"],
         question=card["question"], mid=card["mid"], k=k,
@@ -38,18 +46,18 @@ def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
         return None
 
     futures = []
-    for f in parsed.get("futures", []):
-        if not isinstance(f, dict):
+    for future in parsed.get("futures", []):
+        if not isinstance(future, dict):
             continue
-        verdict = str(f.get("resolves", "")).strip().upper()
-        story = str(f.get("story", "")).strip()
+        verdict = str(future.get("resolves", "")).strip().upper()
+        story = str(future.get("story", "")).strip()
         if verdict in ("YES", "NO") and story:
             futures.append({"story": story[:200], "resolves": verdict,
                             "agent": agent["name"]})
     if len(futures) < max(k // 2, 2):
         return None      # the model didn't really play along — skip, don't guess
 
-    yes = sum(1 for f in futures if f["resolves"] == "YES")
+    yes = sum(1 for future in futures if future["resolves"] == "YES")
     prob = min(max(yes / len(futures), 0.01), 0.99)
     return {"probability": prob,
             "reason": str(parsed.get("reason", ""))[:200],
