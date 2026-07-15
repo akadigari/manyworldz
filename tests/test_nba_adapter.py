@@ -29,6 +29,14 @@ def test_orphan_rows_are_dropped_not_guessed():
 
 
 def test_output_sorted_by_date():
-    games = parse_gamefinder_rows(rows() + rows())  # dupes exercise stability
+    # Two complete games given in reverse date order — output must sort them.
+    later = [
+        {"GAME_ID": "0022400300", "GAME_DATE": "2024-11-09", "TEAM_ABBREVIATION": "DEN",
+         "MATCHUP": "DEN vs. UTA", "PTS": 128, "WL": "W"},
+        {"GAME_ID": "0022400300", "GAME_DATE": "2024-11-09", "TEAM_ABBREVIATION": "UTA",
+         "MATCHUP": "UTA @ DEN", "PTS": 103, "WL": "L"},
+    ]
+    games = parse_gamefinder_rows(later + rows())
+    assert len(games) == 2  # the fixture's complete game + this one
     dates = [g["date"] for g in games]
-    assert dates == sorted(dates)
+    assert dates == sorted(dates) and dates[0] == "2024-10-22"
