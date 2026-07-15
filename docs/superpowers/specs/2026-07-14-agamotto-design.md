@@ -210,6 +210,10 @@ README updated, result published either way.
 allow. Real names permitted going forward (no leak risk on future games).
 Hourly GitHub Actions + Telegram, patterns lifted from kayfabe.
 
+**M-viz — the knaves.ai dashboard (after M1; mock-data demo anytime).** The
+Multiverse Map front door + War Room and Receipts tabs, reading `report.py`'s
+exported JSON. See "The face" section.
+
 **M-money — Kalshi non-sports blend lane (optional, after M1).** Same engine,
 non-sports adapter, LLM + market-mid blend (~0.25 model weight), paper quotes
 one tick inside the book on the blend-favored side. Its own 14-day
