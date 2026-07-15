@@ -73,8 +73,13 @@ agamotto/
 │   ├── ensemble.py      # ensemble mode: different model families, each given
 │   │                    #   a DIFFERENT slice of evidence (news / base rates /
 │   │                    #   price history), trimmed-mean aggregation
-│   ├── swarm.py         # run a crowd (either mode) → votes → optional single
-│   │                    #   deliberation round → consensus + disagreement
+│   ├── swarm.py         # run a crowd (either mode) → each agent VOTES or
+│   │                    #   SIMULATES (see "seeing the futures") → optional
+│   │                    #   single deliberation round → consensus + spread
+│   ├── learn.py         # the learning loop: agent track records → earned
+│   │                    #   voice weights, walk-forward only (see below)
+│   ├── memory.py        # lessons store: what each agent got wrong and why,
+│   │                    #   retrieved for similar future games
 │   ├── calibrate.py     # logistic layer that learns when the crowd runs
 │   │                    #   hot/cold (train: earlier seasons; test: held out)
 │   └── whatif.py        # god's-eye: inject a scenario, re-run, show the shift
@@ -83,6 +88,10 @@ agamotto/
 │                        #   splits, pace, defensive rating, rest/back-to-backs,
 │                        #   lineup availability, head-to-head) → MASKED
 │                        #   stat-sheets (Team A vs Team B, no names)
+├── ingest.py            # feed-it-anything layer: drop a file/URL into
+│                        #   evidence/, it becomes time-stamped evidence cards
+│                        #   the agents read on their next run
+├── evidence/            # the drop folder (plus auto-pulled news per game)
 ├── masker.py            # the anonymizer + the re-identification probe
 ├── markets/
 │   └── closes.py        # verified closing prices: MGM Kaggle NBA dataset
@@ -112,11 +121,68 @@ or market category = one new adapter file.
   mode runs on different Claude tiers (Haiku / Sonnet / Opus) with partitioned
   evidence — weaker diversity, and the report says so explicitly.
 
-The backtest runs the **ablation** that answers, head-to-head:
-persona crowd vs ensemble crowd vs one strong model prompted once vs the
-boring logistic baseline vs the market close. Also measured: deliberation ON
-vs OFF (does letting agents see each other's arguments help or hurt?). These
-comparisons are themselves publishable results.
+## Seeing the futures (simulate mode — the Dr Strange head)
+
+Each agent can run in two modes, set in config:
+
+- **Vote mode:** the agent reads its evidence and gives one probability with a
+  reason. Cheap, one call.
+- **Simulate mode:** the agent *imagines the event playing out* K times
+  (default K=5) — short scenario rollouts ("Team A's pace wears them down in
+  the 4th…", "foul trouble flips it…") — and its probability is the fraction
+  of its own futures where the outcome happens. The crowd collectively holds
+  **N agents × K rollouts** of simulated futures, and the report can show the
+  most common storylines, not just a number. Costs ~K× more per agent, so the
+  cap decides how far it scales.
+
+The what-if engine reuses this directly: inject a scenario and the rollouts
+re-run with that fact forced true — that's the 14,000,605-futures move, sized
+to a college budget.
+
+## The learning loop (how it trains itself)
+
+Honest version of "trains itself": the underlying models never change — what
+learns is everything wrapped around them, and it learns from every settled
+game automatically:
+
+1. **Regrade:** when an event settles, the ledger grades every agent's call.
+2. **Earned voice (learn.py):** each agent/archetype/model-family carries a
+   running track record; aggregation weights shift toward agents that have
+   been right (inverse-Brier with shrinkage, so a lucky streak doesn't take
+   over). The contrarian that keeps nailing upsets earns a louder voice; the
+   narrative fan that keeps losing gets quieter.
+3. **Calibration refit:** the hot/cold correction layer refits on the growing
+   ledger.
+4. **Lessons memory (memory.py):** each miss is stored as a short plain-English
+   lesson ("crowd overweighted home streaks in back-to-backs"); before voting
+   on a similar future game, agents are shown their own relevant past
+   mistakes.
+
+**The no-fooling-ourselves rule:** all learned state is walk-forward only —
+weights and lessons used on game N were learned strictly from games that
+settled before N. And adaptivity itself is an ablation arm: **adaptive weights
+vs frozen equal weights**. If learning doesn't beat not-learning on later
+games, we say so and ship it off by default.
+
+## Feed it anything (the ingest layer)
+
+- **Auto news:** before each live vote, `ingest.py` pulls fresh headlines per
+  game (Google News RSS pattern from kayfabe's research.py — no API key) into
+  time-stamped evidence cards.
+- **Drop anything:** put a file or URL into `evidence/` (scouting notes, an
+  injury tweet screenshot's text, a stats CSV, an article) and it becomes
+  evidence cards tagged to team/date with provenance. Agents read matching
+  cards on their next run. New data source = drop it in, not a rebuild.
+- **Time discipline:** every card carries a timestamp, and the backtest
+  replayer only shows agents cards dated *before* the game — new data can
+  never leak the future into a historical run.
+
+## The ablation (what the backtest answers head-to-head)
+
+Persona crowd vs ensemble crowd vs one strong model prompted once vs the
+boring logistic baseline vs the market close — plus deliberation ON vs OFF,
+**vote vs simulate mode**, and **adaptive vs frozen weights**. Every one of
+these comparisons is a publishable result on its own.
 
 ## Milestones (kill-cheap order)
 
@@ -180,7 +246,9 @@ re-scope. This lane is legal in MD regardless of the 4th Circuit.
 - Every crowd vote cached to disk keyed by (game, agent, config-hash): reruns
   are free, backtests resume, scaling up never re-pays for old votes.
 - "Go harder" = config change only: crowd size, model tier, sample size,
-  deliberation. Nothing structural.
+  deliberation, vote↔simulate mode, rollouts-per-agent K. Nothing structural.
+- Simulate mode multiplies cost by ~K, so v1 runs it on a subset of the
+  backtest sample; the cap, not enthusiasm, decides how far it scales.
 - Default models: Haiku for crowd votes, stronger model only where measured to
   matter.
 
@@ -217,6 +285,9 @@ house style. Commits never carry AI co-author trailers.
   round is the tested, affordable slice of that idea.
 - No transformer calibrator — logistic regression is the honest tool at this
   data size.
+- No model fine-tuning or "retraining the AI" — at our data size that's
+  overfitting sold as learning. The learning loop (weights, calibration,
+  lessons memory) is the version that can actually be proven to help.
 - No real-money execution of any kind; a person places any real bet, and only
   after every gate passes.
 - No Polymarket trading (geo-blocked in MD; data use only).
