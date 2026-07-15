@@ -1,0 +1,57 @@
+# Agamotto on a cloud timer — runs by itself on GitHub's servers, laptop off.
+#
+# Four times a day it grades the open paper picks, has the AI crowd vote on
+# the biggest open non-sports markets, and saves the scorecard back to the
+# repo. It only reads public market data; it never places an order — the
+# ledger is a CSV of pretend picks, graded honestly.
+#
+# To turn it on:
+#   1. Publish this folder to GitHub (GitHub Desktop), keep the repo private
+#      until you're ready to open-source it.
+#   2. On github.com: repo Settings -> Secrets and variables -> Actions ->
+#      New repository secret -> name ANTHROPIC_API_KEY, paste your key.
+#   3. That's it. The Actions tab shows every run; data/ledger.csv fills up.
+#
+# Cost control: the engine has its own hard budget cap (ENGINE_BUDGET_USD in
+# config.py, $10). The spending meter (data/spend.json) is committed back
+# after every run, so the cap holds across cloud runs. When it's hit, runs
+# stop making new calls until you raise the cap.
+
+name: agamotto
+
+on:
+  schedule:
+    - cron: "41 1,7,13,19 * * *"   # four times a day, at :41 (off the busy top of the hour)
+  workflow_dispatch: {}             # also lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write                   # so it can save the ledger + spend meter back
+
+concurrency:
+  group: agamotto
+  cancel-in-progress: false         # never cut a run off partway through
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: grade, vote, and log picks
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python3 run.py
+
+      - name: save the scorecard back to the repo
+        run: |
+          git config user.name "agamotto-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/ledger.csv data/spend.json
+          git diff --staged --quiet || git commit -m "cloud run: ledger + spend update"
+          git push

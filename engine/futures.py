@@ -10,12 +10,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import llm
-from engine.swarm import extract_json
+from engine.swarm import extract_json, market_line
 
 _SIM_PROMPT = """You are {name}, a {archetype} — {style}.
 
 A prediction market asks: "{question}"
-The market price right now says YES has about a {mid}% chance.
+{market_line}
 Recent headlines: {headlines}
 
 Imagine {k} DIFFERENT ways this could actually play out — short, concrete,
@@ -39,7 +39,7 @@ def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
     """
     prompt = _SIM_PROMPT.format(
         name=agent["name"], archetype=agent["archetype"], style=agent["style"],
-        question=card["question"], mid=card["mid"], k=k,
+        question=card["question"], market_line=market_line(card), k=k,
         headlines="; ".join(headlines) if headlines else "(none found)")
     parsed = extract_json(ask_fn(prompt, max_tokens=200 + 80 * k))
     if not parsed:

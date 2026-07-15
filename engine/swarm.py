@@ -18,8 +18,8 @@ from engine import llm
 # {curly braces} get filled in with real values before sending.
 _VOTE_PROMPT = """You are {name}, a {archetype} — {style}.
 
-A prediction market asks: "{question}"
-The market price right now says YES has about a {mid}% chance.
+The question: "{question}"
+{market_line}
 Recent headlines: {headlines}
 
 Think like your character and give YOUR OWN probability that this
@@ -27,7 +27,7 @@ resolves YES. Do not just repeat the market price.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""
 
 _DELIB_PROMPT = """You are {name}, a {archetype} — {style}.
-Market: "{question}" (market price ~{mid}% YES). Your current view: {own}.
+The question: "{question}". {market_line} Your current view: {own}.
 
 Other agents said:
 {others}
@@ -35,6 +35,20 @@ Other agents said:
 After hearing them, give your FINAL probability. It is fine to keep your
 number if they did not change your mind.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""
+
+
+def market_line(card: dict) -> str:
+    """One honest sentence about the market price — or the lack of one.
+
+    Market cards carry a "mid" price in cents. Questions typed by a person
+    (through ask.py) have no market, and lying to the crowd with a made-up
+    price would bias every vote — so we tell them the truth instead.
+    """
+    mid = card.get("mid")
+    if mid:
+        return f"The market price right now says YES has about a {mid}% chance."
+    return ("There is no market price for this question — you have nothing "
+            "to anchor on except your own reasoning.")
 
 
 def extract_json(text: str) -> dict | None:
@@ -74,7 +88,7 @@ def agent_vote(agent: dict, card: dict, headlines: list[str],
     """
     prompt = _VOTE_PROMPT.format(
         name=agent["name"], archetype=agent["archetype"], style=agent["style"],
-        question=card["question"], mid=card["mid"],
+        question=card["question"], market_line=market_line(card),
         headlines="; ".join(headlines) if headlines else "(none found)")
     parsed = extract_json(ask_fn(prompt))
     if not parsed:
@@ -96,7 +110,7 @@ def deliberate(agent: dict, card: dict, own: dict, others: list[str],
     """
     prompt = _DELIB_PROMPT.format(
         name=agent["name"], archetype=agent["archetype"], style=agent["style"],
-        question=card["question"], mid=card["mid"],
+        question=card["question"], market_line=market_line(card),
         own=f'{own["probability"]:.2f} ("{own["reason"]}")',
         others="\n".join(others))
     parsed = extract_json(ask_fn(prompt))
