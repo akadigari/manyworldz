@@ -61,3 +61,108 @@ def mask_statsheet(sheet: dict) -> str:
             f"per game over that stretch; {sheet[f'{side}_rest_days']} day(s) rest."
         )
     return "\n".join(lines)
+
+
+import json as _json
+import os as _os
+import random as _random
+import re as _re
+import sys as _sys
+from pathlib import Path as _Path
+
+_sys.path.insert(0, str(_Path(__file__).resolve().parent))
+import config as _config
+
+_NICK_TO_ABBREV = {t[2].lower(): t[0] for t in NBA_TEAMS}
+
+_PROBE_PROMPT = (
+    "Below is an anonymized description of a real NBA game from the 2024-25 "
+    "season. Using only these clues, name the two teams.\n\n{masked}\n\n"
+    'Reply with ONLY JSON like {{"home": "City Nickname", "away": "City Nickname"}}.'
+)
+
+
+def _abbrev_from_answer(text: str) -> str | None:
+    """Pull a team out of free text by its nickname, if any."""
+    low = text.lower()
+    for nick, ab in _NICK_TO_ABBREV.items():
+        if nick in low:
+            return ab
+    return None
+
+
+def score_probe_answer(answer_text: str, truth: tuple[str, str]) -> bool:
+    """True only when BOTH the home and away guesses are right."""
+    try:
+        guess = _json.loads(answer_text[answer_text.find("{"):answer_text.rfind("}") + 1])
+        home_guess = _abbrev_from_answer(str(guess.get("home", "")))
+        away_guess = _abbrev_from_answer(str(guess.get("away", "")))
+    except (ValueError, AttributeError):
+        return False
+    return home_guess == truth[0] and away_guess == truth[1]
+
+
+def run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict:
+    """Ask each model to un-mask n games. Publish the rate, whatever it is.
+
+    Needs ANTHROPIC_API_KEY. Every call is cached, so re-runs are free.
+    """
+    from adapters.nba import build_statsheet
+    import anthropic
+
+    client = anthropic.Anthropic()
+    cache_dir = _config.CACHE / "probe"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    rng = _random.Random(_config.SEED)
+    # Only probe games late enough to have real form numbers behind them.
+    candidates = [i for i in range(len(games)) if i > 200]
+    picks = rng.sample(candidates, n)
+
+    spent_calls = 0
+    max_calls = int(_config.PROBE_BUDGET_USD / 0.002)  # ~$0.002/call is generous
+    per_model: dict[str, float] = {}
+    for model in models:
+        hits = 0
+        for i in picks:
+            game = games[i]
+            cache_file = cache_dir / f"{game['game_id']}_{model}.json"
+            if cache_file.exists():
+                answer = _json.loads(cache_file.read_text())["answer"]
+            else:
+                if spent_calls >= max_calls:
+                    raise RuntimeError("probe budget cap hit — raise PROBE_BUDGET_USD to continue")
+                masked = mask_statsheet(build_statsheet(games, i))
+                msg = client.messages.create(
+                    model=model, max_tokens=100,
+                    messages=[{"role": "user",
+                               "content": _PROBE_PROMPT.format(masked=masked)}])
+                answer = msg.content[0].text
+                cache_file.write_text(_json.dumps({"answer": answer}))
+                spent_calls += 1
+            if score_probe_answer(answer, (game["home"], game["away"])):
+                hits += 1
+        per_model[model] = round(hits / n, 3)
+
+    result = {"per_model": per_model, "n": n}
+    (_config.DATA / "probe_results.json").write_text(_json.dumps(result, indent=1))
+    worst = max(per_model.values())
+    lines = ["# Re-identification probe — published either way", "",
+             f"Masked games shown: {n} per model", ""]
+    for m, r in per_model.items():
+        lines.append(f"- `{m}`: named both teams on **{r:.1%}** of games")
+    lines += ["", f"G-leak gate (>= {_config.REID_DEMOTION_RATE:.0%} demotes the "
+              f"pre-cutoff backtest): **{'TRIGGERED' if worst >= _config.REID_DEMOTION_RATE else 'not triggered'}**"]
+    (_Path(__file__).parent / "PROBE.md").write_text("\n".join(lines) + "\n")
+    return result
+
+
+if __name__ == "__main__":
+    # CLI: venv/bin/python masker.py --probe
+    if "--probe" in _sys.argv:
+        if not _os.environ.get("ANTHROPIC_API_KEY"):
+            _sys.exit("set ANTHROPIC_API_KEY first")
+        from adapters.nba import fetch_season_results
+        games = fetch_season_results("2024-25")
+        out = run_reid_probe(games, _config.PROBE_N, _config.PROBE_MODELS)
+        print(_json.dumps(out, indent=1))
