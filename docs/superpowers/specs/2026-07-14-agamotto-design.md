@@ -1,4 +1,11 @@
-# Agamotto — design doc
+# manyworlds — design doc (formerly "manyworlds")
+
+**RENAMED 2026-07-15 (owner call):** the project is now **manyworlds** — after
+the many-worlds interpretation of quantum mechanics, where every possibility
+branches into its own universe. Visual identity moves from the Marvel-relic
+"Immortal Weapon" theme to a **Deep Space** theme. Name verified unclaimed in
+this domain (existing GitHub "manyworlds" repos are shader art + Minecraft
+plugins). knaves.ai remains the site brand.
 
 **Date:** 2026-07-14
 **Status:** approved in brainstorm (this doc is the written record)
@@ -8,7 +15,7 @@
 
 ## What this is
 
-Agamotto is the "Dr Strange machine": instead of one model guessing an outcome,
+manyworlds is the "Dr Strange machine": instead of one model guessing an outcome,
 it builds a **crowd of AI forecasters**, lets each one form its own probability,
 and reads the prediction off the crowd. It has a **god's-eye what-if mode** —
 inject a scenario ("star player is OUT tonight") and watch the whole crowd's
@@ -16,8 +23,8 @@ number shift. First target: **NBA games**, scored against real market closing
 prices over 3 seasons. Later targets (WNBA, MLB, Kalshi non-sports) are plug-in
 adapters, not rebuilds.
 
-Named for the Eye of Agamotto — the relic Doctor Strange looks through to run
-the 14,000,605 futures.
+Named for the many-worlds interpretation: every question splits reality into
+branches, and the engine watches them all.
 
 **PAPER-FIRST. Pre-registered gates. The verdict gets published either way.**
 
@@ -43,7 +50,7 @@ found:
   (median 24h volume in wide-spread books is zero), so that lane gets its own
   brutal pre-registered fills test.
 
-So Agamotto has two honest goals, in priority order:
+So manyworlds has two honest goals, in priority order:
 
 1. **The flagship:** a leakage-audited answer to "can an AI crowd beat the
    market?" — the audit machinery (re-ID probe, post-cutoff scoring, ablations,
@@ -249,7 +256,7 @@ re-scope. This lane is legal in MD regardless of the 4th Circuit.
 
 ## The face (knaves.ai — the Multiverse Map)
 
-Agamotto gets a public dashboard at **knaves.ai** (owner's existing domain,
+manyworlds gets a public dashboard at **knaves.ai** (owner's existing domain,
 repointed from the old horse-betting use). Decided 2026-07-15 via visual
 mockups:
 
@@ -263,11 +270,13 @@ mockups:
   voice (the learning loop, visible), the lessons feed, and **the bench**:
   suspended agents shown dimmed with their shadow record, so the punishment
   system is publicly visible too.
-- **Theme — "Immortal Weapon"** (picked 2026-07-15 from the Iron Fist
-  Agamotto-skin palette): black base `#0a0806`, gold chrome for the wordmark /
-  the Eye / the chosen future / primary buttons (`#d9a13b`→`#f5c542`), crimson
-  energy branches with ember glow (`#c22030`→`#ff9d2e`), ivory text
-  (`#efe6d8`). Mockup preserved in the brainstorm session files.
+- **Theme — "Deep Space"** (owner pivot 2026-07-15, replacing "Immortal
+  Weapon"): space-black background `#060913` with a faint starfield;
+  star-white text `#e8ecf5`; **starlight gold** `#f5c542` for the wordmark,
+  chosen worlds, and primary actions; **nebula crimson** `#d4435c` for energy
+  branches; faint violet `#8b7ff0` for secondary worlds. The Multiverse Map
+  reads as branching light-trails across space — every future is a star, the
+  brightest branch is the world the crowd believes in.
 - **Tab: the Receipts Board** — gate lights (pass/fail, verbatim), calibration
   curve, CLV track record, every pick with its story.
 
@@ -341,7 +350,7 @@ Rules that keep it honest and cheap:
 
 ## Public framing (README + knaves.ai rules)
 
-The GitHub repo and the site tell **Agamotto's own story**, on its own terms:
+The GitHub repo and the site tell **manyworlds's own story**, on its own terms:
 
 - Lead with what it is: a multi-agent outcome-simulation engine — a crowd of
   AI forecasters, simulated futures, a what-if god's-eye, a learning loop, and

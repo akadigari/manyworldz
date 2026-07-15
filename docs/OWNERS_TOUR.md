@@ -1,11 +1,11 @@
-# The Owner's Tour — what Agamotto actually is, in plain English
+# The Owner's Tour — what manyworlds actually is, in plain English
 
 This is the document you read twice and then never need again. No jargon.
 After this, you can explain your own project to anyone — including you.
 
 ## The 30-second version (say this in an interview)
 
-> "Agamotto is a forecasting engine. Instead of asking one AI a question, it
+> "manyworlds is a forecasting engine. Instead of asking one AI a question, it
 > builds a small crowd of AI 'characters' with different personalities — a
 > stats nerd, a contrarian, a hype-follower — and each one independently
 > estimates the odds of a real-world event. Some of them literally imagine

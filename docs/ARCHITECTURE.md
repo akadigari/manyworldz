@@ -1,6 +1,6 @@
-# Agamotto — Architecture
+# manyworlds — Architecture
 
-Agamotto is a crowd of AI forecasters that **simulates futures**. Instead of
+manyworlds is a crowd of AI forecasters that **simulates futures**. Instead of
 asking one model "who wins?", it builds a crowd of different forecasters, has
 each one imagine how the event could play out, reads a probability off all
 those simulated futures, and then — the part most projects skip — **grades
@@ -89,7 +89,7 @@ ledger the gates read.
 7. **The pick.** Only if the calibrated number differs from the market price
    by more than fees + a buffer does a paper pick go in the ledger, sized by
    fractional Kelly. No edge, no pick.
-8. **The what-if (the Eye).** Inject a fact — "star player is OUT" — and
+8. **The what-if.** Inject a fact — "star player is OUT" — and
    the futures re-run with that fact forced true. The dashboard animates the
    futures tree re-growing.
 
@@ -122,7 +122,7 @@ Two hard rules keep the learning honest:
 ## Leakage controls (why the backtest can be trusted)
 
 Backtesting an LLM on past events has a dirty secret: the model may already
-know how they ended. Agamotto treats that as a measured threat, not a hope:
+know how they ended. manyworlds treats that as a measured threat, not a hope:
 
 - **The masker** strips every identity from historical stat-sheets (teams
   become "Team A / Team B", exact dates become "mid-season (January)").
@@ -175,7 +175,7 @@ A static site, and deliberately dumb: it renders JSON exported by
 ## Repo map
 
 ```
-agamotto/
+manyworlds/
 ├── config.py        # every dial in one file: crowd size, K futures, models,
 │                    #   deliberation, sample size, hard $ budget cap
 ├── engine/          # personas.py, ensemble.py, swarm.py, learn.py,

@@ -1,4 +1,7 @@
-"""The Eye: force a fact to be true and watch the crowd's number move.
+"""The what-if: force a fact to be true and watch the crowd's number move.
+
+In many-worlds terms: jump to the neighboring world where the fact holds,
+and see what the crowd thinks over there.
 
 We don't touch the agents — we edit the world they see. The injected fact
 is prepended to the market question so every prompt (vote or simulate)
