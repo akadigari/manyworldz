@@ -36,6 +36,7 @@ GO_MAX_JOIN_ERROR = 0.01    # allowed error rate in the 50-row hand audit
 ENGINE_MODEL = "claude-haiku-4-5"  # cheap crowd voices; raise tier here to go harder
 ENGINE_N_AGENTS = 8       # agents per market
 SIM_ROLLOUTS_K = 5        # futures each agent imagines in simulate mode
+SIM_MODE = "vote"         # "vote" (one number per agent) or "simulate" (K futures each)
 DELIBERATION = False      # one round of agents seeing each other's takes
 MIN_EDGE_CENTS = 10       # crowd must differ from market by this much...
 FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
