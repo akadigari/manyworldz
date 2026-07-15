@@ -158,11 +158,26 @@ game automatically:
    on a similar future game, agents are shown their own relevant past
    mistakes.
 
+5. **Punishment with teeth (the bench):** losing voice is the fine; the bench
+   is the suspension. An agent whose rolling Brier stays worse than the
+   crowd's average over its last 25 graded calls gets **benched** — it stops
+   voting entirely. A benched agent serves probation: it keeps making silent
+   shadow picks (logged, zero voice), and only re-enters the crowd after its
+   shadow record beats the crowd average over the next 15 calls. Persistent
+   busts get **retired** and a fresh agent variant is drafted in its place —
+   the roster itself evolves under survival pressure.
+6. **The scoring rule IS the pain:** agents are graded on Brier score, which
+   punishes confident-and-wrong far harder than humble-and-wrong. An agent
+   that screams 95% and misses eats ~9× the damage of one that said 65% and
+   missed. Overconfidence — the thing LLMs are worst at — is exactly what
+   hurts most.
+
 **The no-fooling-ourselves rule:** all learned state is walk-forward only —
-weights and lessons used on game N were learned strictly from games that
-settled before N. And adaptivity itself is an ablation arm: **adaptive weights
-vs frozen equal weights**. If learning doesn't beat not-learning on later
-games, we say so and ship it off by default.
+weights, lessons, benchings, and roster changes used on game N were learned
+strictly from games that settled before N. And adaptivity itself is an
+ablation arm: **adaptive weights + bench vs frozen equal weights**. If the
+punishment system doesn't beat not-having-it on later games, we say so and
+ship it off by default.
 
 ## Feed it anything (the ingest layer)
 
@@ -235,7 +250,14 @@ mockups:
   re-growing — the 14,000,605 experience in a browser.
 - **Tab: the Sanctum War Room** — the Eye as a consensus dial vs the market
   price, the crowd as a constellation where each agent's dot grows as it earns
-  voice (the learning loop, visible), and the lessons feed.
+  voice (the learning loop, visible), the lessons feed, and **the bench**:
+  suspended agents shown dimmed with their shadow record, so the punishment
+  system is publicly visible too.
+- **Theme — "Immortal Weapon"** (picked 2026-07-15 from the Iron Fist
+  Agamotto-skin palette): black base `#0a0806`, gold chrome for the wordmark /
+  the Eye / the chosen future / primary buttons (`#d9a13b`→`#f5c542`), crimson
+  energy branches with ember glow (`#c22030`→`#ff9d2e`), ivory text
+  (`#efe6d8`). Mockup preserved in the brainstorm session files.
 - **Tab: the Receipts Board** — gate lights (pass/fail, verbatim), calibration
   curve, CLV track record, every pick with its story.
 
