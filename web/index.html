@@ -32,6 +32,33 @@
 
   main { position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
 
+  /* hero */
+  .hero { min-height: 62vh; display: flex; flex-direction: column;
+          justify-content: center; text-align: center; padding: 30px 0 46px; }
+  .hero h1 { font-family: Georgia, serif; font-size: clamp(42px, 8vw, 84px);
+             letter-spacing: 6px; line-height: 1.05;
+             background: linear-gradient(100deg, #f5c542 20%, #ffe9a8 50%, #f5c542 80%);
+             -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .by { color: var(--dim); letter-spacing: 4px; font-size: 13px; margin-top: 10px; }
+  .hero .big-tag { color: var(--star); font-size: clamp(16px, 2.6vw, 21px);
+                   max-width: 640px; margin: 22px auto 8px; }
+  .hero .sub-tag { color: var(--dim); font-size: 14px; max-width: 560px; margin: 0 auto 30px; }
+  .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { text-decoration: none; font: 13px "SF Mono", Menlo, monospace;
+         letter-spacing: 1px; padding: 11px 22px; border-radius: 6px; }
+  .btn.gold { background: var(--gold); color: var(--space); font-weight: 700; }
+  .btn.ghost { border: 1px solid var(--line); color: var(--star); }
+  .btn.ghost:hover, .btn.gold:hover { filter: brightness(1.12); }
+
+  /* how it works */
+  .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+         gap: 14px; margin: 40px 0 10px; }
+  .step { background: var(--panel); border: 1px solid var(--line);
+          border-radius: 10px; padding: 18px; }
+  .step .k { font: 700 12px "SF Mono", Menlo, monospace; letter-spacing: 2px;
+             color: var(--gold); margin-bottom: 8px; }
+  .step p { color: var(--dim); font-size: 13.5px; }
+
   /* header */
   header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
   .wordmark { font-family: Georgia, serif; font-size: 26px; letter-spacing: 8px; color: var(--gold); }
@@ -86,14 +113,32 @@
 <body>
 <div id="sky"></div>
 <main>
-  <header>
-    <span class="wordmark">KNAVES</span>
-    <span class="sub">manyworlds · a crowd of AI forecasters</span>
-    <span class="paper mono">PAPER ONLY</span>
-  </header>
-  <p class="tagline">Every question splits into many worlds. The engine watches them all — and keeps score.</p>
+  <div class="hero">
+    <h1>MANYWORLDS</h1>
+    <div class="by">A KNAVES INSTRUMENT · PAPER ONLY</div>
+    <p class="big-tag">Every question splits into many worlds.<br>The engine watches them all — and keeps score.</p>
+    <p class="sub-tag">A crowd of AI forecasters — a stats nerd, a contrarian, an oddsmaker —
+      each simulates how the future could play out. Their worlds fold into one honest
+      probability, graded against real markets, in public.</p>
+    <div class="cta">
+      <a class="btn gold" href="#worlds">SEE THE WORLDS ↓</a>
+      <a class="btn ghost" href="https://github.com/akadigari/manyworlds">READ THE CODE</a>
+    </div>
+  </div>
 
-  <nav>
+  <div class="how">
+    <div class="step"><div class="k">1 · THE CROWD FORMS</div>
+      <p>Eight AI characters research each question — headlines, base rates —
+         and think in genuinely different ways, on purpose.</p></div>
+    <div class="step"><div class="k">2 · WORLDS BRANCH</div>
+      <p>Each agent imagines the event playing out again and again. Gold worlds
+         resolve YES, crimson worlds NO. Their spread is the crowd's doubt.</p></div>
+    <div class="step"><div class="k">3 · REALITY GRADES IT</div>
+      <p>Every pick is logged and scored against real closing prices. The rules
+         for "actually good" were locked before any results existed.</p></div>
+  </div>
+
+  <nav id="worlds">
     <button id="tab-futures" class="on" onclick="show('futures')">THE WORLDS</button>
     <button id="tab-receipts" onclick="show('receipts')">THE RECEIPTS</button>
   </nav>
