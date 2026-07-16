@@ -18,6 +18,8 @@ A prediction market asks: "{question}"
 {market_line}
 Recent headlines: {headlines}
 
+Start from the base rate: how often do things like this usually happen,
+historically? Let that shape how many of your futures land each way.
 Imagine {k} DIFFERENT ways this could actually play out — short, concrete,
 one sentence each. Make them genuinely different, not five copies.
 Reply with ONLY JSON like:

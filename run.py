@@ -86,7 +86,7 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
     picks = 0
     snapshot = []          # what the crowd saw + said, market by market
     for card in targets:
-        headlines = news.headlines_for(card["question"]) if live else []
+        headlines = news.research(card["question"]) if live else []
         result = run_crowd(card, headlines, crowd, mode=mode,
                            k=config.SIM_ROLLOUTS_K,
                            deliberation=config.DELIBERATION, ask_fn=ask)

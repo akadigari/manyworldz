@@ -22,6 +22,8 @@ The question: "{question}"
 {market_line}
 Recent headlines: {headlines}
 
+Start from the base rate: how often do things like this usually happen,
+historically? Anchor there first, THEN adjust for the evidence above.
 Think like your character and give YOUR OWN probability that this
 resolves YES. Do not just repeat the market price.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""

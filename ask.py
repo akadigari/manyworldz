@@ -45,7 +45,7 @@ def ask_question(question: str, whatif: str | None = None, mode: str = "vote",
     if k is None:
         k = config.SIM_ROLLOUTS_K
     crowd = build_crowd(n_agents, config.SEED)
-    headlines = news.headlines_for(question) if with_news else []
+    headlines = news.research(question) if with_news else []
     ask = ask_fn or llm.ask
     if whatif:
         return run_whatif(card, headlines, crowd, whatif, mode, k,

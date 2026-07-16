@@ -41,6 +41,42 @@ def _fetch_xml(url: str) -> str:
     return requests.get(url, timeout=15).text
 
 
+_STOPWORDS = {"will", "the", "a", "an", "in", "on", "at", "by", "of", "to",
+              "be", "is", "are", "was", "this", "that", "it", "its", "before",
+              "after", "than", "more", "and", "or", "for", "with", "does",
+              "do", "get", "have", "has", "above", "below", "during"}
+
+
+def key_terms(question: str, max_terms: int = 8) -> str:
+    """Boil a question down to its search-worthy words.
+
+    "Will the album drop before July 31?" -> "album drop july 31".
+    Dropping filler words gives the news search a second, wider angle.
+    """
+    words = [w.strip("?,.()!\"'").lower() for w in question.split()]
+    kept = [w for w in words if w and w not in _STOPWORDS]
+    return " ".join(kept[:max_terms])
+
+
+def research(question: str, limit: int = 8) -> list[str]:
+    """Do the crowd's homework: search the news from two angles.
+
+    Angle 1: the question as asked. Angle 2: just its key words (which
+    catches articles that phrase things differently). Results are merged
+    with duplicates removed, newest-angle first. Like headlines_for, this
+    never raises — worst case is an empty list.
+    """
+    seen, merged = set(), []
+    for query in (question, key_terms(question)):
+        if not query:
+            continue
+        for headline in headlines_for(query, limit=limit // 2 + 1):
+            if headline not in seen:
+                seen.add(headline)
+                merged.append(headline)
+    return merged[:limit]
+
+
 def headlines_for(query: str, limit: int = 3) -> list[str]:
     """Today's headlines for a query, cached per day.
 
