@@ -60,7 +60,7 @@ def write_outputs(report: dict) -> None:
 
     s = report["stats"]
     lines = [
-        "# manyworlds — the live scorecard",
+        "# manyworldz — the live scorecard",
         "",
         f"_Updated {report['generated_at'][:16]}Z. Paper picks only — a"
         " person makes any real decision, and only if the gates pass._",

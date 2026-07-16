@@ -1,4 +1,4 @@
-# manyworlds on a cloud timer — runs by itself on GitHub's servers, laptop off.
+# manyworldz on a cloud timer — runs by itself on GitHub's servers, laptop off.
 #
 # Four times a day it grades the open paper picks, has the AI crowd vote on
 # the biggest open non-sports markets, and saves the scorecard back to the
@@ -19,7 +19,7 @@
 # pennies, so the cap still gives months of runway.) When it's hit, runs
 # stop making new calls until you raise the cap.
 
-name: manyworlds
+name: manyworldz
 
 on:
   schedule:
@@ -30,7 +30,7 @@ permissions:
   contents: write                   # so it can save the ledger + spend meter back
 
 concurrency:
-  group: manyworlds
+  group: manyworldz
   cancel-in-progress: false         # never cut a run off partway through
 
 jobs:
@@ -50,7 +50,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           # cheap voices for the unattended cloud run; change to sonnet/opus/
           # fable here if you want a smarter (pricier) crowd
-          MANYWORLDS_MODEL: haiku
+          MANYWORLDZ_MODEL: haiku
         run: |
           python3 run.py
           python3 report.py
@@ -60,7 +60,7 @@ jobs:
 
       - name: save the scorecard + dashboard back to the repo
         run: |
-          git config user.name "manyworlds-bot"
+          git config user.name "manyworldz-bot"
           git config user.email "actions@users.noreply.github.com"
           # || true: a cycle with no new picks/spend may leave a file untouched
           git add data/ledger.csv data/spend.json web/data.json REPORT.md 2>/dev/null || true

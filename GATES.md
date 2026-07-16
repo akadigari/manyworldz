@@ -1,4 +1,4 @@
-# manyworlds — the gates (locked before any results exist)
+# manyworldz — the gates (locked before any results exist)
 
 Same idea as kayfabe/MechLab/TrendLab: we write the pass/fail rules first,
 so we can't fool ourselves later. Verdicts get published either way.

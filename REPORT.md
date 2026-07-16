@@ -1,4 +1,4 @@
-# manyworlds — the live scorecard
+# manyworldz — the live scorecard
 
 _Updated 2026-07-15T21:14Z. Paper picks only — a person makes any real decision, and only if the gates pass._
 

@@ -42,7 +42,7 @@ GO_MAX_JOIN_ERROR = 0.01    # allowed error rate when a person hand-checks 50 ro
 #   opus   -> claude-opus-4-8    (strong reasoning, ~5x)
 #   fable  -> claude-fable-5     (the frontier, ~10x — a cycle costs real cents)
 # Anyone's key works: the engine reads ANTHROPIC_API_KEY from the
-# environment. Set MANYWORLDS_MODEL to override the model without
+# environment. Set MANYWORLDZ_MODEL to override the model without
 # editing this file (that's how the cloud run picks its model too).
 import os as _os
 MODELS = {
@@ -51,7 +51,7 @@ MODELS = {
     "opus": "claude-opus-4-8",
     "fable": "claude-fable-5",
 }
-ENGINE_MODEL = _os.environ.get("MANYWORLDS_MODEL", "haiku")
+ENGINE_MODEL = _os.environ.get("MANYWORLDZ_MODEL", "haiku")
 ENGINE_N_AGENTS = 8       # agents per market
 SIM_ROLLOUTS_K = 5        # "futures" (imagined ways the event could play out) each agent dreams up in simulate mode
 SIM_MODE = "vote"         # "vote" (one number per agent) or "simulate" (K futures each)

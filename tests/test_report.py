@@ -49,4 +49,4 @@ def test_write_outputs_produces_valid_dashboard_json(tmp_path, monkeypatch):
     report_mod.write_outputs(r)
     data = json.loads((tmp_path / "web" / "data.json").read_text())
     assert data["stats"]["total_picks"] == 1
-    assert (tmp_path / "REPORT.md").read_text().startswith("# manyworlds")
+    assert (tmp_path / "REPORT.md").read_text().startswith("# manyworldz")

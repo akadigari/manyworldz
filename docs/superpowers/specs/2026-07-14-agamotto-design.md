@@ -1,10 +1,10 @@
-# manyworlds — design doc (formerly "Agamotto")
+# manyworldz — design doc (formerly "Agamotto")
 
-**RENAMED 2026-07-15 (owner call):** the project is now **manyworlds** — after
+**RENAMED 2026-07-15 (owner call):** the project is now **manyworldz** — after
 the many-worlds interpretation of quantum mechanics, where every possibility
 branches into its own universe. Visual identity moves from the Marvel-relic
 "Immortal Weapon" theme to a **Deep Space** theme. Name verified unclaimed in
-this domain (existing GitHub "manyworlds" repos are shader art + Minecraft
+this domain (existing GitHub "manyworldz" repos are shader art + Minecraft
 plugins). knaves.ai remains the site brand.
 
 **Date:** 2026-07-14
@@ -15,7 +15,7 @@ plugins). knaves.ai remains the site brand.
 
 ## What this is
 
-manyworlds is the "Dr Strange machine": instead of one model guessing an outcome,
+manyworldz is the "Dr Strange machine": instead of one model guessing an outcome,
 it builds a **crowd of AI forecasters**, lets each one form its own probability,
 and reads the prediction off the crowd. It has a **god's-eye what-if mode** —
 inject a scenario ("star player is OUT tonight") and watch the whole crowd's
@@ -50,7 +50,7 @@ found:
   (median 24h volume in wide-spread books is zero), so that lane gets its own
   brutal pre-registered fills test.
 
-So manyworlds has two honest goals, in priority order:
+So manyworldz has two honest goals, in priority order:
 
 1. **The flagship:** a leakage-audited answer to "can an AI crowd beat the
    market?" — the audit machinery (re-ID probe, post-cutoff scoring, ablations,
@@ -256,7 +256,7 @@ re-scope. This lane is legal in MD regardless of the 4th Circuit.
 
 ## The face (knaves.ai — the Multiverse Map)
 
-manyworlds gets a public dashboard at **knaves.ai** (owner's existing domain,
+manyworldz gets a public dashboard at **knaves.ai** (owner's existing domain,
 repointed from the old horse-betting use). Decided 2026-07-15 via visual
 mockups:
 
@@ -350,7 +350,7 @@ Rules that keep it honest and cheap:
 
 ## Public framing (README + knaves.ai rules)
 
-The GitHub repo and the site tell **manyworlds's own story**, on its own terms:
+The GitHub repo and the site tell **manyworldz's own story**, on its own terms:
 
 - Lead with what it is: a multi-agent outcome-simulation engine — a crowd of
   AI forecasters, simulated futures, a what-if god's-eye, a learning loop, and

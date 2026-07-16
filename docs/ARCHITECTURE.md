@@ -1,6 +1,6 @@
-# manyworlds — Architecture
+# manyworldz — Architecture
 
-manyworlds is a crowd of AI forecasters that **simulates futures**. Instead of
+manyworldz is a crowd of AI forecasters that **simulates futures**. Instead of
 asking one model "who wins?", it builds a crowd of different forecasters, has
 each one imagine how the event could play out, reads a probability off all
 those simulated futures, and then — the part most projects skip — **grades
@@ -122,7 +122,7 @@ Two hard rules keep the learning honest:
 ## Leakage controls (why the backtest can be trusted)
 
 Backtesting an LLM on past events has a dirty secret: the model may already
-know how they ended. manyworlds treats that as a measured threat, not a hope:
+know how they ended. manyworldz treats that as a measured threat, not a hope:
 
 - **The masker** strips every identity from historical stat-sheets (teams
   become "Team A / Team B", exact dates become "mid-season (January)").
@@ -180,7 +180,7 @@ ships with the two tabs above and grows a third when M2 lands.)
 ## Repo map
 
 ```
-manyworlds/
+manyworldz/
 ├── config.py        # every dial in one file: crowd size, K futures, models,
 │                    #   deliberation, sample size, hard $ budget cap
 ├── engine/          # personas.py, ensemble.py, swarm.py, learn.py,

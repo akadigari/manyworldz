@@ -1,9 +1,9 @@
-# 🌌 manyworlds
+# 🌌 manyworldz
 
 **Every question splits into many worlds. This engine watches them all — and keeps score.**
 
 Ask it anything about the future. Instead of one AI giving you one opinion,
-manyworlds builds a small crowd of AI characters — a stats nerd, a contrarian,
+manyworldz builds a small crowd of AI characters — a stats nerd, a contrarian,
 a hype-follower, an oddsmaker — and each one independently works out the
 odds. In simulate mode, each agent *imagines the event playing out* several
 times and counts how the futures land. The crowd's views fold into one
@@ -31,7 +31,7 @@ $ python ask.py "Will the album drop this month?" --whatif "the label confirmed 
 ## Quickstart (5 minutes)
 
 ```bash
-git clone <this repo> && cd manyworlds
+git clone <this repo> && cd manyworldz
 python3 -m venv venv && venv/bin/pip install -r requirements.txt
 export ANTHROPIC_API_KEY=your-key        # get one at console.anthropic.com
 venv/bin/python ask.py "Will it snow in DC this December?" --simulate
@@ -39,7 +39,7 @@ venv/bin/python ask.py "Will it snow in DC this December?" --simulate
 
 **Any key, any Claude model.** The engine reads `ANTHROPIC_API_KEY` from
 your environment — nothing is hardcoded. Pick the crowd's brain with
-`--model` (or the `MANYWORLDS_MODEL` env var):
+`--model` (or the `MANYWORLDZ_MODEL` env var):
 
 | Name | Model | Vibe |
 |---|---|---|
@@ -82,7 +82,7 @@ no model choice can ever surprise you.
 
 ## Run it in the cloud (laptop off)
 
-The included GitHub Action (`.github/workflows/manyworlds.yml`) runs the live
+The included GitHub Action (`.github/workflows/manyworldz.yml`) runs the live
 loop four times a day on GitHub's servers and commits the scorecard back to
 the repo. Setup: push to GitHub, add `ANTHROPIC_API_KEY` as a repository
 secret (Settings → Secrets and variables → Actions), done.
@@ -90,7 +90,7 @@ secret (Settings → Secrets and variables → Actions), done.
 ## Why this exists
 
 Multi-agent "prediction" demos are everywhere; published, graded track
-records are almost nowhere. manyworlds is built backwards from that gap: the
+records are almost nowhere. manyworldz is built backwards from that gap: the
 crowd is the show, but the scorecard is the product. Expectations are set
 honestly — published research says AI forecasters roughly match human
 crowds at best — and the gates exist to find out, not to assume.
