@@ -35,7 +35,23 @@ GO_MAX_JOIN_ERROR = 0.01    # allowed error rate when a person hand-checks 50 ro
 
 # ---- M1 engine knobs (the "go harder" dials) ----
 
-ENGINE_MODEL = "claude-haiku-4-5"  # cheap crowd voices; raise tier here to go harder
+# Which AI powers the crowd. Use a friendly name or a full model ID.
+# Friendly names (cheapest to strongest):
+#   haiku  -> claude-haiku-4-5   (~1c per question — the default)
+#   sonnet -> claude-sonnet-5    (smarter, ~3x the cost)
+#   opus   -> claude-opus-4-8    (strong reasoning, ~5x)
+#   fable  -> claude-fable-5     (the frontier, ~10x — a cycle costs real cents)
+# Anyone's key works: the engine reads ANTHROPIC_API_KEY from the
+# environment. Set MANYWORLDS_MODEL to override the model without
+# editing this file (that's how the cloud run picks its model too).
+import os as _os
+MODELS = {
+    "haiku": "claude-haiku-4-5",
+    "sonnet": "claude-sonnet-5",
+    "opus": "claude-opus-4-8",
+    "fable": "claude-fable-5",
+}
+ENGINE_MODEL = _os.environ.get("MANYWORLDS_MODEL", "haiku")
 ENGINE_N_AGENTS = 8       # agents per market
 SIM_ROLLOUTS_K = 5        # "futures" (imagined ways the event could play out) each agent dreams up in simulate mode
 SIM_MODE = "vote"         # "vote" (one number per agent) or "simulate" (K futures each)

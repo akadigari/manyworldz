@@ -48,6 +48,9 @@ jobs:
       - name: grade, vote, and log picks
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # cheap voices for the unattended cloud run; change to sonnet/opus/
+          # fable here if you want a smarter (pricier) crowd
+          MANYWORLDS_MODEL: haiku
         run: |
           python3 run.py
           python3 report.py

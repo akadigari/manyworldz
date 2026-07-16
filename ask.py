@@ -31,7 +31,8 @@ from engine.whatif import run_whatif
 
 def ask_question(question: str, whatif: str | None = None, mode: str = "vote",
                  k: int | None = None, n_agents: int | None = None,
-                 with_news: bool = True, ask_fn=None) -> dict:
+                 with_news: bool = True, ask_fn=None,
+                 model: str | None = None) -> dict:
     """Run the crowd on any question and return the full result.
 
     The question becomes a "card" with no market price (mid=None), so the
@@ -46,7 +47,15 @@ def ask_question(question: str, whatif: str | None = None, mode: str = "vote",
         k = config.SIM_ROLLOUTS_K
     crowd = build_crowd(n_agents, config.SEED)
     headlines = news.research(question) if with_news else []
-    ask = ask_fn or llm.ask
+    if ask_fn is not None:
+        ask = ask_fn
+    elif model is not None:
+        # Carry the chosen model into every crowd call (e.g. --model fable).
+        chosen = model
+        def ask(prompt, model=None, max_tokens=400):
+            return llm.ask(prompt, model=chosen, max_tokens=max_tokens)
+    else:
+        ask = llm.ask
     if whatif:
         return run_whatif(card, headlines, crowd, whatif, mode, k,
                           config.DELIBERATION, ask)
@@ -80,13 +89,17 @@ def main() -> None:
                         help="each agent imagines K futures instead of one vote")
     parser.add_argument("--agents", type=int, default=None,
                         help=f"crowd size (default {config.ENGINE_N_AGENTS})")
+    parser.add_argument("--model", default=None,
+                        help="haiku, sonnet, opus, fable, or any full model ID "
+                             f"(default {config.ENGINE_MODEL})")
     parser.add_argument("--no-news", action="store_true",
                         help="skip the headline lookup")
     args = parser.parse_args()
 
     mode = "simulate" if args.simulate else "vote"
     result = ask_question(args.question, whatif=args.whatif, mode=mode,
-                          n_agents=args.agents, with_news=not args.no_news)
+                          n_agents=args.agents, with_news=not args.no_news,
+                          model=args.model)
 
     print(f'\nQ: {args.question}')
     if args.whatif:

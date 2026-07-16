@@ -37,9 +37,24 @@ export ANTHROPIC_API_KEY=your-key        # get one at console.anthropic.com
 venv/bin/python ask.py "Will it snow in DC this December?" --simulate
 ```
 
-A typical question costs about a cent. Answers are cached on your machine —
-asking the same thing twice is free. A hard budget cap (`ENGINE_BUDGET_USD`
-in `config.py`, default $10) means it can never surprise you.
+**Any key, any Claude model.** The engine reads `ANTHROPIC_API_KEY` from
+your environment — nothing is hardcoded. Pick the crowd's brain with
+`--model` (or the `MANYWORLDS_MODEL` env var):
+
+| Name | Model | Vibe |
+|---|---|---|
+| `haiku` | claude-haiku-4-5 | the default — a question costs ~a cent |
+| `sonnet` | claude-sonnet-5 | smarter voices, ~3x the cost |
+| `opus` | claude-opus-4-8 | strong reasoning, ~5x |
+| `fable` | claude-fable-5 | the frontier — real cents per question |
+
+```bash
+venv/bin/python ask.py "Will it snow in DC this December?" --model fable --simulate
+```
+
+Answers are cached on your machine — asking the same thing twice is free.
+A hard budget cap (`ENGINE_BUDGET_USD` in `config.py`, default $10) means
+no model choice can ever surprise you.
 
 ## What's in the box
 

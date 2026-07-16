@@ -24,21 +24,46 @@ _PRICES = {
     "claude-haiku-4-5": (1.00, 5.00),
     "claude-sonnet-5": (3.00, 15.00),
     "claude-opus-4-8": (5.00, 25.00),
+    "claude-fable-5": (10.00, 50.00),
 }
-_DEFAULT_PRICE = (5.00, 25.00)  # unknown model -> assume it's expensive (the safe guess)
+_DEFAULT_PRICE = (10.00, 50.00)  # unknown model -> assume frontier prices (the safe guess)
+
+
+def resolve_model(name: str | None) -> str:
+    """Turn a friendly name ("haiku", "fable") into a full model ID.
+
+    Full IDs pass straight through, so any model the API serves works —
+    including ones released after this file was written.
+    """
+    name = name or config.ENGINE_MODEL
+    return config.MODELS.get(name.lower().strip(), name)
+
+
+def _extract_text(msg) -> str:
+    """Pull the plain text out of an API response, safely.
+
+    Two quirks handled here: reasoning models (like Fable) may include
+    "thinking" blocks we don't want, and their safety layer can decline a
+    request entirely (stop_reason "refusal") — in that case we return ""
+    so the crowd counts it as one unusable answer and moves on. Nothing
+    is ever invented.
+    """
+    if getattr(msg, "stop_reason", None) == "refusal":
+        return ""
+    return "".join(b.text for b in msg.content if b.type == "text")
 
 
 def _call_api(prompt: str, model: str, max_tokens: int):
     """The only function that really talks to the API. Split out so tests
-    can replace it."""
+    can replace it. Reads ANTHROPIC_API_KEY from the environment — anyone's
+    key works; nothing is hardcoded."""
     import anthropic
     client = anthropic.Anthropic()
     msg = client.messages.create(
         model=model, max_tokens=max_tokens,
         messages=[{"role": "user", "content": prompt}],
     )
-    text = "".join(b.text for b in msg.content if b.type == "text")
-    return text, msg.usage.input_tokens, msg.usage.output_tokens
+    return _extract_text(msg), msg.usage.input_tokens, msg.usage.output_tokens
 
 
 def spent_usd() -> float:
@@ -78,7 +103,7 @@ def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
     this checks the running total against ENGINE_BUDGET_USD and refuses to
     call the API at all once the budget is used up.
     """
-    model = model or config.ENGINE_MODEL
+    model = resolve_model(model)
     key = hashlib.sha256(f"{model}\n{prompt}".encode()).hexdigest()
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_file = CACHE_DIR / f"{key}.json"
