@@ -48,7 +48,9 @@ jobs:
       - name: grade, vote, and log picks
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python3 run.py
+        run: |
+          python3 run.py
+          python3 report.py
 
       - name: refresh the dashboard data
         run: python3 report.py
