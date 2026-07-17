@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** The Dr Strange machine, running live: a crowd of AI agents that votes on (or simulates futures for) real open Kalshi non-sports markets, answers what-if injections, and logs paper picks with CLV grading: tonight, not in October.
+**Goal:** The Dr Strange machine, running live: a crowd of AI agents that votes on (or simulates futures for) real open Kalshi non-sports markets, answers what-if injections, and logs paper picks with CLV grading. Tonight, not in October.
 
 **Architecture:** Pure Python on top of the M0 codebase. `engine/llm.py` is the one place that talks to the Anthropic API (disk-cached, budget-capped). `adapters/kalshi_events.py` turns Kalshi's public API into simple "market cards." `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes or simulated futures and folds them into a consensus; `engine/whatif.py` re-runs the crowd with a fact forced true. `ledger.py` logs paper picks and grades them (settlement + CLV). `run.py` wires one live cycle. Every LLM-touching function takes an `ask_fn` parameter so tests inject canned answers: the suite stays 100% offline and key-free.
 
@@ -1128,7 +1128,7 @@ Expected: FAIL (`ModuleNotFoundError`)
 ```python
 """The god's-eye: force a fact to be true and watch the crowd's number move.
 
-We don't touch the agents, we edit the world they see. The injected fact
+We don't touch the agents. We edit the world they see. The injected fact
 is prepended to the market question so every prompt (vote or simulate)
 carries it.
 """
@@ -1553,7 +1553,7 @@ git commit -m "m1: engine live, status update"
   deliberately deferred to M2 with the learning loop: one crowd
   architecture goes live first; noted here so the gap is a decision,
   not an oversight.
-- **Placeholders:** none; every step has complete code. The one known
+- **Placeholders:** none. Every step has complete code. The one known
   simplification (Task 9's `mode` expression) is flagged inline with the
   exact fix.
 - **Type consistency:** market card keys (`ticker/question/category/yes_bid/
