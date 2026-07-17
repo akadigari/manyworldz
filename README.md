@@ -1,100 +1,115 @@
-# 🌌 manyworldz
+# manyworldz
 
-**Every question splits into many worlds. This engine watches them all — and keeps score.**
+An LLM-driven forecasting engine that runs a crowd of AI agents on any yes/no
+question about the future — each agent researches, votes (or simulates the
+outcome multiple times), the votes fold into one probability, and every
+prediction gets logged and graded against real prediction-market prices.
 
-Ask it anything about the future. Instead of one AI giving you one opinion,
-manyworldz builds a small crowd of AI characters — a stats nerd, a contrarian,
-a hype-follower, an oddsmaker — and each one independently works out the
-odds. In simulate mode, each agent *imagines the event playing out* several
-times and counts how the futures land. The crowd's views fold into one
-honest probability.
+Paper only. The engine never places bets — it writes CSV rows and keeps score.
 
-Then the part almost nobody ships: **it grades itself.** On real prediction
-markets, every paper pick is logged and scored against what actually
-happened — with pass/fail rules written down *before* any results existed.
+## What it does
 
-```
-$ python ask.py "Will the Fed cut rates in September?"
+- **Ask it anything** — give it `"Will the Fed cut rates in September?"`; six
+  to eight AI personas (a stats nerd, a contrarian, an oddsmaker, a
+  sharp-money tracker...) each pull headlines, anchor on a base rate, and
+  return their own probability with a one-line reason
+- **Simulate mode** — each agent imagines the event playing out K different
+  ways; its probability is how many of its futures land YES
+- **What-if** — re-runs the whole crowd with a fact forced true and shows how
+  much the odds move
+- **Live loop** — scans ~4,000 open Kalshi markets (non-sports), votes on the
+  biggest ones, and logs a paper pick when the crowd disagrees with the
+  market by more than fees could explain
+- **Scorecard** — every pick graded against closing prices (CLV). Results
+  written to CSV and a dashboard automatically
 
-  THE CROWD SAYS: 62% chance of YES
-  (disagreement spread 0.11, 0 unusable answers skipped)
+## How it works
 
-   70%  Ava    (stats nerd): futures pricing implies a cut is likelier than not
-   55%  Ben    (contrarian): everyone expects it, which is exactly when it slips
-   ...
+1. `adapters/kalshi_events.py` pulls open markets and turns them into simple
+   "cards" (question, price, volume). `engine/news.py` grabs headlines from
+   two search angles — no API key needed
+2. `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes,
+   throws out junk answers (never invents one), trims the extremes, and
+   returns one probability plus a disagreement spread
+3. `run.py` compares the crowd's number to the market price. Gap bigger than
+   edge + fee buffer → paper pick goes in `data/ledger.csv`
+4. Next cycle, `ledger.py` re-checks every open pick: did the market move
+   toward us (CLV), did it settle, did we win
+5. `report.py` writes `web/data.json` — the dashboard draws straight from it
 
-$ python ask.py "Will the album drop this month?" --whatif "the label confirmed the date"
-
-  THE FACT MOVES THE ODDS UP 34% (+34%)
-```
-
-## Quickstart (5 minutes)
+## Quick Start
 
 ```bash
-git clone <this repo> && cd manyworldz
+git clone https://github.com/akadigari/manyworldz && cd manyworldz
 python3 -m venv venv && venv/bin/pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key        # get one at console.anthropic.com
-venv/bin/python ask.py "Will it snow in DC this December?" --simulate
+export ANTHROPIC_API_KEY=your-key   # console.anthropic.com
+
+venv/bin/python ask.py "Will it snow in DC this December?"
+venv/bin/python ask.py "Will the album drop this month?" --simulate --whatif "the label confirmed the date"
+venv/bin/python run.py              # one live market cycle
 ```
 
-**Any key, any Claude model.** The engine reads `ANTHROPIC_API_KEY` from
-your environment — nothing is hardcoded. Pick the crowd's brain with
-`--model` (or the `MANYWORLDZ_MODEL` env var):
+A question costs about a cent. Answers are cached — asking twice is free.
 
-| Name | Model | Vibe |
+## Models
+
+Pick the crowd's brain with `--model` or the `MANYWORLDZ_MODEL` env var:
+
+| Name | Model | Cost |
 |---|---|---|
-| `haiku` | claude-haiku-4-5 | the default — a question costs ~a cent |
-| `sonnet` | claude-sonnet-5 | smarter voices, ~3x the cost |
-| `opus` | claude-opus-4-8 | strong reasoning, ~5x |
-| `fable` | claude-fable-5 | the frontier — real cents per question |
+| `haiku` | claude-haiku-4-5 | ~1c per question (default) |
+| `sonnet` | claude-sonnet-5 | ~3x |
+| `opus` | claude-opus-4-8 | ~5x |
+| `fable` | claude-fable-5 | ~10x |
 
-```bash
-venv/bin/python ask.py "Will it snow in DC this December?" --model fable --simulate
+Any full model ID also works. Hard budget cap in `config.py`
+(`ENGINE_BUDGET_USD`, default $10) — the engine stops calling the API when
+it's spent, no surprises.
+
+## The rules it can't break
+
+- Paper only — a person makes any real decision, and only if the
+  pre-registered gates pass (`GATES.md`, written before any results existed:
+  beat the closing line, beat a boring baseline, survive a luck test,
+  survive fees)
+- Junk model answers get skipped and counted, never fabricated. All-junk
+  crowd → no pick
+- Questions with no market price are told so — the crowd never gets a fake
+  anchor
+- The dashboard reads the exact same ledger the gates read
+
+## Run it in the cloud
+
+`.github/workflows/manyworldz.yml` runs the live loop 4x/day on GitHub
+Actions and commits the scorecard back. Setup: push to GitHub, add
+`ANTHROPIC_API_KEY` as a repository secret (Settings → Secrets → Actions).
+Done — laptop can stay off.
+
+## Files
+
+```
+ask.py            ask the crowd anything (CLI)
+run.py            one live cycle: grade -> vote -> log picks
+engine/           llm client (cached, budget-capped), personas, swarm,
+                  simulate mode, what-if, news research
+adapters/         kalshi market cards (+ a dormant NBA backtest lab)
+ledger.py         the scorecard: picks, CLV, settlement
+report.py         ledger -> web/data.json + REPORT.md
+web/index.html    the dashboard (static, no server) — branching-worlds map,
+                  browser ask-the-crowd on your own key, receipts
+GATES.md          pre-registered pass/fail rules
+docs/             architecture + a plain-English owner's tour
 ```
 
-Answers are cached on your machine — asking the same thing twice is free.
-A hard budget cap (`ENGINE_BUDGET_USD` in `config.py`, default $10) means
-no model choice can ever surprise you.
+## Requirements
 
-## What's in the box
+- Python 3.11+
+- An Anthropic API key (only for asking/voting — market scanning and the
+  dashboard need none)
+- `pip install -r requirements.txt` (anthropic, requests, pandas, pytest)
 
-| Piece | What it does |
-|---|---|
-| `ask.py` | Ask the crowd anything; `--whatif` re-runs with a fact forced true |
-| `run.py` | The live loop: crowd votes on real open prediction markets, logs paper picks |
-| `engine/` | The crowd: personas, voting, simulated futures, deliberation, what-if |
-| `ledger.py` | The scorecard — every pick graded against real closing prices (CLV) |
-| `GATES.md` | The pre-registered rules for what would count as real skill |
-| `docs/OWNERS_TOUR.md` | The whole project explained in plain English |
+79 tests, all offline — `venv/bin/pytest` runs without a key or network.
 
-## The honesty rules
+## License
 
-1. **Paper only.** The machine writes CSV rows; it cannot spend money or
-   place bets. Any real-world decision belongs to a human.
-2. **Pre-registered gates.** To ever claim "edge," the crowd must beat the
-   market's closing price, beat a boring statistics baseline, survive a
-   luck test, survive fees, and have enough depth to matter — rules locked
-   before results existed. Failures get published too.
-3. **Never fabricate.** Junk model answers are skipped and counted. If the
-   whole crowd fails on a question, there is no answer — not a made-up one.
-4. **Honest prompts.** Questions without a market price say so — the crowd
-   is never fed a fake anchor.
-
-## Run it in the cloud (laptop off)
-
-The included GitHub Action (`.github/workflows/manyworldz.yml`) runs the live
-loop four times a day on GitHub's servers and commits the scorecard back to
-the repo. Setup: push to GitHub, add `ANTHROPIC_API_KEY` as a repository
-secret (Settings → Secrets and variables → Actions), done.
-
-## Why this exists
-
-Multi-agent "prediction" demos are everywhere; published, graded track
-records are almost nowhere. manyworldz is built backwards from that gap: the
-crowd is the show, but the scorecard is the product. Expectations are set
-honestly — published research says AI forecasters roughly match human
-crowds at best — and the gates exist to find out, not to assume.
-
-Research-lab project. Not financial advice, not a betting product.
-
-MIT licensed. Built by [@akadigari](https://github.com/akadigari).
+MIT
