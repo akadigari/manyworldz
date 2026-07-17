@@ -1,6 +1,6 @@
-# manyworldz — the live scorecard
+# manyworldz: the live scorecard
 
-_Updated 2026-07-17T02:03Z. Paper picks only — a person makes any real decision, and only if the gates pass._
+_Updated 2026-07-17T02:03Z. Paper picks only. A person makes any real decision, and only if the gates pass._
 
 - **Picks:** 0 total, 0 open, 0 settled
 - **Record on settled:** 0 wins, 0 losses

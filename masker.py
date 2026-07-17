@@ -6,7 +6,7 @@ how often models can un-hide the teams anyway. We publish that number.
 """
 from __future__ import annotations
 
-# Every NBA team as (abbreviation, city, nickname) — e.g. ("BOS", "Boston", "Celtics").
+# Every NBA team as (abbreviation, city, nickname): e.g. ("BOS", "Boston", "Celtics").
 NBA_TEAMS: list[tuple[str, str, str]] = [
     ("ATL", "Atlanta", "Hawks"), ("BOS", "Boston", "Celtics"),
     ("BKN", "Brooklyn", "Nets"), ("CHA", "Charlotte", "Hornets"),
@@ -26,7 +26,7 @@ NBA_TEAMS: list[tuple[str, str, str]] = [
 ]
 
 # Casual nicknames fans use that aren't the official team name (like
-# "Dubs" for the Warriors) — banned too, so they can't leak the team either.
+# "Dubs" for the Warriors), banned too, so they can't leak the team either.
 _SHORTHANDS = ["Sixers", "Cavs", "Mavs", "Wolves", "Blazers", "Lakeshow",
                "Dubs", "Nola", "OKC"]
 
@@ -44,7 +44,7 @@ BANNED_TOKENS: list[str] = sorted(
 def month_label(date: str) -> str:
     """Turn an exact date (like "2025-01-14") into a vague label like
     "mid-season (January)", so nobody can look up that exact date and find
-    out which real game — and which teams — it was.
+    out which real game, and which teams, it was.
     """
     months = ["January", "February", "March", "April", "May", "June", "July",
               "August", "September", "October", "November", "December"]
@@ -57,7 +57,7 @@ def month_label(date: str) -> str:
 
 def mask_statsheet(sheet: dict) -> str:
     """Turn a stat-sheet into the plain-text description an agent (or the
-    re-ID probe below) actually reads — with real team names replaced by
+    re-ID probe below) actually reads, with real team names replaced by
     "Team A" (home) and "Team B" (away).
     """
     lines = [
@@ -114,7 +114,7 @@ _PROBE_PROMPT = (
 def _word_in(word: str, low_text: str) -> bool:
     """True if `word` appears in `low_text` as a whole word, not just a substring.
 
-    This is what stops "nets" from matching inside "hornets" — plain
+    This is what stops "nets" from matching inside "hornets". Plain
     substring checks can't tell the difference, but a word-boundary regex can.
     """
     return _re.search(rf"\b{_re.escape(word)}\b", low_text) is not None
@@ -125,7 +125,7 @@ def _abbrev_from_answer(text: str) -> str | None:
 
     A nickname (like "Celtics") always wins if one is there. A 3-letter
     abbreviation (like "BOS") or a plain city name (like "Boston") also
-    counts, but only when that city belongs to exactly one team — "Los
+    counts, but only when that city belongs to exactly one team: "Los
     Angeles" or "LA" alone could mean the Lakers or the Clippers, so those
     never count on their own.
     """
@@ -151,7 +151,7 @@ def score_probe_answer(answer_text: str, truth: tuple[str, str]) -> bool:
 
     `answer_text` is the model's raw reply (expected to hold JSON with
     "home"/"away" guesses); `truth` is the real (home, away) abbreviation
-    pair. Returns True only when BOTH guesses are right — no partial credit.
+    pair. Returns True only when BOTH guesses are right: no partial credit.
     """
     try:
         guess = _json.loads(answer_text[answer_text.find("{"):answer_text.rfind("}") + 1])
@@ -191,7 +191,7 @@ def run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict:
                 answer = _json.loads(cache_file.read_text())["answer"]
             else:
                 if spent_calls >= max_calls:
-                    raise RuntimeError("probe budget cap hit — raise PROBE_BUDGET_USD to continue")
+                    raise RuntimeError("probe budget cap hit, raise PROBE_BUDGET_USD to continue")
                 masked = mask_statsheet(build_statsheet(games, i))
                 msg = client.messages.create(
                     model=model, max_tokens=100,
@@ -206,10 +206,10 @@ def run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict:
 
     result = {"per_model": per_model, "n": n}
     (_config.DATA / "probe_results.json").write_text(_json.dumps(result, indent=1))
-    # Grade by the WORST model's rate, not the average — we'd rather be too
+    # Grade by the WORST model's rate, not the average. We'd rather be too
     # cautious about leaks than too generous.
     worst = max(per_model.values())
-    lines = ["# Re-identification probe — published either way", "",
+    lines = ["# Re-identification probe: published either way", "",
              f"Masked games shown: {n} per model", ""]
     for m, r in per_model.items():
         lines.append(f"- `{m}`: named both teams on **{r:.1%}** of games")

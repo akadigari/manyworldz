@@ -2,10 +2,10 @@
 
 Read-only public API, non-sports only, paper trading only. Known venue
 quirk: prices usually arrive as cents (43) but sometimes as dollar
-strings ("0.43") — _cents() accepts both. Live responses (verified
+strings ("0.43"). _cents() accepts both. Live responses (verified
 2026-07-15) use yes_bid_dollars/yes_ask_dollars ("0.1200" = 12 cents)
 and volume_fp (a float string) instead of the plain yes_bid/yes_ask/
-volume fields the old fixture used — we read the dollars/fp fields
+volume fields the old fixture used. We read the dollars/fp fields
 first and fall back to the plain ones so both shapes work.
 """
 from __future__ import annotations
@@ -49,7 +49,7 @@ def _cents(value) -> int:
 
 
 def parse_events(payload: dict) -> list[dict]:
-    """Turn Kalshi's raw /events response into a flat list of "cards" —
+    """Turn Kalshi's raw /events response into a flat list of "cards":
     one simple dict per tradeable market, with the fields we actually use.
 
     An "event" can bundle several related markets together (e.g. one
@@ -75,7 +75,7 @@ def parse_events(payload: dict) -> list[dict]:
                 "category": event.get("category", ""),
                 "yes_bid": bid,      # highest price buyers are offering, in cents
                 "yes_ask": ask,      # lowest price sellers are asking, in cents
-                "mid": round((bid + ask) / 2) if (bid and ask) else 0,  # halfway between — the "market price"
+                "mid": round((bid + ask) / 2) if (bid and ask) else 0,  # halfway between: the "market price"
                 "close_time": market.get("close_time", ""),
                 "volume": int(float(market.get("volume_fp") or market.get("volume") or 0)),
             })
@@ -102,7 +102,7 @@ def tradeable(cards: list[dict], now_iso: str) -> list[dict]:
         try:
             close = datetime.fromisoformat(c["close_time"].replace("Z", "+00:00"))
         except (ValueError, AttributeError, TypeError):
-            continue                                  # missing/bad close_time — skip, don't crash
+            continue                                  # missing/bad close_time: skip, don't crash
         if close < now + timedelta(hours=24):
             continue                                  # about to settle
         keep.append(c)
@@ -136,7 +136,7 @@ def fetch_market(ticker: str) -> dict:
     m = resp.json().get("market", {})
     bid = _cents(m.get("yes_bid_dollars", m.get("yes_bid")))
     ask = _cents(m.get("yes_ask_dollars", m.get("yes_ask")))
-    # A one-sided book (no real bid, or no real ask — Kalshi shows a
+    # A one-sided book (no real bid, or no real ask: Kalshi shows a
     # missing ask as either 0 or 100) means we don't actually know a
     # price. Say so with None instead of making one up.
     one_sided = bid == 0 or ask in (0, 100)

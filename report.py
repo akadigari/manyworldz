@@ -1,7 +1,7 @@
 """Turn the scorecard into something the website (and a human) can read.
 
-Reads three local files — the pick ledger, the latest cycle snapshot, and
-the spending meter — and writes two things:
+Reads three local files (the pick ledger, the latest cycle snapshot, and
+the spending meter) and writes two things:
 
   web/data.json   what the knaves.ai dashboard draws
   REPORT.md       a plain-English summary for the repo page
@@ -60,9 +60,9 @@ def write_outputs(report: dict) -> None:
 
     s = report["stats"]
     lines = [
-        "# manyworldz — the live scorecard",
+        "# manyworldz: the live scorecard",
         "",
-        f"_Updated {report['generated_at'][:16]}Z. Paper picks only — a"
+        f"_Updated {report['generated_at'][:16]}Z. Paper picks only. A"
         " person makes any real decision, and only if the gates pass._",
         "",
         f"- **Picks:** {s['total_picks']} total, {s['open']} open,"

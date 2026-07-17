@@ -29,7 +29,7 @@ def test_orphan_rows_are_dropped_not_guessed():
 
 
 def test_output_sorted_by_date():
-    # Two complete games given in reverse date order — output must sort them.
+    # Two complete games given in reverse date order: output must sort them.
     later = [
         {"GAME_ID": "0022400300", "GAME_DATE": "2024-11-09", "TEAM_ABBREVIATION": "DEN",
          "MATCHUP": "DEN vs. UTA", "PTS": 128, "WL": "W"},

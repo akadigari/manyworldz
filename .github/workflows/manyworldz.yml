@@ -1,8 +1,8 @@
-# manyworldz on a cloud timer — runs by itself on GitHub's servers, laptop off.
+# manyworldz on a cloud timer: runs by itself on GitHub's servers, laptop off.
 #
 # Four times a day it grades the open paper picks, has the AI crowd vote on
 # the biggest open non-sports markets, and saves the scorecard back to the
-# repo. It only reads public market data; it never places an order — the
+# repo. It only reads public market data; it never places an order. The
 # ledger is a CSV of pretend picks, graded honestly.
 #
 # To turn it on:
@@ -15,7 +15,7 @@
 # Cost control: the engine has its own hard budget cap (ENGINE_BUDGET_USD in
 # config.py, $10). The spending meter (data/spend.json) is committed back
 # after every run, so the CAP holds across cloud runs. (The answer cache is
-# per-run in the cloud — each run starts fresh — but a full cycle costs
+# per-run in the cloud, so each run starts fresh, but a full cycle costs
 # pennies, so the cap still gives months of runway.) When it's hit, runs
 # stop making new calls until you raise the cap.
 

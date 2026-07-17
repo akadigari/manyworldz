@@ -30,7 +30,7 @@ def test_loader_normalizes_names_and_drops_bad_rows():
 
 def test_los_angeles_clippers_full_name_resolves_to_lac(tmp_path):
     # Datasets often write "Los Angeles Clippers" even though the league's
-    # own city field for that team is just "LA" — both must resolve to LAC.
+    # own city field for that team is just "LA": both must resolve to LAC.
     csv_path = tmp_path / "clippers.csv"
     csv_path.write_text(
         "game_date,home_team,away_team,home_ml_close,away_ml_close\n"

@@ -1,4 +1,4 @@
-"""Fresh headlines for a market question — free, no API key.
+"""Fresh headlines for a market question: free, no API key.
 
 Google News RSS gives the crowd something real to react to. Failures
 return an empty list: a news outage should never stop the cycle.
@@ -64,7 +64,7 @@ def research(question: str, limit: int = 8) -> list[str]:
     Angle 1: the question as asked. Angle 2: just its key words (which
     catches articles that phrase things differently). Results are merged
     with duplicates removed, newest-angle first. Like headlines_for, this
-    never raises — worst case is an empty list.
+    never raises, worst case is an empty list.
     """
     seen, merged = set(), []
     for query in (question, key_terms(question)):

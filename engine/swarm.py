@@ -2,7 +2,7 @@
 votes fold into one number plus a disagreement spread.
 
 Every function takes ask_fn so tests can inject canned answers. Junk
-answers are skipped and counted — never invented.
+answers are skipped and counted, never invented.
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from engine import llm
 
 # The two prompt templates below are the actual text sent to the model.
 # {curly braces} get filled in with real values before sending.
-_VOTE_PROMPT = """You are {name}, a {archetype} — {style}.
+_VOTE_PROMPT = """You are {name}, a {archetype}: {style}.
 
 The question: "{question}"
 {market_line}
@@ -28,7 +28,7 @@ Think like your character and give YOUR OWN probability that this
 resolves YES. Do not just repeat the market price.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""
 
-_DELIB_PROMPT = """You are {name}, a {archetype} — {style}.
+_DELIB_PROMPT = """You are {name}, a {archetype}: {style}.
 The question: "{question}". {market_line} Your current view: {own}.
 
 Other agents said:
@@ -40,16 +40,16 @@ Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}
 
 
 def market_line(card: dict) -> str:
-    """One honest sentence about the market price — or the lack of one.
+    """One honest sentence about the market price, or the lack of one.
 
     Market cards carry a "mid" price in cents. Questions typed by a person
     (through ask.py) have no market, and lying to the crowd with a made-up
-    price would bias every vote — so we tell them the truth instead.
+    price would bias every vote, so we tell them the truth instead.
     """
     mid = card.get("mid")
     if mid:
         return f"The market price right now says YES has about a {mid}% chance."
-    return ("There is no market price for this question — you have nothing "
+    return ("There is no market price for this question: you have nothing "
             "to anchor on except your own reasoning.")
 
 
@@ -68,14 +68,14 @@ def _clean_prob(raw) -> float | None:
     """Turn whatever the model sent back into a safe probability.
 
     Returns None if `raw` isn't a number at all. Otherwise clamps it into
-    the range 0.01 to 0.99 — we never let an agent claim total (100%) or
+    the range 0.01 to 0.99. We never let an agent claim total (100%) or
     zero (0%) certainty, since real events are basically never that sure.
     """
     try:
         p = float(raw)
     except (TypeError, ValueError):
         return None
-    return min(max(p, 0.01), 0.99)  # never 0% or 100% — stay humble
+    return min(max(p, 0.01), 0.99)  # never 0% or 100%, stay humble
 
 
 def agent_vote(agent: dict, card: dict, headlines: list[str],
@@ -85,7 +85,7 @@ def agent_vote(agent: dict, card: dict, headlines: list[str],
     Fills in the vote prompt with this agent's personality and the
     market's question, sends it, and pulls out a probability + one-line
     reason. Returns None if the model's reply couldn't be understood
-    (bad JSON, missing/invalid probability) — a bad answer gets skipped,
+    (bad JSON, missing/invalid probability). A bad answer gets skipped,
     never guessed at.
     """
     prompt = _VOTE_PROMPT.format(
@@ -129,7 +129,7 @@ def consensus(probs: list[float]) -> tuple[float, float]:
 
     With 5 or more votes we drop the single highest and lowest first, so
     one overexcited agent can't drag the answer around. We also return the
-    "spread" — how much the crowd disagreed. Small spread = confident crowd.
+    "spread": how much the crowd disagreed. Small spread = confident crowd.
     """
     if not probs:
         return 0.5, 0.0
@@ -148,7 +148,7 @@ def run_crowd(card: dict, headlines: list[str], crowd: list[dict],
     into one consensus number.
 
     `mode` picks how each agent answers: "vote" (one probability) or
-    "simulate" (K imagined futures — see engine/futures.py). If
+    "simulate" (K imagined futures, see engine/futures.py). If
     `deliberation` is on, agents get a second round where they see what
     everyone else said before giving a final answer. Returns the crowd's
     consensus probability and spread, every individual vote, any imagined
@@ -175,10 +175,10 @@ def run_crowd(card: dict, headlines: list[str], crowd: list[dict],
 
     if deliberation and len(votes) >= 2:
         # One line of summary text per vote, e.g. "- Ava (stats nerd): 0.62
-        # — trusts the recent form numbers." This is what gets shown to
+        # (trusts the recent form numbers)." This is what gets shown to
         # each agent as "what everyone else said."
         digest = [f'- {v["agent"]} ({v["archetype"]}): '
-                  f'{v["probability"]:.2f} — {v["reason"]}' for v in votes]
+                  f'{v["probability"]:.2f} ({v["reason"]})' for v in votes]
         by_name = {a["name"]: a for a in crowd}
         revised = []
         for v in votes:

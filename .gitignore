@@ -1,7 +1,7 @@
 venv/
 # Keep the scorecard and the spending meter in the repo (the cloud runs
 # need them to persist between runs); ignore everything else in data/
-# (caches, downloads — all rebuildable).
+# (caches, downloads, all rebuildable).
 data/*
 !data/ledger.csv
 !data/spend.json

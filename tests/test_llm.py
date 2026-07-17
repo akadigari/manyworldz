@@ -61,7 +61,7 @@ def test_refusal_becomes_empty_answer_not_a_crash():
 
 
 def test_thinking_blocks_are_skipped():
-    # Reasoning models return "thinking" blocks alongside the answer text —
+    # Reasoning models return "thinking" blocks alongside the answer text:
     # only the text should come through.
     from types import SimpleNamespace
     thinking = SimpleNamespace(type="thinking", thinking="internal notes")

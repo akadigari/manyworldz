@@ -2,7 +2,7 @@
 failed, using rules that were written down in GATES.md and config.py
 BEFORE any results existed. That order matters: the rules can't be
 quietly loosened after the fact just because the numbers came out badly.
-This file only checks the rules — it never changes them.
+This file only checks the rules. It never changes them.
 """
 from __future__ import annotations
 
@@ -32,23 +32,23 @@ def evaluate(n_games: int, audit_errors: int, audit_n: int,
     """
     reasons = []
     if n_games >= config.GO_MIN_GAMES:
-        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}) — pass")
+        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}): pass")
         games_ok = True
     else:
-        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}) — FAIL")
+        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}): FAIL")
         games_ok = False
 
     err_rate = audit_errors / max(audit_n, 1)
     if err_rate <= config.GO_MAX_JOIN_ERROR:
-        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}) — pass")
+        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}): pass")
         audit_ok = True
     else:
-        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}) — FAIL")
+        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}): FAIL")
         audit_ok = False
 
     demote = worst_reid_rate >= config.REID_DEMOTION_RATE
     reasons.append(
-        f"worst re-ID rate: {worst_reid_rate:.1%} — "
+        f"worst re-ID rate: {worst_reid_rate:.1%}: "
         + ("pre-cutoff backtest DEMOTED to calibration-only" if demote
            else "mask holds; pre-cutoff backtest stays scoreable"))
 
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     verdict = evaluate(len(table), audit_errors, audit_n,
                  max(probe["per_model"].values()))
     lines = ["# M0 verdict", "",
-             f"**{'GO' if verdict['go'] else 'NO-GO'}** — " +
+             f"**{'GO' if verdict['go'] else 'NO-GO'}**: " +
              ("engine work may start." if verdict["go"]
               else "fix the data before any engine code."), ""]
     lines += [f"- {r}" for r in verdict["reasons"]]

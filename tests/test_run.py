@@ -21,7 +21,7 @@ def test_pick_side_needs_edge_plus_buffer():
 
 
 def test_one_cycle_saves_a_snapshot_for_the_dashboard(tmp_path, monkeypatch):
-    # The website draws from latest_cycle.json — make sure a cycle writes it.
+    # The website draws from latest_cycle.json: make sure a cycle writes it.
     import json
     monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
     cards = parse_events(json.loads(FIXTURE.read_text()))

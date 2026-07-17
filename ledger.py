@@ -1,5 +1,5 @@
 """The paper ledger keeps a record of every pick the crowd makes, and later
-checks it against what really happened. Nothing here is real money — it's
+checks it against what really happened. Nothing here is real money, it's
 a spreadsheet-style CSV file we can grade over time.
 
 The honest scorecard is CLV (closing line value): after we log a pick, did
@@ -44,8 +44,8 @@ def _write_all(rows: list[dict], path: Path) -> None:
 
     We write to a temp file in the same folder first, then swap it into
     the real path with one atomic rename (os.replace). If the process
-    dies mid-write, the old ledger file is still sitting there intact —
-    a crash can never truncate it.
+    dies mid-write, the old ledger file is still sitting there intact.
+    A crash can never truncate it.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, tmp_name = tempfile.mkstemp(dir=path.parent, prefix=".ledger-", suffix=".tmp")
@@ -65,7 +65,7 @@ def _write_all(rows: list[dict], path: Path) -> None:
 
 def log_pick(row: dict, path: Path | None = None) -> None:
     """Append one pick. A second open pick on the same ticker+side is a
-    repeat opinion, not a new position — refused."""
+    repeat opinion, not a new position, so it is refused."""
     path = path or _DEFAULT
     rows = load(path)
     for r in rows:
@@ -94,7 +94,7 @@ def grade(latest_by_ticker: dict[str, dict], path: Path | None = None) -> dict:
             continue
         latest = latest_by_ticker[r["ticker"]]
         mid = latest.get("mid")
-        if mid:                    # None or 0 means "price unknown" — keep old values
+        if mid:                    # None or 0 means "price unknown": keep old values
             entry = int(r["entry_mid"])
             r["latest_mid"] = mid
             # CLV: cents the price moved in our favor since we logged the

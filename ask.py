@@ -2,8 +2,8 @@
 
 This is the front door to the whole engine. You type a yes/no question about
 the future; a crowd of AI characters reads it (plus fresh headlines), each
-forms its own probability — or, in simulate mode, imagines the outcome
-playing out several times — and you get one honest number plus everyone's
+forms its own probability (or, in simulate mode, imagines the outcome
+playing out several times), and you get one honest number plus everyone's
 reasoning. Add --whatif to force a fact to be true and watch the number move.
 
 Examples:
@@ -37,7 +37,7 @@ def ask_question(question: str, whatif: str | None = None, mode: str = "vote",
 
     The question becomes a "card" with no market price (mid=None), so the
     agents are told honestly that they have nothing to anchor on. Returns
-    the run_crowd dict — or, when a what-if fact is given, the
+    the run_crowd dict, or, when a what-if fact is given, the
     before/after/shift dict from run_whatif.
     """
     card = {"ticker": "ASK", "question": question, "mid": None}

@@ -30,5 +30,5 @@ def test_abbreviation_and_city_answers_count():
 
 
 def test_ambiguous_city_alone_does_not_match():
-    # "Los Angeles" alone could be LAL or LAC — must not count as either
+    # "Los Angeles" alone could be LAL or LAC: must not count as either
     assert score_probe_answer('{"home": "Los Angeles", "away": "Utah Jazz"}', ("LAL", "UTA")) is False

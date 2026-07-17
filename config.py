@@ -2,7 +2,7 @@
 number and setting lives here instead of being buried inside the code that
 does the actual work. Want to change how many "agent" votes get cast, how
 much money the project is allowed to spend, or what counts as a
-"post-cutoff" game? Change it here — nowhere else.
+"post-cutoff" game? Change it here, nowhere else.
 """
 from pathlib import Path
 
@@ -22,7 +22,7 @@ PROBE_BUDGET_USD = 5.00  # hard stop for probe spend
 
 # Checked against Anthropic's model docs on 2026-07-15: claude-haiku-4-5
 # lists a "reliable knowledge cutoff" of Feb 2025 and a broader TRAINING
-# DATA cutoff of Jul 2025. For leak safety we use the broader one — the
+# DATA cutoff of Jul 2025. For leak safety we use the broader one: the
 # model may have seen anything up to July 2025. With a one-month buffer,
 # games on/after this date count as "post-cutoff" (results the model
 # cannot have seen in training).
@@ -37,10 +37,10 @@ GO_MAX_JOIN_ERROR = 0.01    # allowed error rate when a person hand-checks 50 ro
 
 # Which AI powers the crowd. Use a friendly name or a full model ID.
 # Friendly names (cheapest to strongest):
-#   haiku  -> claude-haiku-4-5   (~1c per question — the default)
+#   haiku  -> claude-haiku-4-5   (~1c per question, the default)
 #   sonnet -> claude-sonnet-5    (smarter, ~3x the cost)
 #   opus   -> claude-opus-4-8    (strong reasoning, ~5x)
-#   fable  -> claude-fable-5     (the frontier, ~10x — a cycle costs real cents)
+#   fable  -> claude-fable-5     (the frontier, ~10x, a cycle costs real cents)
 # Anyone's key works: the engine reads ANTHROPIC_API_KEY from the
 # environment. Set MANYWORLDZ_MODEL to override the model without
 # editing this file (that's how the cloud run picks its model too).
@@ -60,4 +60,4 @@ MIN_EDGE_CENTS = 10       # crowd must differ from market by this much...
 FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
 MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
 ENGINE_BUDGET_USD = 10.00 # hard stop for cumulative engine spend
-EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets — Maryland law only lets us paper-trade non-sports ones
+EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets us paper-trade non-sports ones

@@ -1,8 +1,8 @@
 """The one door to the Anthropic API.
 
 Every call is cached to disk (same question -> free repeat) and metered
-against a hard budget. When the budget is gone, the engine stops asking —
-it never quietly keeps spending.
+against a hard budget. When the budget is gone, the engine stops asking.
+It never quietly keeps spending.
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ SPEND_FILE = config.DATA / "spend.json"   # running total of what we've spent
 
 # Rough price per 1 million "tokens" (roughly, chunks of a word) the model
 # reads (input) or writes (output). Used only to estimate spending so we
-# can enforce the budget cap — not an exact invoice.
+# can enforce the budget cap, not an exact invoice.
 _PRICES = {
     "claude-haiku-4-5": (1.00, 5.00),
     "claude-sonnet-5": (3.00, 15.00),
@@ -32,7 +32,7 @@ _DEFAULT_PRICE = (10.00, 50.00)  # unknown model -> assume frontier prices (the 
 def resolve_model(name: str | None) -> str:
     """Turn a friendly name ("haiku", "fable") into a full model ID.
 
-    Full IDs pass straight through, so any model the API serves works —
+    Full IDs pass straight through, so any model the API serves works,
     including ones released after this file was written.
     """
     name = name or config.ENGINE_MODEL
@@ -44,7 +44,7 @@ def _extract_text(msg) -> str:
 
     Two quirks handled here: reasoning models (like Fable) may include
     "thinking" blocks we don't want, and their safety layer can decline a
-    request entirely (stop_reason "refusal") — in that case we return ""
+    request entirely (stop_reason "refusal"). In that case we return ""
     so the crowd counts it as one unusable answer and moves on. Nothing
     is ever invented.
     """
@@ -55,7 +55,7 @@ def _extract_text(msg) -> str:
 
 def _call_api(prompt: str, model: str, max_tokens: int):
     """The only function that really talks to the API. Split out so tests
-    can replace it. Reads ANTHROPIC_API_KEY from the environment — anyone's
+    can replace it. Reads ANTHROPIC_API_KEY from the environment: anyone's
     key works; nothing is hardcoded."""
     import anthropic
     client = anthropic.Anthropic()
@@ -98,7 +98,7 @@ def _record_spend(model: str, tokens_in: int, tokens_out: int) -> None:
 def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
     """Ask the model one question and return its plain-text answer.
 
-    The same prompt+model combo is only ever paid for once — repeat calls
+    The same prompt+model combo is only ever paid for once. Repeat calls
     return the cached answer instantly and for free. Before any new call,
     this checks the running total against ENGINE_BUDGET_USD and refuses to
     call the API at all once the budget is used up.
@@ -112,7 +112,7 @@ def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
 
     if spent_usd() >= config.ENGINE_BUDGET_USD:
         raise RuntimeError(
-            f"engine budget cap hit (${config.ENGINE_BUDGET_USD:.2f}) — "
+            f"engine budget cap hit (${config.ENGINE_BUDGET_USD:.2f}): "
             "raise ENGINE_BUDGET_USD in config.py to keep going")
 
     text, tokens_in, tokens_out = _call_api(prompt, model, max_tokens)

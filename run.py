@@ -2,8 +2,8 @@
 
 Grade what's open, look at the biggest open non-sports markets, let the
 crowd form its number, and log a paper pick when the crowd disagrees with
-the market by more than fees could explain. A person places any real bet —
-this only writes CSV rows.
+the market by more than fees could explain. A person places any real bet.
+This only writes CSV rows.
 """
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ from engine.swarm import run_crowd
 def _save_cycle_snapshot(markets: list[dict], now: str, path: Path) -> None:
     """Save everything the crowd just saw and said, for the dashboard.
 
-    The website draws its branching-futures map from this file — every
+    The website draws its branching-futures map from this file: every
     vote, every imagined future, every verdict from the latest cycle.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -61,7 +61,7 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
     ask = ask_fn or llm.ask
     now = now_iso or datetime.now(timezone.utc).isoformat()
 
-    # 1. Grade open picks (live only — needs per-ticker fetches).
+    # 1. Grade open picks (live only, needs per-ticker fetches).
     graded = {"updated": 0, "settled": 0}
     if live:
         open_tickers = {r["ticker"] for r in ledger.load()
@@ -98,7 +98,7 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
                 "verdict": None}
         snapshot.append(snap)
         if not result["votes"]:
-            # Nobody gave a usable answer — a fake 0.5 "consensus" would
+            # Nobody gave a usable answer. A fake 0.5 "consensus" would
             # fabricate a pick out of nothing. Skip the market instead.
             snap["verdict"] = "no_quorum"
             print(f'  no quorum (all {result["skipped"]} answers unusable) '
@@ -106,7 +106,7 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
             continue
         verdict = pick_side(result["probability"], card["mid"])
         # "mid" = the mid price: halfway between what buyers will pay and
-        # sellers will take, in cents — the market's best guess at "fair."
+        # sellers will take, in cents. The market's best guess at "fair."
         line = (f'{card["mid"]:>3}c market | {result["probability"]:.2f} crowd '
                 f'(spread {result["spread"]:.2f}, {result["skipped"]} skipped) '
                 f'| {card["question"][:60]}')

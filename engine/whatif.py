@@ -3,7 +3,7 @@
 In many-worlds terms: jump to the neighboring world where the fact holds,
 and see what the crowd thinks over there.
 
-We don't touch the agents — we edit the world they see. The injected fact
+We don't touch the agents, we edit the world they see. The injected fact
 is prepended to the market question so every prompt (vote or simulate)
 carries it.
 """
@@ -20,7 +20,7 @@ from engine.swarm import run_crowd
 def run_whatif(card: dict, headlines: list[str], crowd: list[dict],
                inject: str, mode: str = "vote", k: int = 5,
                deliberation: bool = False, ask_fn=llm.ask) -> dict:
-    """Run the crowd twice — once normally, once with a fact forced true —
+    """Run the crowd twice (once normally, once with a fact forced true)
     and measure how much that fact moves the crowd's number.
 
     `inject` is the fact to force, e.g. "the star player is out injured."
@@ -33,7 +33,7 @@ def run_whatif(card: dict, headlines: list[str], crowd: list[dict],
 
     twisted = dict(card)
     twisted["question"] = (
-        f"WHAT-IF (treat as definitely true: {inject}) — {card['question']}")
+        f"WHAT-IF (treat as definitely true: {inject}): {card['question']}")
     after = run_crowd(twisted, headlines, crowd, mode, k, deliberation, ask_fn)
 
     return {"before": before, "after": after,

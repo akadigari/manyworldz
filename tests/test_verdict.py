@@ -8,7 +8,7 @@ from verdict_m0 import evaluate
 def test_clean_pass_is_go():
     v = evaluate(n_games=400, audit_errors=0, audit_n=50, worst_reid_rate=0.31)
     assert v["go"] is True
-    assert v["demote_precutoff"] is True  # 31% leak still demotes — separate axis
+    assert v["demote_precutoff"] is True  # 31% leak still demotes: separate axis
 
 
 def test_too_few_games_is_no_go():

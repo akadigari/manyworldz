@@ -1,5 +1,5 @@
-"""This file matches up two separate lists — real NBA game results and the
-market's verified closing prices — into one clean table. That table is
+"""This file matches up two separate lists (real NBA game results and the
+market's verified closing prices) into one clean table. That table is
 the foundation the whole M0 backtest is built on.
 
 If a game can't be matched cleanly (no verified price found, or more than
@@ -42,14 +42,14 @@ def build_table(games: list[dict], closes: pd.DataFrame,
     for game in post:
         matches = by_key.get(key(game["date"], game["home"], game["away"]), [])
         if len(matches) == 1:
-            # Exactly one verified price for this game — a clean match.
+            # Exactly one verified price for this game: a clean match.
             rows.append({"date": game["date"], "home": game["home"], "away": game["away"],
                          "home_won": game["home_won"],
                          "home_close_prob": matches[0]["home_close_prob"],
                          "provenance": matches[0]["provenance"]})
         else:
             # Zero matches (no price found) or 2+ matches (which one is
-            # real?) — either way, we can't trust a single answer, so this
+            # real?). Either way, we can't trust a single answer, so this
             # game gets set aside instead of guessed at.
             quarantined.append({"date": game["date"], "home": game["home"], "away": game["away"],
                         "reason": "no_close" if not matches else "duplicate_close"})

@@ -18,7 +18,7 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
     """Combine per-team rows into one record per game.
 
     A game only counts when we see BOTH of its rows (home and away).
-    Orphans are dropped — we never guess a missing side.
+    Orphans are dropped: we never guess a missing side.
     """
     by_id: dict[str, list[dict]] = {}
     for r in rows:
@@ -53,7 +53,7 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
 def fetch_season_results(season: str) -> list[dict]:
     """Fetch one regular season's results, with a disk cache.
 
-    season looks like "2024-25". Cached forever — settled games don't change.
+    season looks like "2024-25". Cached forever: settled games don't change.
     """
     config.CACHE.mkdir(parents=True, exist_ok=True)
     cache_file = config.CACHE / f"results_{season}.json"
@@ -109,10 +109,10 @@ def _form(history: list[dict], team: str) -> dict:
 
 
 def build_statsheet(games: list[dict], idx: int) -> dict:
-    """Everything an agent may know about a game — from BEFORE tipoff only.
+    """Everything an agent may know about a game, from BEFORE tipoff only.
 
     Assumes `games` is already sorted by date (parse_gamefinder_rows always
-    sorts it) — team_history() relies on that order, and hist[-1] below only
+    sorts it). team_history() relies on that order, and hist[-1] below only
     grabs the most recent prior game if the list is in date order.
     """
     game = games[idx]

@@ -1,4 +1,4 @@
-"""Tests for report.py — the honest bridge from ledger to website."""
+"""Tests for report.py: the honest bridge from ledger to website."""
 import sys
 from pathlib import Path
 
@@ -39,7 +39,7 @@ def test_empty_ledger_reports_zeros_not_crash():
 
 
 def test_write_outputs_produces_valid_dashboard_json(tmp_path, monkeypatch):
-    # The website loads web/data.json — make sure write_outputs actually
+    # The website loads web/data.json: make sure write_outputs actually
     # writes valid JSON and a REPORT.md, and doesn't crash on real shapes.
     import json
     import config

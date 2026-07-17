@@ -63,7 +63,7 @@ def test_cents_parses_dollar_strings_regardless_of_size():
 
 def test_one_sided_book_at_top_of_range_is_excluded():
     # yes_bid_dollars "0.9900" / yes_ask_dollars "1.0000" -> bid 99 / ask
-    # 100. An ask of 100 means "no one is actually offering to sell" —
+    # 100. An ask of 100 means "no one is actually offering to sell":
     # not a real two-sided market, so tradeable() must drop it.
     got = cards()
     near = next(c for c in got if c["ticker"] == "NEAR-CERTAIN-99")

@@ -1,7 +1,7 @@
 """Load verified market closing prices for NBA games.
 
 The Kaggle CSV is downloaded by hand into data/ (see the plan's execution
-task). We validate its columns loudly instead of assuming — if the real
+task). We validate its columns loudly instead of assuming. If the real
 file names differ, edit COLUMN_MAP and nothing else.
 """
 from __future__ import annotations
@@ -27,7 +27,7 @@ COLUMN_MAP = {
 _FULLNAME_TO_ABBREV = {f"{t[1]} {t[2]}".lower(): t[0] for t in NBA_TEAMS}
 # Some datasets write the Clippers with the official league city ("LA"
 # Clippers) even though the more common way people write it is "Los
-# Angeles Clippers" — accept that spelling too.
+# Angeles Clippers". Accept that spelling too.
 _FULLNAME_TO_ABBREV["los angeles clippers"] = "LAC"
 
 _DATE_FORMAT_RE = re.compile(r"^\d{4}-\d{2}-\d{2}")
@@ -38,7 +38,7 @@ def american_to_prob(ml: int) -> float:
     probability between 0 and 1.
 
     "Raw" means it still has the bookmaker's profit margin (the "vig")
-    baked in — see devig() below for how that gets stripped out.
+    baked in: see devig() below for how that gets stripped out.
     """
     ml = int(ml)
     if ml < 0:
@@ -55,7 +55,7 @@ def devig(p_home_raw: float, p_away_raw: float) -> float:
 
 def validate_schema(df: pd.DataFrame) -> None:
     """Make sure the CSV actually has the columns we expect, and fail
-    loudly with a clear message if it doesn't — instead of quietly
+    loudly with a clear message if it doesn't, instead of quietly
     producing garbage further down the line.
     """
     missing = [v for v in COLUMN_MAP.values() if v not in df.columns]
@@ -78,7 +78,7 @@ def load_kaggle_closes(csv_path: Path) -> pd.DataFrame:
     probability (with the vig removed).
 
     Rows with an unrecognized team name or broken odds are dropped rather
-    than guessed at — see the "dropped" count this prints when it runs.
+    than guessed at: see the "dropped" count this prints when it runs.
     """
     raw = pd.read_csv(csv_path)
     validate_schema(raw)
@@ -93,7 +93,7 @@ def load_kaggle_closes(csv_path: Path) -> pd.DataFrame:
             raise ValueError(
                 f"column '{COLUMN_MAP['date']}' doesn't look like YYYY-MM-DD. "
                 f"First value found: {first_date!r}. Dates must be in "
-                f"YYYY-MM-DD format — reformat the CSV before loading.")
+                f"YYYY-MM-DD format. Reformat the CSV before loading.")
 
     rows = []
     dropped = 0
