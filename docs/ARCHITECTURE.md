@@ -1,9 +1,9 @@
-# manyworldz — Architecture
+# manyworldz: Architecture
 
 manyworldz is a crowd of AI forecasters that **simulates futures**. Instead of
 asking one model "who wins?", it builds a crowd of different forecasters, has
 each one imagine how the event could play out, reads a probability off all
-those simulated futures, and then — the part most projects skip — **grades
+those simulated futures, and then (the part most projects skip) **grades
 itself against reality and real market prices**, with pass/fail rules written
 down before any results exist.
 
@@ -66,30 +66,30 @@ ledger the gates read.
    cards** whose timestamps say the crowd is allowed to see them.
 2. **The crowd forms.** Two ways to build it (both supported, measured
    head-to-head):
-   - **Persona mode** — one model plays N distinct characters: the stats
+   - **Persona mode**: one model plays N distinct characters: the stats
      nerd, the narrative fan, the sharp-money watcher, the contrarian, the
      oddsmaker, the insider.
-   - **Ensemble mode** — N *different model families*, each shown a
+   - **Ensemble mode**: N *different model families*, each shown a
      *different slice* of the evidence (one gets news, one gets base rates,
      one gets price history), combined with a trimmed mean. Different brains
      plus different information beats one brain in costumes.
 3. **Each agent sees futures.** In *vote mode* an agent returns one
    probability with a reason. In *simulate mode* it imagines the event
-   playing out K times — short scenario rollouts — and its probability is
+   playing out K times (short scenario rollouts) and its probability is
    the share of its own futures where the outcome happens. A 25-agent crowd
    at K=5 holds **125 simulated futures per event**.
 4. **Optional deliberation.** One round where agents see each other's
-   arguments and may update. Exactly one round, and it's an experiment arm —
+   arguments and may update. Exactly one round, and it's an experiment arm:
    the backtest measures whether deliberation helps or hurts.
 5. **Consensus + doubt.** The crowd's futures collapse to one probability;
    how much the agents disagree becomes the confidence number.
 6. **Calibration.** A simple logistic layer, trained only on the past,
    corrects the crowd's known lean (e.g. chronic overconfidence). No
-   transformers — at this data size that would be memorizing, not learning.
+   transformers: at this data size that would be memorizing, not learning.
 7. **The pick.** Only if the calibrated number differs from the market price
    by more than fees + a buffer does a paper pick go in the ledger, sized by
    fractional Kelly. No edge, no pick.
-8. **The what-if.** Inject a fact — "star player is OUT" — and
+8. **The what-if.** Inject a fact ("star player is OUT") and
    the futures re-run with that fact forced true. The dashboard animates the
    futures tree re-growing.
 
@@ -131,7 +131,7 @@ know how they ended. manyworldz treats that as a measured threat, not a hope:
   whatever it is**, and if it crosses the pre-registered line, the masked
   backtest is demoted to calibration-training only.
 - **Post-cutoff scoring** is the gold standard: accuracy claims rest on
-  events dated *after* the model's documented training cutoff — futures the
+  events dated *after* the model's documented training cutoff: futures the
   model cannot have memorized.
 - **Time-stamped evidence.** Every evidence card carries a timestamp, and the
   replayer only shows agents cards dated before the event.
@@ -154,7 +154,7 @@ measured head-to-head experiments:
 Fail a gate and the published verdict says so, plainly. A clean documented
 "no" is a real result.
 
-## The face — knaves.ai
+## The face: knaves.ai
 
 A static site, and deliberately dumb: it renders JSON exported by
 `report.py`, which reads the same ledger the gates read. The dashboard
@@ -163,18 +163,18 @@ A static site, and deliberately dumb: it renders JSON exported by
 The shipped site (`web/index.html`) is one self-contained file with two tabs:
 
 - **THE WORLDS (front door):** each market as a branching-worlds tree over a
-  starfield — every future the crowd imagined is a light-trail ending in a
+  starfield, every future the crowd imagined is a light-trail ending in a
   star (gold = resolves YES, crimson = NO), the root is "NOW," and the big
   number is the crowd's folded answer vs the market price.
-- **THE RECEIPTS:** stat tiles (picks, open, settled, win–loss record, average
+- **THE RECEIPTS:** stat tiles (picks, open, settled, win-loss record, average
   CLV, spend) plus the full pick-by-pick table, colored by CLV.
-- **Theme — "Deep Space":** space-black `#060913` with a twinkling starfield,
+- **Theme, "Deep Space":** space-black `#060913` with a twinkling starfield,
   star-white text `#e8ecf5`, starlight-gold `#f5c542` (wordmark, chosen
   worlds, YES), nebula-crimson `#e0435c` (NO branches), faint violet
   `#8b7ff0` (secondary).
 
-(The War Room tab — an agent constellation showing earned voice and the
-bench — belongs with the M2 learning loop, which isn't built yet. The site
+(The War Room tab, an agent constellation showing earned voice and the
+bench, belongs with the M2 learning loop, which isn't built yet. The site
 ships with the two tabs above and grows a third when M2 lands.)
 
 ## Repo map
@@ -214,7 +214,7 @@ rewrite.
 - **Determinism.** One seed (`14000605`) everywhere; any run reproduces
   exactly. Every model call is cached; re-runs are free.
 - **Hard budget caps.** The engine counts tokens and halts at the cap. The
-  cap decides how far anything scales — not enthusiasm.
+  cap decides how far anything scales, not enthusiasm.
 - **Quarantine, never guess.** Odd data goes to a quarantine file with a
   reason. Missing votes are dropped and counted, never fabricated.
 - **Plain English.** Comments, docstrings, output, and this document.

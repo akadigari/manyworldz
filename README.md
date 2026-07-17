@@ -1,33 +1,33 @@
 # manyworldz
 
 An LLM-driven forecasting engine that runs a crowd of AI agents on any yes/no
-question about the future — each agent researches, votes (or simulates the
+question about the future: each agent researches, votes (or simulates the
 outcome multiple times), the votes fold into one probability, and every
 prediction gets logged and graded against real prediction-market prices.
 
-Paper only. The engine never places bets — it writes CSV rows and keeps score.
+Paper only. The engine never places bets. It writes CSV rows and keeps score.
 
 ## What it does
 
-- **Ask it anything** — give it `"Will the Fed cut rates in September?"`; six
+- **Ask it anything**: give it `"Will the Fed cut rates in September?"`; six
   to eight AI personas (a stats nerd, a contrarian, an oddsmaker, a
   sharp-money tracker...) each pull headlines, anchor on a base rate, and
   return their own probability with a one-line reason
-- **Simulate mode** — each agent imagines the event playing out K different
+- **Simulate mode**: each agent imagines the event playing out K different
   ways; its probability is how many of its futures land YES
-- **What-if** — re-runs the whole crowd with a fact forced true and shows how
+- **What-if**: re-runs the whole crowd with a fact forced true and shows how
   much the odds move
-- **Live loop** — scans ~4,000 open Kalshi markets (non-sports), votes on the
+- **Live loop**: scans ~4,000 open Kalshi markets (non-sports), votes on the
   biggest ones, and logs a paper pick when the crowd disagrees with the
   market by more than fees could explain
-- **Scorecard** — every pick graded against closing prices (CLV). Results
+- **Scorecard**: every pick graded against closing prices (CLV). Results
   written to CSV and a dashboard automatically
 
 ## How it works
 
 1. `adapters/kalshi_events.py` pulls open markets and turns them into simple
    "cards" (question, price, volume). `engine/news.py` grabs headlines from
-   two search angles — no API key needed
+   two search angles, no API key needed
 2. `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes,
    throws out junk answers (never invents one), trims the extremes, and
    returns one probability plus a disagreement spread
@@ -35,7 +35,7 @@ Paper only. The engine never places bets — it writes CSV rows and keeps score.
    edge + fee buffer → paper pick goes in `data/ledger.csv`
 4. Next cycle, `ledger.py` re-checks every open pick: did the market move
    toward us (CLV), did it settle, did we win
-5. `report.py` writes `web/data.json` — the dashboard draws straight from it
+5. `report.py` writes `web/data.json`: the dashboard draws straight from it
 
 ## Quick Start
 
@@ -49,7 +49,7 @@ venv/bin/python ask.py "Will the album drop this month?" --simulate --whatif "th
 venv/bin/python run.py              # one live market cycle
 ```
 
-A question costs about a cent. Answers are cached — asking twice is free.
+A question costs about a cent. Answers are cached, so asking twice is free.
 
 ## Models
 
@@ -63,18 +63,18 @@ Pick the crowd's brain with `--model` or the `MANYWORLDZ_MODEL` env var:
 | `fable` | claude-fable-5 | ~10x |
 
 Any full model ID also works. Hard budget cap in `config.py`
-(`ENGINE_BUDGET_USD`, default $10) — the engine stops calling the API when
+(`ENGINE_BUDGET_USD`, default $10). The engine stops calling the API when
 it's spent, no surprises.
 
 ## The rules it can't break
 
-- Paper only — a person makes any real decision, and only if the
+- Paper only: a person makes any real decision, and only if the
   pre-registered gates pass (`GATES.md`, written before any results existed:
   beat the closing line, beat a boring baseline, survive a luck test,
   survive fees)
 - Junk model answers get skipped and counted, never fabricated. All-junk
   crowd → no pick
-- Questions with no market price are told so — the crowd never gets a fake
+- Questions with no market price are told so, the crowd never gets a fake
   anchor
 - The dashboard reads the exact same ledger the gates read
 
@@ -83,7 +83,7 @@ it's spent, no surprises.
 `.github/workflows/manyworldz.yml` runs the live loop 4x/day on GitHub
 Actions and commits the scorecard back. Setup: push to GitHub, add
 `ANTHROPIC_API_KEY` as a repository secret (Settings → Secrets → Actions).
-Done — laptop can stay off.
+Done. Laptop can stay off.
 
 ## Files
 
@@ -95,7 +95,7 @@ engine/           llm client (cached, budget-capped), personas, swarm,
 adapters/         kalshi market cards (+ a dormant NBA backtest lab)
 ledger.py         the scorecard: picks, CLV, settlement
 report.py         ledger -> web/data.json + REPORT.md
-web/index.html    the dashboard (static, no server) — branching-worlds map,
+web/index.html    the dashboard (static, no server): branching-worlds map,
                   browser ask-the-crowd on your own key, receipts
 GATES.md          pre-registered pass/fail rules
 docs/             architecture + a plain-English owner's tour
@@ -104,11 +104,11 @@ docs/             architecture + a plain-English owner's tour
 ## Requirements
 
 - Python 3.11+
-- An Anthropic API key (only for asking/voting — market scanning and the
+- An Anthropic API key (only for asking/voting; market scanning and the
   dashboard need none)
 - `pip install -r requirements.txt` (anthropic, requests, pandas, pytest)
 
-79 tests, all offline — `venv/bin/pytest` runs without a key or network.
+79 tests, all offline: `venv/bin/pytest` runs without a key or network.
 
 ## License
 
