@@ -108,6 +108,24 @@
   .empty { color: var(--dim); text-align: center; padding: 46px 0; }
 
   footer { margin-top: 44px; color: var(--dim); font-size: 12px; line-height: 1.8; }
+
+  /* ask the worlds */
+  .ask-form { background: var(--panel); border: 1px solid var(--line);
+              border-radius: 10px; padding: 20px; margin-bottom: 22px; }
+  .ask-form label { display: block; color: var(--dim); font-size: 11px;
+                    letter-spacing: 1px; margin: 14px 0 5px; font-family: "SF Mono", Menlo, monospace; }
+  .ask-form label:first-child { margin-top: 0; }
+  .ask-form input, .ask-form select {
+    width: 100%; background: var(--space); border: 1px solid var(--line);
+    border-radius: 6px; color: var(--star); padding: 10px 12px; font-size: 14px; }
+  .ask-form input:focus { outline: none; border-color: var(--gold); }
+  .ask-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ask-go { margin-top: 18px; width: 100%; background: var(--gold); border: none;
+            color: var(--space); font: 700 14px "SF Mono", Menlo, monospace;
+            letter-spacing: 2px; padding: 13px; border-radius: 6px; cursor: pointer; }
+  .ask-go:disabled { opacity: .45; cursor: wait; }
+  .keynote { color: var(--dim); font-size: 12px; margin-top: 10px; line-height: 1.6; }
+  .ask-error { color: var(--crimson); font-size: 13px; margin-top: 12px; }
 </style>
 </head>
 <body>
@@ -140,10 +158,41 @@
 
   <nav id="worlds">
     <button id="tab-futures" class="on" onclick="show('futures')">THE WORLDS</button>
+    <button id="tab-ask" onclick="show('ask')">ASK THE WORLDS</button>
     <button id="tab-receipts" onclick="show('receipts')">THE RECEIPTS</button>
   </nav>
 
   <section id="futures"></section>
+  <section id="ask" style="display:none">
+    <div class="ask-form">
+      <label>YOUR QUESTION (YES / NO, ABOUT THE FUTURE)</label>
+      <input id="ask-q" placeholder="Will the Fed cut rates in September?" maxlength="200">
+      <label>WHAT-IF — OPTIONAL: A FACT TO FORCE TRUE IN A SECOND RUN</label>
+      <input id="ask-w" placeholder="the chair signals a cut in the press conference" maxlength="200">
+      <div class="ask-row">
+        <div>
+          <label>CROWD BRAIN</label>
+          <select id="ask-m">
+            <option value="claude-haiku-4-5">haiku — ~1c per ask</option>
+            <option value="claude-sonnet-5">sonnet — smarter, ~3x</option>
+            <option value="claude-opus-4-8">opus — strong, ~5x</option>
+            <option value="claude-fable-5">fable — frontier, ~10x</option>
+          </select>
+        </div>
+        <div>
+          <label>YOUR ANTHROPIC API KEY</label>
+          <input id="ask-k" type="password" placeholder="sk-ant-..." autocomplete="off">
+        </div>
+      </div>
+      <button class="ask-go" id="ask-go" onclick="askWorlds()">SPLIT THE WORLDS</button>
+      <p class="keynote">Your key travels straight from this browser to Anthropic and
+        nowhere else — this page has no server, stores nothing, and never sees it
+        again after the request. Six AI characters vote; with a what-if, they vote
+        twice. Total cost on haiku: about a cent.</p>
+      <div id="ask-error" class="ask-error"></div>
+    </div>
+    <div id="ask-out"></div>
+  </section>
   <section id="receipts" style="display:none"></section>
 
   <footer>
@@ -171,7 +220,7 @@
 
 /* ---- tabs -------------------------------------------------------- */
 function show(which) {
-  for (const name of ['futures', 'receipts']) {
+  for (const name of ['futures', 'ask', 'receipts']) {
     document.getElementById(name).style.display = name === which ? '' : 'none';
     document.getElementById('tab-' + name).classList.toggle('on', name === which);
   }
@@ -330,6 +379,129 @@ const SAMPLE = {
       ] },
   ]},
 };
+
+/* ---- ask the worlds: the crowd, running in YOUR browser ------------ */
+// Mirrors the Python engine's personas and prompts. The visitor's key goes
+// directly to Anthropic (that's what the special header below permits) —
+// no server, no storage, no middleman.
+const CAST = [
+  ['Ava', 'stats nerd', 'trusts base rates and numbers, distrusts stories'],
+  ['Ben', 'contrarian', 'hunts for reasons the crowd is wrong'],
+  ['Cleo', 'sharp-money tracker', 'cares only where informed money is moving'],
+  ['Dev', 'oddsmaker', 'tries to set a fair line others would bet into'],
+  ['Ember', 'narrative fan', 'feels momentum and hype, follows the story'],
+  ['Finn', 'insider brain', 'obsesses over who actually decides the outcome'],
+];
+
+function votePrompt(name, archetype, style, question) {
+  return `You are ${name}, a ${archetype} — ${style}.\n\n` +
+    `The question: "${question}"\n` +
+    `There is no market price for this question — you have nothing to anchor ` +
+    `on except your own reasoning.\n\n` +
+    `Start from the base rate: how often do things like this usually happen, ` +
+    `historically? Anchor there first, THEN adjust for what you know.\n` +
+    `Think like your character and give YOUR OWN probability that this ` +
+    `resolves YES.\n` +
+    `Reply with ONLY JSON like {"probability": 0.42, "reason": "one short sentence"}`;
+}
+
+async function callClaude(key, model, prompt) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({ model, max_tokens: 300,
+      messages: [{ role: 'user', content: prompt }] }),
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API error ${resp.status}`);
+  }
+  const msg = await resp.json();
+  if (msg.stop_reason === 'refusal') return '';
+  return (msg.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+}
+
+function parseVote(text) {
+  const a = text.indexOf('{'), b = text.lastIndexOf('}');
+  if (a === -1 || b <= a) return null;
+  try {
+    const v = JSON.parse(text.slice(a, b + 1));
+    let p = parseFloat(v.probability);
+    if (!isFinite(p)) return null;
+    p = Math.min(Math.max(p, 0.01), 0.99);
+    return { probability: p, reason: String(v.reason || '').slice(0, 200) };
+  } catch { return null; }
+}
+
+function foldVotes(votes) {
+  const ps = votes.map(v => v.probability).sort((a, b) => a - b);
+  const use = ps.length >= 5 ? ps.slice(1, -1) : ps;   // trim one high + one low
+  const mean = use.reduce((s, x) => s + x, 0) / use.length;
+  const m = ps.reduce((s, x) => s + x, 0) / ps.length;
+  const spread = Math.sqrt(ps.reduce((s, x) => s + (x - m) ** 2, 0) / ps.length);
+  return { probability: Math.round(mean * 1e4) / 1e4, spread: Math.round(spread * 1e4) / 1e4 };
+}
+
+async function runBrowserCrowd(key, model, question) {
+  const answers = await Promise.allSettled(CAST.map(([n, a, s]) =>
+    callClaude(key, model, votePrompt(n, a, s, question))));
+  const votes = [], skipped = [];
+  answers.forEach((r, i) => {
+    const vote = r.status === 'fulfilled' ? parseVote(r.value) : null;
+    if (vote) votes.push({ ...vote, agent: CAST[i][0], archetype: CAST[i][1] });
+    else skipped.push(CAST[i][0]);
+  });
+  if (!votes.length) throw new Error('The whole crowd came back unusable — try again.');
+  return { question, ...foldVotes(votes), votes, futures: [], skipped: skipped.length, mid: null };
+}
+
+function askCard(title, m) {
+  return `<div class="market">
+    <div class="q">${esc(title)}</div>
+    <div class="meta mono">${m.votes.length} voices · disagreement ${m.spread}${m.skipped ? ` · ${m.skipped} unusable` : ''} · no market — the crowd is on its own</div>
+    <div class="readout"><span class="bigp">${Math.round(m.probability * 100)}%</span>
+      <span class="vs mono">the crowd's chance of YES</span></div>
+    ${tree(m)}
+  </div>`;
+}
+
+async function askWorlds() {
+  const q = document.getElementById('ask-q').value.trim();
+  const w = document.getElementById('ask-w').value.trim();
+  const key = document.getElementById('ask-k').value.trim();
+  const model = document.getElementById('ask-m').value;
+  const errEl = document.getElementById('ask-error');
+  const out = document.getElementById('ask-out');
+  errEl.textContent = '';
+  if (!q) { errEl.textContent = 'Type a yes/no question first.'; return; }
+  if (!key) { errEl.textContent = 'Paste your Anthropic API key (console.anthropic.com) — it never leaves your browser except to Anthropic.'; return; }
+
+  const btn = document.getElementById('ask-go');
+  btn.disabled = true; btn.textContent = 'SPLITTING THE WORLDS…';
+  out.innerHTML = '';
+  try {
+    const before = await runBrowserCrowd(key, model, q);
+    out.innerHTML = askCard(q, before);
+    if (w) {
+      btn.textContent = 'RUNNING THE WHAT-IF…';
+      const twisted = `WHAT-IF (treat as definitely true: ${w}) — ${q}`;
+      const after = await runBrowserCrowd(key, model, twisted);
+      const shift = Math.round((after.probability - before.probability) * 100);
+      out.innerHTML += askCard(`WHAT-IF: ${w}`, after) +
+        `<div class="market"><div class="readout"><span class="bigp">${shift >= 0 ? '+' : ''}${shift}%</span>
+         <span class="vs mono">how much that fact moves the odds</span></div></div>`;
+    }
+  } catch (e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'SPLIT THE WORLDS';
+  }
+}
 
 fetch('data.json')
   .then(r => { if (!r.ok) throw 0; return r.json(); })
