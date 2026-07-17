@@ -1,8 +1,8 @@
-# Agamotto M0 — Leak & Data Pilot Implementation Plan
+# Agamotto M0: Leak & Data Pilot Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Prove (or kill) Agamotto's two foundations before any swarm code exists: (1) measure how badly LLMs re-identify "anonymized" NBA games, and (2) build the post-cutoff scoring table of games joined to verified market closing prices — then issue the pre-registered GO/NO-GO.
+**Goal:** Prove (or kill) Agamotto's two foundations before any swarm code exists: (1) measure how badly LLMs re-identify "anonymized" NBA games, and (2) build the post-cutoff scoring table of games joined to verified market closing prices, then issue the pre-registered GO/NO-GO.
 
 **Architecture:** Pure-Python pipeline, no framework. `adapters/nba.py` pulls and caches game results; `masker.py` anonymizes stat-sheets and runs the re-ID probe against Claude models; `markets/closes.py` loads the MGM Kaggle closing-odds CSV (and optionally Kalshi candlesticks); `jointable.py` joins results×closes into the scoring table with a quarantine file; `verdict_m0.py` applies the pre-registered gates. Everything cached to disk; tests run on fixtures with zero network and zero API keys.
 
@@ -10,15 +10,15 @@
 
 ## Global Constraints
 
-- Spec: `docs/superpowers/specs/2026-07-14-agamotto-design.md` — M0 section governs.
-- **No swarm code in M0** (no personas, no ensemble, no voting) — spec's explicit rule.
-- Comments/docstrings/output in plain, simple English — high-school level, no jargon (owner rule).
+- Spec: `docs/superpowers/specs/2026-07-14-agamotto-design.md` (M0 section governs).
+- **No swarm code in M0** (no personas, no ensemble, no voting): spec's explicit rule.
+- Comments/docstrings/output in plain, simple English: high-school level, no jargon (owner rule).
 - Commits: never add AI co-author trailers. Commit as the repo's existing identity (`akadigari` / `arkadigari@gmail.com`).
-- All dates are plain `"YYYY-MM-DD"` strings end-to-end — never pandas datetime columns (dodges pandas-3 ns/µs pitfalls that bit MechLab).
+- All dates are plain `"YYYY-MM-DD"` strings end-to-end: never pandas datetime columns (dodges pandas-3 ns/µs pitfalls that bit MechLab).
 - Determinism: every random choice uses `SEED = 14000605` from `config.py`.
 - API spend: the re-ID probe is the ONLY step that calls a paid API in M0; hard-capped at `PROBE_BUDGET_USD = 5.00`.
 - Public framing: README text never mentions MiroFish and never frames the project as a betting product (owner rule; spec "Public framing").
-- Data files live in `data/` (gitignored). Tests never touch `data/` — fixtures only.
+- Data files live in `data/` (gitignored). Tests never touch `data/`: fixtures only.
 - Pre-registered gate values (copied from spec, locked): re-ID demotion at **≥10%**, GO needs **≥350** post-cutoff games with verified closes and **≤1%** errors in a 50-row hand audit.
 
 ---
@@ -107,10 +107,10 @@ GO_MIN_GAMES = 350          # post-cutoff games with a verified close
 GO_MAX_JOIN_ERROR = 0.01    # allowed error rate in the 50-row hand audit
 ```
 
-- [ ] **Step 4: Write `GATES.md`** (pre-registration — this exists BEFORE any result)
+- [ ] **Step 4: Write `GATES.md`** (pre-registration: this exists BEFORE any result)
 
 ```markdown
-# Agamotto — the gates (locked before any results exist)
+# Agamotto: the gates (locked before any results exist)
 
 Same idea as kayfabe/MechLab/TrendLab: we write the pass/fail rules first,
 so we can't fool ourselves later. Verdicts get published either way.
@@ -148,17 +148,17 @@ honest "no edge," published as a portfolio result.
 A crowd of AI forecasters that simulates futures. Each agent imagines how
 an event could play out; the crowd's futures become a probability; a
 what-if mode re-runs every future with a fact forced true. The crowd
-learns from every settled event — agents that keep being wrong lose their
+learns from every settled event. Agents that keep being wrong lose their
 voice, get benched, and can be retired.
 
 Everything is measured against real-world outcomes and market closing
 prices, with pass/fail gates written down before any results exist
 (see GATES.md). Paper-only research. Verdicts get published either way.
 
-**Status: Milestone 0 — data + leak audit. No engine yet.**
+**Status: Milestone 0, data + leak audit. No engine yet.**
 ```
 
-- [ ] **Step 6: Write the failing test** — `tests/test_config.py`
+- [ ] **Step 6: Write the failing test**: `tests/test_config.py`
 
 ```python
 import sys
@@ -183,7 +183,7 @@ def test_cutoff_date_is_a_plain_string():
 - [ ] **Step 7: Run tests**
 
 Run: `venv/bin/pytest tests/test_config.py -v`
-Expected: 2 PASS (config.py already written in Step 3 — this test locks the numbers against drift).
+Expected: 2 PASS (config.py already written in Step 3, this test locks the numbers against drift).
 
 - [ ] **Step 8: Commit**
 
@@ -203,14 +203,14 @@ git commit -m "m0: scaffold, pre-registered gates, config"
 **Interfaces:**
 - Consumes: `config.CACHE`, `config.SEED`
 - Produces:
-  `parse_gamefinder_rows(rows: list[dict]) -> list[dict]` — returns game dicts
+  `parse_gamefinder_rows(rows: list[dict]) -> list[dict]`: returns game dicts
   sorted by date, each: `{"game_id": str, "date": "YYYY-MM-DD", "home": str,
   "away": str, "home_pts": int, "away_pts": int, "home_won": bool}`
   (home/away are 3-letter abbreviations like "BOS").
-  `fetch_season_results(season: str) -> list[dict]` — same shape, cached to
+  `fetch_season_results(season: str) -> list[dict]`: same shape, cached to
   `data/cache/results_{season}.json`; `season` looks like `"2024-25"`.
 
-- [ ] **Step 1: Build the fixture** — `tests/fixtures/gamefinder_rows.json`
+- [ ] **Step 1: Build the fixture**: `tests/fixtures/gamefinder_rows.json`
 
 nba_api's LeagueGameFinder returns one row per team per game; the home team's
 `MATCHUP` says `"BOS vs. LAL"`, the away team's says `"LAL @ BOS"`. Fixture with
@@ -227,7 +227,7 @@ one complete game (two rows) plus one orphan row (game missing its pair):
 ]
 ```
 
-- [ ] **Step 2: Write the failing test** — `tests/test_nba_adapter.py`
+- [ ] **Step 2: Write the failing test**: `tests/test_nba_adapter.py`
 
 ```python
 import json
@@ -269,7 +269,7 @@ def test_output_sorted_by_date():
 - [ ] **Step 3: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_nba_adapter.py -v`
-Expected: FAIL — `ModuleNotFoundError: adapters`
+Expected: FAIL (`ModuleNotFoundError: adapters`)
 
 - [ ] **Step 4: Write `adapters/nba.py`**
 
@@ -294,7 +294,7 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
     """Combine per-team rows into one record per game.
 
     A game only counts when we see BOTH of its rows (home and away).
-    Orphans are dropped — we never guess a missing side.
+    Orphans are dropped: we never guess a missing side.
     """
     by_id: dict[str, list[dict]] = {}
     for r in rows:
@@ -324,7 +324,7 @@ def parse_gamefinder_rows(rows: list[dict]) -> list[dict]:
 def fetch_season_results(season: str) -> list[dict]:
     """Fetch one regular season's results, with a disk cache.
 
-    season looks like "2024-25". Cached forever — settled games don't change.
+    season looks like "2024-25". Cached forever: settled games don't change.
     """
     config.CACHE.mkdir(parents=True, exist_ok=True)
     cache_file = config.CACHE / f"results_{season}.json"
@@ -374,16 +374,16 @@ git commit -m "m0: nba results adapter with offline-tested parser"
 **Interfaces:**
 - Consumes: game dicts from Task 2
 - Produces:
-  `team_history(games: list[dict], team: str, before_date: str) -> list[dict]`
-  — that team's games strictly before the date, oldest first.
-  `build_statsheet(games: list[dict], idx: int) -> dict` — for game `games[idx]`:
+  `team_history(games: list[dict], team: str, before_date: str) -> list[dict]`:
+  that team's games strictly before the date, oldest first.
+  `build_statsheet(games: list[dict], idx: int) -> dict`: for game `games[idx]`:
   `{"date": str, "home": str, "away": str,
     "home_form": {"last10_wins": int, "avg_pts_for": float, "avg_pts_against": float},
     "away_form": {...same keys...},
     "home_rest_days": int, "away_rest_days": int}`
   (rest days capped at 9 so season openers don't leak "this is October game 1").
 
-- [ ] **Step 1: Write the failing test** — `tests/test_statsheet.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_statsheet.py`
 
 ```python
 import sys
@@ -422,7 +422,7 @@ def test_statsheet_form_and_rest():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_statsheet.py -v`
-Expected: FAIL — `ImportError: cannot import name 'build_statsheet'`
+Expected: FAIL (`ImportError: cannot import name 'build_statsheet'`)
 
 - [ ] **Step 3: Append to `adapters/nba.py`**
 
@@ -459,7 +459,7 @@ def _form(history: list[dict], team: str) -> dict:
 
 
 def build_statsheet(games: list[dict], idx: int) -> dict:
-    """Everything an agent may know about a game — from BEFORE tipoff only."""
+    """Everything an agent may know about a game, from BEFORE tipoff only."""
     game = games[idx]
     sheet = {"date": game["date"], "home": game["home"], "away": game["away"]}
     for side in ("home", "away"):
@@ -496,14 +496,14 @@ git commit -m "m0: stat-sheet builder (backward-looking form + capped rest)"
 **Interfaces:**
 - Consumes: stat-sheet dicts from Task 3
 - Produces:
-  `NBA_TEAMS: list[tuple[str, str, str]]` — 30 rows of `(abbrev, city, nickname)`.
-  `BANNED_TOKENS: list[str]` — every abbrev, city word, nickname, plus common
+  `NBA_TEAMS: list[tuple[str, str, str]]`: 30 rows of `(abbrev, city, nickname)`.
+  `BANNED_TOKENS: list[str]`: every abbrev, city word, nickname, plus common
   shorthands ("Sixers", "Cavs", "Mavs", "Wolves", "Blazers", "Lakeshow").
-  `month_label(date: str) -> str` — `"2025-01-03"` → `"mid-season (January)"`.
-  `mask_statsheet(sheet: dict) -> str` — the anonymized text block; the ONLY
+  `month_label(date: str) -> str`: `"2025-01-03"` → `"mid-season (January)"`.
+  `mask_statsheet(sheet: dict) -> str`: the anonymized text block; the ONLY
   identity words are "Team A" (home) and "Team B" (away).
 
-- [ ] **Step 1: Write the failing test** — `tests/test_masker.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_masker.py`
 
 ```python
 import re
@@ -544,7 +544,7 @@ def test_teams_become_a_and_b():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_masker.py -v`
-Expected: FAIL — `ModuleNotFoundError: masker`
+Expected: FAIL (`ModuleNotFoundError: masker`)
 
 - [ ] **Step 3: Write `masker.py`** (mask half; probe added in Task 5)
 
@@ -623,7 +623,7 @@ Expected: 3 PASS
 
 ```bash
 git add masker.py tests/test_masker.py
-git commit -m "m0: masker — Team A/B stat-sheets, banned-token tested"
+git commit -m "m0: masker, Team A/B stat-sheets, banned-token tested"
 ```
 
 ---
@@ -637,16 +637,16 @@ git commit -m "m0: masker — Team A/B stat-sheets, banned-token tested"
 **Interfaces:**
 - Consumes: `mask_statsheet`, `NBA_TEAMS`, stat-sheets (Task 3), `config.PROBE_*`
 - Produces:
-  `score_probe_answer(answer_text: str, truth: tuple[str, str]) -> bool` —
+  `score_probe_answer(answer_text: str, truth: tuple[str, str]) -> bool`:
   True only if the model named BOTH teams correctly (nickname match counts;
   truth is `(home_abbrev, away_abbrev)`).
-  `run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict` —
+  `run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict`:
   returns `{"per_model": {model: rate}, "n": n}`, writes
   `data/probe_results.json` and `PROBE.md`; caches each call to
   `data/cache/probe/{game_id}_{model}.json`; stops if estimated spend
   exceeds `config.PROBE_BUDGET_USD`.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_probe.py` (no API calls)
+- [ ] **Step 1: Write the failing test**: `tests/test_probe.py` (no API calls)
 
 ```python
 import sys
@@ -673,7 +673,7 @@ def test_garbage_answer_scores_false_not_crash():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_probe.py -v`
-Expected: FAIL — `ImportError: cannot import name 'score_probe_answer'`
+Expected: FAIL (`ImportError: cannot import name 'score_probe_answer'`)
 
 - [ ] **Step 3: Append to `masker.py`**
 
@@ -746,7 +746,7 @@ def run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict:
                 answer = _json.loads(cache_file.read_text())["answer"]
             else:
                 if spent_calls >= max_calls:
-                    raise RuntimeError("probe budget cap hit — raise PROBE_BUDGET_USD to continue")
+                    raise RuntimeError("probe budget cap hit: raise PROBE_BUDGET_USD to continue")
                 masked = mask_statsheet(build_statsheet(games, i))
                 msg = client.messages.create(
                     model=model, max_tokens=100,
@@ -762,7 +762,7 @@ def run_reid_probe(games: list[dict], n: int, models: list[str]) -> dict:
     result = {"per_model": per_model, "n": n}
     (_config.DATA / "probe_results.json").write_text(_json.dumps(result, indent=1))
     worst = max(per_model.values())
-    lines = ["# Re-identification probe — published either way", "",
+    lines = ["# Re-identification probe: published either way", "",
              f"Masked games shown: {n} per model", ""]
     for m, r in per_model.items():
         lines.append(f"- `{m}`: named both teams on **{r:.1%}** of games")
@@ -792,7 +792,7 @@ Expected: 6 PASS (probe scoring + masker still green)
 
 ```bash
 git add masker.py tests/test_probe.py
-git commit -m "m0: re-ID probe — cached, budget-capped, offline-tested scoring"
+git commit -m "m0: re-ID probe, cached, budget-capped, offline-tested scoring"
 ```
 
 ---
@@ -807,17 +807,17 @@ git commit -m "m0: re-ID probe — cached, budget-capped, offline-tested scoring
 - Consumes: a CSV manually downloaded to `data/nba_closes.csv` (execution task
   covers finding it; loader validates rather than assumes)
 - Produces:
-  `american_to_prob(ml: int) -> float` — raw implied probability.
-  `devig(p_home_raw: float, p_away_raw: float) -> float` — home prob, vig removed.
-  `COLUMN_MAP: dict[str, str]` — our name → expected CSV column name (one dict
+  `american_to_prob(ml: int) -> float`: raw implied probability.
+  `devig(p_home_raw: float, p_away_raw: float) -> float`: home prob, vig removed.
+  `COLUMN_MAP: dict[str, str]`: our name → expected CSV column name (one dict
   to edit if the real file differs).
-  `validate_schema(df) -> None` — raises with the full found-column list if
+  `validate_schema(df) -> None`: raises with the full found-column list if
   any mapped column is missing.
-  `load_kaggle_closes(csv_path: Path) -> pd.DataFrame` — columns exactly:
+  `load_kaggle_closes(csv_path: Path) -> pd.DataFrame`: columns exactly:
   `date` (str YYYY-MM-DD), `home` (abbrev), `away` (abbrev),
   `home_close_prob` (float 0-1), `provenance` (str, `"kaggle"`).
 
-- [ ] **Step 1: Build the fixture** — `tests/fixtures/closes_sample.csv`
+- [ ] **Step 1: Build the fixture**: `tests/fixtures/closes_sample.csv`
 
 ```csv
 game_date,home_team,away_team,home_ml_close,away_ml_close
@@ -826,7 +826,7 @@ game_date,home_team,away_team,home_ml_close,away_ml_close
 2025-03-07,Utah Jazz,,-300,+240
 ```
 
-- [ ] **Step 2: Write the failing test** — `tests/test_closes.py`
+- [ ] **Step 2: Write the failing test**: `tests/test_closes.py`
 
 ```python
 import sys
@@ -862,7 +862,7 @@ def test_loader_normalizes_names_and_drops_bad_rows():
 - [ ] **Step 3: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_closes.py -v`
-Expected: FAIL — `ModuleNotFoundError: markets`
+Expected: FAIL (`ModuleNotFoundError: markets`)
 
 - [ ] **Step 4: Write `markets/closes.py`**
 
@@ -870,7 +870,7 @@ Expected: FAIL — `ModuleNotFoundError: markets`
 """Load verified market closing prices for NBA games.
 
 The Kaggle CSV is downloaded by hand into data/ (see the plan's execution
-task). We validate its columns loudly instead of assuming — if the real
+task). We validate its columns loudly instead of assuming: if the real
 file names differ, edit COLUMN_MAP and nothing else.
 """
 from __future__ import annotations
@@ -950,7 +950,7 @@ Expected: 3 PASS
 
 ```bash
 git add markets/ tests/test_closes.py tests/fixtures/closes_sample.csv
-git commit -m "m0: kaggle closes loader — devig, name normalization, loud schema check"
+git commit -m "m0: kaggle closes loader, devig, name normalization, loud schema check"
 ```
 
 ---
@@ -966,16 +966,16 @@ git commit -m "m0: kaggle closes loader — devig, name normalization, loud sche
   `config.MODEL_CUTOFF_DATE`, `config.SEED`
 - Produces:
   `build_table(games: list[dict], closes: pd.DataFrame, cutoff: str)
-  -> tuple[pd.DataFrame, pd.DataFrame]` — `(table, quarantine)`.
+  -> tuple[pd.DataFrame, pd.DataFrame]`: `(table, quarantine)`.
   `table` columns: `date, home, away, home_won, home_close_prob, provenance`
-  — one row per post-cutoff game that matched exactly one close.
-  `quarantine` columns: `date, home, away, reason` — post-cutoff games with
+  (one row per post-cutoff game that matched exactly one close).
+  `quarantine` columns: `date, home, away, reason`: post-cutoff games with
   no close (`"no_close"`) or more than one (`"duplicate_close"`).
-  `write_outputs(table, quarantine) -> None` — writes
+  `write_outputs(table, quarantine) -> None`: writes
   `data/scoring_table.csv`, `data/quarantine.csv`, and
   `data/audit_sample.csv` (50 seeded random rows of the table).
 
-- [ ] **Step 1: Write the failing test** — `tests/test_jointable.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_jointable.py`
 
 ```python
 import sys
@@ -1025,12 +1025,12 @@ def test_pre_cutoff_games_are_excluded_not_quarantined():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_jointable.py -v`
-Expected: FAIL — `ModuleNotFoundError: jointable`
+Expected: FAIL (`ModuleNotFoundError: jointable`)
 
 - [ ] **Step 3: Write `jointable.py`**
 
 ```python
-"""Join game results to verified market closes — the table M0 stands on.
+"""Join game results to verified market closes: the table M0 stands on.
 
 Anything odd goes to a quarantine file with a reason. We never guess and
 never silently drop a post-cutoff game.
@@ -1117,10 +1117,10 @@ git commit -m "m0: results-x-closes join with quarantine and seeded audit sample
   `data/probe_results.json`, `AUDIT.md` (human-written count)
 - Produces:
   `evaluate(n_games: int, audit_errors: int, audit_n: int,
-  worst_reid_rate: float) -> dict` — keys: `go: bool`, `demote_precutoff: bool`,
+  worst_reid_rate: float) -> dict`: keys: `go: bool`, `demote_precutoff: bool`,
   `reasons: list[str]`. CLI writes `M0_VERDICT.md`.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_verdict.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_verdict.py`
 
 ```python
 import sys
@@ -1133,7 +1133,7 @@ from verdict_m0 import evaluate
 def test_clean_pass_is_go():
     v = evaluate(n_games=400, audit_errors=0, audit_n=50, worst_reid_rate=0.31)
     assert v["go"] is True
-    assert v["demote_precutoff"] is True  # 31% leak still demotes — separate axis
+    assert v["demote_precutoff"] is True  # 31% leak still demotes (separate axis)
 
 
 def test_too_few_games_is_no_go():
@@ -1155,13 +1155,13 @@ def test_low_leak_does_not_demote():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_verdict.py -v`
-Expected: FAIL — `ModuleNotFoundError: verdict_m0`
+Expected: FAIL (`ModuleNotFoundError: verdict_m0`)
 
 - [ ] **Step 3: Write `verdict_m0.py`**
 
 ```python
 """Apply the pre-registered M0 gates. The rules live in GATES.md and
-config.py — this file only checks them, it never bends them.
+config.py: this file only checks them, it never bends them.
 """
 from __future__ import annotations
 
@@ -1177,23 +1177,23 @@ def evaluate(n_games: int, audit_errors: int, audit_n: int,
              worst_reid_rate: float) -> dict:
     reasons = []
     if n_games >= config.GO_MIN_GAMES:
-        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}) — pass")
+        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}), pass")
         games_ok = True
     else:
-        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}) — FAIL")
+        reasons.append(f"games with verified closes: {n_games} (need {config.GO_MIN_GAMES}), FAIL")
         games_ok = False
 
     err_rate = audit_errors / max(audit_n, 1)
     if err_rate <= config.GO_MAX_JOIN_ERROR:
-        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}) — pass")
+        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}), pass")
         audit_ok = True
     else:
-        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}) — FAIL")
+        reasons.append(f"hand-audit errors: {audit_errors}/{audit_n} ({err_rate:.1%}), FAIL")
         audit_ok = False
 
     demote = worst_reid_rate >= config.REID_DEMOTION_RATE
     reasons.append(
-        f"worst re-ID rate: {worst_reid_rate:.1%} — "
+        f"worst re-ID rate: {worst_reid_rate:.1%}, "
         + ("pre-cutoff backtest DEMOTED to calibration-only" if demote
            else "mask holds; pre-cutoff backtest stays scoreable"))
 
@@ -1214,7 +1214,7 @@ if __name__ == "__main__":
     v = evaluate(len(table), audit_errors, audit_n,
                  max(probe["per_model"].values()))
     lines = ["# M0 verdict", "",
-             f"**{'GO' if v['go'] else 'NO-GO'}** — " +
+             f"**{'GO' if v['go'] else 'NO-GO'}**: " +
              ("engine work may start." if v["go"]
               else "fix the data before any engine code."), ""]
     lines += [f"- {r}" for r in v["reasons"]]
@@ -1241,7 +1241,7 @@ git commit -m "m0: verdict engine applying the pre-registered gates"
 
 ---
 
-### Task 9: Execute the pilot (real data, real probe — human steps marked)
+### Task 9: Execute the pilot (real data, real probe: human steps marked)
 
 **Files:**
 - Create (by running, not writing): `data/cache/results_*.json`,
@@ -1250,60 +1250,60 @@ git commit -m "m0: verdict engine applying the pre-registered gates"
 
 **Interfaces:**
 - Consumes: everything above.
-- Produces: the M0 verdict — the input to planning M1.
+- Produces: the M0 verdict, the input to planning M1.
 
-- [ ] **Step 1: Confirm the model cutoff date** — open
+- [ ] **Step 1: Confirm the model cutoff date**: open
   https://docs.anthropic.com/en/docs/about-claude/models and check
   claude-haiku-4-5's "training data cutoff". If it is NOT February 2025,
   update `MODEL_CUTOFF_DATE` in `config.py` to (cutoff month + 1) and commit
   before proceeding.
 
-- [ ] **Step 2: Fetch results** —
+- [ ] **Step 2: Fetch results**:
   `venv/bin/python adapters/nba.py 2024-25` then
   `venv/bin/python adapters/nba.py 2025-26`.
   Expected: `2024-25: ~1230 games cached`, `2025-26: ~900+ games cached`.
 
-- [ ] **Step 3 (HUMAN): Download the closes CSV** — search Kaggle for the NBA
+- [ ] **Step 3 (HUMAN): Download the closes CSV**: search Kaggle for the NBA
   betting-odds dataset covering 2021-22 through the 2026 All-Star break with
   closing moneylines (the scout board's "MGM Kaggle dataset";
   wiki/resources/scout-trading-multiagent-simulation-for-prediction-and-forecasting.md
   has the trail). Download the CSV to `data/nba_closes.csv`. If its column
-  names differ from `COLUMN_MAP` in `markets/closes.py`, edit that one dict —
+  names differ from `COLUMN_MAP` in `markets/closes.py`, edit that one dict:
   `validate_schema` will print exactly what it found.
 
-- [ ] **Step 4: Build the table** — `venv/bin/python jointable.py`.
+- [ ] **Step 4: Build the table**: `venv/bin/python jointable.py`.
   Expected: `scoring table: N games | quarantine: M` with N well over 350.
-  If N < 350: check `data/quarantine.csv` reasons before anything else —
-  name normalization gaps are the usual suspect.
+  If N < 350: check `data/quarantine.csv` reasons before anything else.
+  Name normalization gaps are the usual suspect.
 
-- [ ] **Step 5 (HUMAN): Hand-audit 50 rows** — open `data/audit_sample.csv`;
+- [ ] **Step 5 (HUMAN): Hand-audit 50 rows**: open `data/audit_sample.csv`;
   for each row check the winner and the close against an independent source
   (Basketball-Reference box score + the raw CSV row). Write `AUDIT.md`:
 
 ```markdown
-# M0 hand audit — 2026-MM-DD
+# M0 hand audit: 2026-MM-DD
 Checked data/audit_sample.csv (seeded sample, SEED=14000605) against
 Basketball-Reference and the raw closes CSV.
 errors: 0 of 50
 notes: (anything odd goes here)
 ```
 
-- [ ] **Step 6: Run the probe** (~$1-2 of API spend, capped at $5) —
+- [ ] **Step 6: Run the probe** (~$1-2 of API spend, capped at $5):
   `export ANTHROPIC_API_KEY=... && venv/bin/python masker.py --probe`.
   Expected: `data/probe_results.json` + `PROBE.md` with a rate per model.
-  The number is the number — 0% or 60%, it gets published.
+  The number is the number: 0% or 60%, it gets published.
 
-- [ ] **Step 7: The verdict** — `venv/bin/python verdict_m0.py`.
+- [ ] **Step 7: The verdict**: `venv/bin/python verdict_m0.py`.
   Expected: `M0_VERDICT.md` printed and written: GO/NO-GO + demotion status.
 
 - [ ] **Step 8: Commit the paper trail**
 
 ```bash
 git add PROBE.md AUDIT.md M0_VERDICT.md
-git commit -m "m0: pilot executed — probe rate, audit, and verdict on the record"
+git commit -m "m0: pilot executed, probe rate, audit, and verdict on the record"
 ```
 
-- [ ] **Step 9: Report** — read `M0_VERDICT.md` back to the owner with the three
+- [ ] **Step 9: Report**: read `M0_VERDICT.md` back to the owner with the three
   headline numbers (games, audit errors, worst re-ID rate) and what they mean
   for M1 planning. If NO-GO: the failing gate's fix is the next plan, not the
   engine.
@@ -1313,7 +1313,7 @@ git commit -m "m0: pilot executed — probe rate, audit, and verdict on the reco
 ## Self-review notes (done at write time)
 
 - **Spec coverage:** M0 section fully covered (masker ✓ probe ✓ closes table ✓
-  join+audit ✓ GO/NO-GO ✓). Engine/dashboard/money-arm intentionally out —
+  join+audit ✓ GO/NO-GO ✓). Engine/dashboard/money-arm intentionally out:
   they are M1+/M-viz/M-money plans, written after this verdict.
 - **Placeholders:** none; every step has runnable content. The one unknown
   (exact Kaggle CSV columns) is handled by a loud `validate_schema` + a single

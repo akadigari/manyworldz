@@ -1,29 +1,29 @@
-# Agamotto M1 — The Engine, Live — Implementation Plan
+# Agamotto M1: The Engine, Live (Implementation Plan)
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** The Dr Strange machine, running live: a crowd of AI agents that votes on (or simulates futures for) real open Kalshi non-sports markets, answers what-if injections, and logs paper picks with CLV grading — tonight, not in October.
+**Goal:** The Dr Strange machine, running live: a crowd of AI agents that votes on (or simulates futures for) real open Kalshi non-sports markets, answers what-if injections, and logs paper picks with CLV grading: tonight, not in October.
 
-**Architecture:** Pure Python on top of the M0 codebase. `engine/llm.py` is the one place that talks to the Anthropic API (disk-cached, budget-capped). `adapters/kalshi_events.py` turns Kalshi's public API into simple "market cards." `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes or simulated futures and folds them into a consensus; `engine/whatif.py` re-runs the crowd with a fact forced true. `ledger.py` logs paper picks and grades them (settlement + CLV). `run.py` wires one live cycle. Every LLM-touching function takes an `ask_fn` parameter so tests inject canned answers — the suite stays 100% offline and key-free.
+**Architecture:** Pure Python on top of the M0 codebase. `engine/llm.py` is the one place that talks to the Anthropic API (disk-cached, budget-capped). `adapters/kalshi_events.py` turns Kalshi's public API into simple "market cards." `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes or simulated futures and folds them into a consensus; `engine/whatif.py` re-runs the crowd with a fact forced true. `ledger.py` logs paper picks and grades them (settlement + CLV). `run.py` wires one live cycle. Every LLM-touching function takes an `ask_fn` parameter so tests inject canned answers: the suite stays 100% offline and key-free.
 
 **Tech Stack:** Python 3.11+ (existing venv), `anthropic`, `requests` (add to requirements), `pytest`. Kalshi public API (read-only, no key).
 
 ## Global Constraints
 
-- Spec: `docs/superpowers/specs/2026-07-14-agamotto-design.md` — resequenced Milestones: M1 = engine live; learning loop is M2 (NOT in this plan: no learn.py, no memory.py, no bench, no calibrate.py).
-- Plain, simple English in comments/docstrings/output — high-school level, no jargon (owner rule).
+- Spec: `docs/superpowers/specs/2026-07-14-agamotto-design.md`. Resequenced Milestones: M1 = engine live; learning loop is M2 (NOT in this plan: no learn.py, no memory.py, no bench, no calibrate.py).
+- Plain, simple English in comments/docstrings/output: high-school level, no jargon (owner rule).
 - Commits as `akadigari <arkadigari@gmail.com>`; NEVER any AI co-author trailer.
 - Dates/times as plain ISO strings end-to-end; determinism via `config.SEED = 14000605`.
 - **Tests are offline and key-free:** no network, no `ANTHROPIC_API_KEY`, no `data/` access. LLM calls injected via `ask_fn`; HTTP parsed from fixtures.
-- **Hard budget cap:** cumulative engine spend tracked in `data/spend.json`; hard stop at `ENGINE_BUDGET_USD = 10.00`. Never fabricate a vote — an unparseable/failed answer is skipped and counted.
+- **Hard budget cap:** cumulative engine spend tracked in `data/spend.json`; hard stop at `ENGINE_BUDGET_USD = 10.00`. Never fabricate a vote: an unparseable/failed answer is skipped and counted.
 - Default crowd model `claude-haiku-4-5` (spec's cost decision; "go harder" is config-only).
 - Kalshi: read-only public API, non-sports only (`category != "Sports"`), paper picks only. MD-legal lane per spec.
-- Market prices are in **cents (integers 1-99)**; the API sometimes returns dollar-strings — parse both (known venue quirk).
+- Market prices are in **cents (integers 1-99)**; the API sometimes returns dollar-strings: parse both (known venue quirk).
 - README/public text: no MiroFish mentions, not framed as a betting product.
 
 ---
 
-### Task 1: LLM client — cached, budget-capped `ask()`
+### Task 1: LLM client (cached, budget-capped `ask()`)
 
 **Files:**
 - Create: `engine/__init__.py` (empty), `engine/llm.py`
@@ -34,7 +34,7 @@
 - Consumes: `config.CACHE`, `config.DATA`
 - Produces (later tasks rely on these exact names):
   `ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str`
-  — returns the model's text; disk-cached by sha256(model+prompt); raises
+  returns the model's text; disk-cached by sha256(model+prompt); raises
   `RuntimeError` when the budget cap is hit. `spent_usd() -> float`.
   Config names: `ENGINE_MODEL`, `ENGINE_N_AGENTS`, `SIM_ROLLOUTS_K`,
   `DELIBERATION`, `MIN_EDGE_CENTS`, `FEE_BUFFER_CENTS`, `MARKETS_PER_RUN`,
@@ -58,7 +58,7 @@ EXCLUDED_CATEGORIES = {"Sports"}  # non-sports only (MD-legal lane)
 
 Add `requests>=2.31` to `requirements.txt` and run `venv/bin/pip install -r requirements.txt`.
 
-- [ ] **Step 2: Write the failing test** — `tests/test_llm.py`
+- [ ] **Step 2: Write the failing test**: `tests/test_llm.py`
 
 ```python
 import sys
@@ -107,7 +107,7 @@ def test_spend_meter_accumulates(tmp_path, monkeypatch):
 - [ ] **Step 3: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_llm.py -v`
-Expected: FAIL — `ModuleNotFoundError` / `ImportError`
+Expected: FAIL (`ModuleNotFoundError` / `ImportError`)
 
 - [ ] **Step 4: Write `engine/llm.py`**
 
@@ -115,8 +115,8 @@ Expected: FAIL — `ModuleNotFoundError` / `ImportError`
 """The one door to the Anthropic API.
 
 Every call is cached to disk (same question -> free repeat) and metered
-against a hard budget. When the budget is gone, the engine stops asking —
-it never quietly keeps spending.
+against a hard budget. When the budget is gone, the engine stops asking.
+It never quietly keeps spending.
 """
 from __future__ import annotations
 
@@ -131,7 +131,7 @@ import config
 CACHE_DIR = config.CACHE / "llm"
 SPEND_FILE = config.DATA / "spend.json"
 
-# rough $ per 1M tokens (input, output) — used only for the safety meter
+# rough $ per 1M tokens (input, output), used only for the safety meter
 _PRICES = {
     "claude-haiku-4-5": (1.00, 5.00),
     "claude-sonnet-5": (3.00, 15.00),
@@ -182,7 +182,7 @@ def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
 
     if spent_usd() >= config.ENGINE_BUDGET_USD:
         raise RuntimeError(
-            f"engine budget cap hit (${config.ENGINE_BUDGET_USD:.2f}) — "
+            f"engine budget cap hit (${config.ENGINE_BUDGET_USD:.2f}): "
             "raise ENGINE_BUDGET_USD in config.py to keep going")
 
     text, tokens_in, tokens_out = _call_api(prompt, model, max_tokens)
@@ -200,12 +200,12 @@ Expected: 3 PASS
 
 ```bash
 git add engine/ config.py requirements.txt tests/test_llm.py
-git commit -m "m1: llm client — cached, budget-capped, test-injectable"
+git commit -m "m1: llm client, cached, budget-capped, test-injectable"
 ```
 
 ---
 
-### Task 2: Kalshi adapter — live non-sports market cards
+### Task 2: Kalshi adapter (live non-sports market cards)
 
 **Files:**
 - Create: `adapters/kalshi_events.py`
@@ -214,18 +214,18 @@ git commit -m "m1: llm client — cached, budget-capped, test-injectable"
 **Interfaces:**
 - Consumes: `config.EXCLUDED_CATEGORIES`, `config.CACHE`
 - Produces:
-  `parse_events(payload: dict) -> list[dict]` — market cards, each:
+  `parse_events(payload: dict) -> list[dict]`: market cards, each:
   `{"ticker": str, "question": str, "category": str, "yes_bid": int,
   "yes_ask": int, "mid": int, "close_time": str, "volume": int}`
   (prices in cents; dollar-string inputs like "0.43" parsed to 43).
-  `tradeable(cards: list[dict], now_iso: str) -> list[dict]` — keeps cards
+  `tradeable(cards: list[dict], now_iso: str) -> list[dict]`: keeps cards
   with two-sided quotes, spread <= 10 cents, volume >= 100, and closing
   more than 24h after `now_iso`; sorted by volume, biggest first.
-  `fetch_open_markets() -> list[dict]` — live GET (network), parse, filter.
-  `fetch_market(ticker: str) -> dict` — one live market with
+  `fetch_open_markets() -> list[dict]`: live GET (network), parse, filter.
+  `fetch_market(ticker: str) -> dict`: one live market with
   `{"ticker", "mid", "status", "result"}` for grading.
 
-- [ ] **Step 1: Build the fixture** — `tests/fixtures/kalshi_events.json`
+- [ ] **Step 1: Build the fixture**: `tests/fixtures/kalshi_events.json`
 
 ```json
 {
@@ -258,7 +258,7 @@ git commit -m "m1: llm client — cached, budget-capped, test-injectable"
 }
 ```
 
-- [ ] **Step 2: Write the failing test** — `tests/test_kalshi_adapter.py`
+- [ ] **Step 2: Write the failing test**: `tests/test_kalshi_adapter.py`
 
 ```python
 import json
@@ -304,7 +304,7 @@ def test_tradeable_sorts_by_volume():
 - [ ] **Step 3: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_kalshi_adapter.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 4: Write `adapters/kalshi_events.py`**
 
@@ -313,7 +313,7 @@ Expected: FAIL — `ModuleNotFoundError`
 
 Read-only public API, non-sports only, paper trading only. Known venue
 quirk: prices usually arrive as cents (43) but sometimes as dollar
-strings ("0.43") — _cents() accepts both.
+strings ("0.43"). _cents() accepts both.
 """
 from __future__ import annotations
 
@@ -442,7 +442,7 @@ Expected: 3 PASS
 
 ```bash
 git add adapters/kalshi_events.py tests/test_kalshi_adapter.py tests/fixtures/kalshi_events.json
-git commit -m "m1: kalshi adapter — live non-sports market cards, offline-tested"
+git commit -m "m1: kalshi adapter, live non-sports market cards, offline-tested"
 ```
 
 ---
@@ -456,12 +456,12 @@ git commit -m "m1: kalshi adapter — live non-sports market cards, offline-test
 **Interfaces:**
 - Consumes: `config.CACHE`
 - Produces:
-  `parse_rss(xml_text: str, limit: int = 3) -> list[str]` — headline strings.
-  `headlines_for(query: str, limit: int = 3) -> list[str]` — live Google News
+  `parse_rss(xml_text: str, limit: int = 3) -> list[str]`: headline strings.
+  `headlines_for(query: str, limit: int = 3) -> list[str]`: live Google News
   RSS fetch, cached to `data/cache/news/` by day+query; returns `[]` on any
   network problem (never crashes a cycle).
 
-- [ ] **Step 1: Build the fixture** — `tests/fixtures/news_rss.xml`
+- [ ] **Step 1: Build the fixture**: `tests/fixtures/news_rss.xml`
 
 ```xml
 <?xml version="1.0"?>
@@ -474,7 +474,7 @@ git commit -m "m1: kalshi adapter — live non-sports market cards, offline-test
 </channel></rss>
 ```
 
-- [ ] **Step 2: Write the failing test** — `tests/test_news.py`
+- [ ] **Step 2: Write the failing test**: `tests/test_news.py`
 
 ```python
 import sys
@@ -499,12 +499,12 @@ def test_garbage_xml_returns_empty_not_crash():
 - [ ] **Step 3: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_news.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 4: Write `engine/news.py`**
 
 ```python
-"""Fresh headlines for a market question — free, no API key.
+"""Fresh headlines for a market question: free, no API key.
 
 Google News RSS gives the crowd something real to react to. Failures
 return an empty list: a news outage should never stop the cycle.
@@ -566,7 +566,7 @@ git commit -m "m1: keyless news headlines with daily cache"
 
 ---
 
-### Task 4: Personas — the crowd roster
+### Task 4: Personas (the crowd roster)
 
 **Files:**
 - Create: `engine/personas.py`
@@ -575,12 +575,12 @@ git commit -m "m1: keyless news headlines with daily cache"
 **Interfaces:**
 - Consumes: `config.SEED`
 - Produces:
-  `ARCHETYPES: list[tuple[str, str]]` — six `(archetype, style)` pairs.
-  `build_crowd(n: int, seed: int) -> list[dict]` — n agents, each
+  `ARCHETYPES: list[tuple[str, str]]`: six `(archetype, style)` pairs.
+  `build_crowd(n: int, seed: int) -> list[dict]`: n agents, each
   `{"name": str, "archetype": str, "style": str}`; deterministic per seed;
   names unique.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_personas.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_personas.py`
 
 ```python
 import sys
@@ -607,7 +607,7 @@ def test_crowd_cycles_all_archetypes():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_personas.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 3: Write `engine/personas.py`**
 
@@ -656,12 +656,12 @@ Expected: 2 PASS
 
 ```bash
 git add engine/personas.py tests/test_personas.py
-git commit -m "m1: persona roster — six archetypes, seeded crowds"
+git commit -m "m1: persona roster, six archetypes, seeded crowds"
 ```
 
 ---
 
-### Task 5: Swarm — vote mode, deliberation, consensus
+### Task 5: Swarm (vote mode, deliberation, consensus)
 
 **Files:**
 - Create: `engine/swarm.py`
@@ -671,17 +671,17 @@ git commit -m "m1: persona roster — six archetypes, seeded crowds"
 - Consumes: `personas` agents, market cards, headlines, `llm.ask` (as the
   default `ask_fn`)
 - Produces:
-  `extract_json(text: str) -> dict | None` — first {...} block parsed, else None.
-  `agent_vote(agent, card, headlines, ask_fn) -> dict | None` —
+  `extract_json(text: str) -> dict | None`: first {...} block parsed, else None.
+  `agent_vote(agent, card, headlines, ask_fn) -> dict | None`:
   `{"probability": float 0-1, "reason": str}` or None on junk.
-  `deliberate(agent, card, own, others, ask_fn) -> dict | None` — same shape.
-  `consensus(probs: list[float]) -> tuple[float, float]` — (trimmed mean,
+  `deliberate(agent, card, own, others, ask_fn) -> dict | None`: same shape.
+  `consensus(probs: list[float]) -> tuple[float, float]`: (trimmed mean,
   spread); with 5+ votes the single highest and lowest are dropped.
   `run_crowd(card, headlines, crowd, mode, k, deliberation, ask_fn) -> dict`
-  — `{"probability": float, "spread": float, "votes": [...], "futures": [...],
+  returns `{"probability": float, "spread": float, "votes": [...], "futures": [...],
   "skipped": int}` (futures filled by Task 6's simulate mode; empty in vote mode).
 
-- [ ] **Step 1: Write the failing test** — `tests/test_swarm.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_swarm.py`
 
 ```python
 import json
@@ -759,7 +759,7 @@ def test_deliberation_second_round_updates():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_swarm.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 3: Write `engine/swarm.py`**
 
@@ -768,7 +768,7 @@ Expected: FAIL — `ModuleNotFoundError`
 votes fold into one number plus a disagreement spread.
 
 Every function takes ask_fn so tests can inject canned answers. Junk
-answers are skipped and counted — never invented.
+answers are skipped and counted, never invented.
 """
 from __future__ import annotations
 
@@ -780,7 +780,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import llm
 
-_VOTE_PROMPT = """You are {name}, a {archetype} — {style}.
+_VOTE_PROMPT = """You are {name}, a {archetype}: {style}.
 
 A prediction market asks: "{question}"
 The market price right now says YES has about a {mid}% chance.
@@ -790,7 +790,7 @@ Think like your character and give YOUR OWN probability that this
 resolves YES. Do not just repeat the market price.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""
 
-_DELIB_PROMPT = """You are {name}, a {archetype} — {style}.
+_DELIB_PROMPT = """You are {name}, a {archetype}: {style}.
 Market: "{question}" (market price ~{mid}% YES). Your current view: {own}.
 
 Other agents said:
@@ -817,7 +817,7 @@ def _clean_prob(raw) -> float | None:
         p = float(raw)
     except (TypeError, ValueError):
         return None
-    return min(max(p, 0.01), 0.99)  # never 0% or 100% — stay humble
+    return min(max(p, 0.01), 0.99)  # never 0% or 100%, stay humble
 
 
 def agent_vote(agent: dict, card: dict, headlines: list[str],
@@ -885,7 +885,7 @@ def run_crowd(card: dict, headlines: list[str], crowd: list[dict],
 
     if deliberation and len(votes) >= 2:
         digest = [f'- {v["agent"]} ({v["archetype"]}): '
-                  f'{v["probability"]:.2f} — {v["reason"]}' for v in votes]
+                  f'{v["probability"]:.2f} ({v["reason"]})' for v in votes]
         by_name = {a["name"]: a for a in crowd}
         revised = []
         for v in votes:
@@ -901,7 +901,7 @@ def run_crowd(card: dict, headlines: list[str], crowd: list[dict],
             "futures": all_futures, "skipped": skipped}
 ```
 
-- [ ] **Step 4: Create a stub so vote mode works before Task 6** — `engine/futures.py`
+- [ ] **Step 4: Create a stub so vote mode works before Task 6**: `engine/futures.py`
 
 ```python
 """Simulate mode lives here (filled in by the next task)."""
@@ -921,12 +921,12 @@ Expected: 6 PASS
 
 ```bash
 git add engine/swarm.py engine/futures.py tests/test_swarm.py
-git commit -m "m1: swarm — vote mode, deliberation round, trimmed consensus"
+git commit -m "m1: swarm, vote mode, deliberation round, trimmed consensus"
 ```
 
 ---
 
-### Task 6: Simulate mode — each agent sees K futures
+### Task 6: Simulate mode (each agent sees K futures)
 
 **Files:**
 - Modify: `engine/futures.py` (replace the stub)
@@ -935,12 +935,12 @@ git commit -m "m1: swarm — vote mode, deliberation round, trimmed consensus"
 **Interfaces:**
 - Consumes: agents, cards, headlines, `ask_fn`
 - Produces:
-  `agent_futures(agent, card, headlines, k, ask_fn) -> dict | None` —
+  `agent_futures(agent, card, headlines, k, ask_fn) -> dict | None`:
   `{"probability": float, "reason": str, "futures": [{"story": str,
   "resolves": "YES"|"NO", "agent": str}]}`; probability = YES-fraction of
   the agent's own futures; None if fewer than half of k futures parse.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_futures.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_futures.py`
 
 ```python
 import sys
@@ -993,12 +993,12 @@ def test_junk_resolves_values_are_dropped():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_futures.py -v`
-Expected: FAIL — `NotImplementedError` or assertion failures
+Expected: FAIL (`NotImplementedError` or assertion failures)
 
 - [ ] **Step 3: Replace `engine/futures.py`**
 
 ```python
-"""Simulate mode: an agent doesn't just vote — it imagines the event
+"""Simulate mode: an agent doesn't just vote. It imagines the event
 playing out K times, and its probability is the share of its own futures
 where the answer is YES. The stories feed the what-if view and the
 dashboard's futures tree later.
@@ -1012,13 +1012,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import llm
 from engine.swarm import extract_json
 
-_SIM_PROMPT = """You are {name}, a {archetype} — {style}.
+_SIM_PROMPT = """You are {name}, a {archetype}: {style}.
 
 A prediction market asks: "{question}"
 The market price right now says YES has about a {mid}% chance.
 Recent headlines: {headlines}
 
-Imagine {k} DIFFERENT ways this could actually play out — short, concrete,
+Imagine {k} DIFFERENT ways this could actually play out: short, concrete,
 one sentence each. Make them genuinely different, not five copies.
 Reply with ONLY JSON like:
 {{"futures": [{{"story": "one sentence", "resolves": "YES"}},
@@ -1047,7 +1047,7 @@ def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
             futures.append({"story": story[:200], "resolves": verdict,
                             "agent": agent["name"]})
     if len(futures) < max(k // 2, 2):
-        return None      # the model didn't really play along — skip, don't guess
+        return None      # the model didn't really play along: skip, don't guess
 
     yes = sum(1 for f in futures if f["resolves"] == "YES")
     prob = min(max(yes / len(futures), 0.01), 0.99)
@@ -1065,12 +1065,12 @@ Expected: 9 PASS (futures + swarm still green)
 
 ```bash
 git add engine/futures.py tests/test_futures.py
-git commit -m "m1: simulate mode — K futures per agent, YES-fraction probability"
+git commit -m "m1: simulate mode, K futures per agent, YES-fraction probability"
 ```
 
 ---
 
-### Task 7: What-if — the god's-eye
+### Task 7: What-if (the god's-eye)
 
 **Files:**
 - Create: `engine/whatif.py`
@@ -1080,11 +1080,11 @@ git commit -m "m1: simulate mode — K futures per agent, YES-fraction probabili
 - Consumes: `run_crowd` (Task 5), cards, crowd
 - Produces:
   `run_whatif(card, headlines, crowd, inject, mode, k, deliberation, ask_fn)
-  -> dict` — `{"before": <run_crowd dict>, "after": <run_crowd dict>,
+  -> dict`: `{"before": <run_crowd dict>, "after": <run_crowd dict>,
   "shift": float}` where `after` re-runs the crowd with the injected fact
   forced true, and `shift = after.probability - before.probability`.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_whatif.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_whatif.py`
 
 ```python
 import sys
@@ -1121,14 +1121,14 @@ def test_whatif_reruns_and_reports_shift():
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_whatif.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 3: Write `engine/whatif.py`**
 
 ```python
 """The god's-eye: force a fact to be true and watch the crowd's number move.
 
-We don't touch the agents — we edit the world they see. The injected fact
+We don't touch the agents, we edit the world they see. The injected fact
 is prepended to the market question so every prompt (vote or simulate)
 carries it.
 """
@@ -1149,7 +1149,7 @@ def run_whatif(card: dict, headlines: list[str], crowd: list[dict],
 
     twisted = dict(card)
     twisted["question"] = (
-        f"WHAT-IF (treat as definitely true: {inject}) — {card['question']}")
+        f"WHAT-IF (treat as definitely true: {inject}): {card['question']}")
     after = run_crowd(twisted, headlines, crowd, mode, k, deliberation, ask_fn)
 
     return {"before": before, "after": after,
@@ -1165,12 +1165,12 @@ Expected: 1 PASS
 
 ```bash
 git add engine/whatif.py tests/test_whatif.py
-git commit -m "m1: what-if god's-eye — inject a fact, measure the shift"
+git commit -m "m1: what-if god's-eye, inject a fact, measure the shift"
 ```
 
 ---
 
-### Task 8: Paper ledger — picks, settlement, CLV
+### Task 8: Paper ledger (picks, settlement, CLV)
 
 **Files:**
 - Create: `ledger.py`
@@ -1179,18 +1179,18 @@ git commit -m "m1: what-if god's-eye — inject a fact, measure the shift"
 **Interfaces:**
 - Consumes: market cards, `fetch_market`-shaped dicts, `config.DATA`
 - Produces:
-  `LEDGER_COLUMNS: list[str]` — exactly: `logged_at, ticker, question, side,
+  `LEDGER_COLUMNS: list[str]`, exactly: `logged_at, ticker, question, side,
   entry_mid, crowd_prob, edge_cents, mode, status, result, latest_mid,
   clv_cents, settled_at`.
-  `log_pick(row: dict, path: Path | None = None) -> None` — appends (creates
+  `log_pick(row: dict, path: Path | None = None) -> None`: appends (creates
   file with header when missing); refuses duplicate open (ticker, side).
   `load(path: Path | None = None) -> list[dict]`.
   `grade(latest_by_ticker: dict[str, dict], path: Path | None = None) -> dict`
-  — updates open rows: `latest_mid` + `clv_cents` (YES pick: latest−entry;
+  updates open rows: `latest_mid` + `clv_cents` (YES pick: latest−entry;
   NO pick: entry−latest); rows whose market is settled get `status="settled"`,
   `result`, `settled_at`. Returns `{"updated": int, "settled": int}`.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_ledger.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_ledger.py`
 
 ```python
 import sys
@@ -1243,7 +1243,7 @@ def test_grade_updates_clv_and_settles(tmp_path):
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_ledger.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 3: Write `ledger.py`**
 
@@ -1288,7 +1288,7 @@ def _write_all(rows: list[dict], path: Path) -> None:
 
 def log_pick(row: dict, path: Path | None = None) -> None:
     """Append one pick. A second open pick on the same ticker+side is a
-    repeat opinion, not a new position — refused."""
+    repeat opinion, not a new position, so it is refused."""
     path = path or _DEFAULT
     rows = load(path)
     for r in rows:
@@ -1331,12 +1331,12 @@ Expected: 3 PASS
 
 ```bash
 git add ledger.py tests/test_ledger.py
-git commit -m "m1: paper ledger — picks, duplicate guard, CLV grading, settlement"
+git commit -m "m1: paper ledger, picks, duplicate guard, CLV grading, settlement"
 ```
 
 ---
 
-### Task 9: run.py — one live cycle
+### Task 9: run.py (one live cycle)
 
 **Files:**
 - Create: `run.py`
@@ -1345,17 +1345,17 @@ git commit -m "m1: paper ledger — picks, duplicate guard, CLV grading, settlem
 **Interfaces:**
 - Consumes: everything above.
 - Produces:
-  `pick_side(crowd_prob: float, mid: int) -> tuple[str, int] | None` —
+  `pick_side(crowd_prob: float, mid: int) -> tuple[str, int] | None`:
   ("YES"/"NO", edge_cents) when the edge clears `MIN_EDGE_CENTS +
   FEE_BUFFER_CENTS`, else None. Edge in cents: YES edge = crowd*100 − mid;
   NO edge = mid − crowd*100.
-  `one_cycle(cards: list[dict] | None = None, ask_fn=None) -> dict` — grades
+  `one_cycle(cards: list[dict] | None = None, ask_fn=None) -> dict`: grades
   open picks, runs the crowd on the top `MARKETS_PER_RUN` tradeable cards,
   logs new picks, returns `{"considered": int, "picks": int, "graded": dict}`.
   Passing `cards`/`ask_fn` keeps tests offline; `None` means live.
-  CLI: `venv/bin/python run.py` (live) — prints a plain-English cycle report.
+  CLI: `venv/bin/python run.py` (live): prints a plain-English cycle report.
 
-- [ ] **Step 1: Write the failing test** — `tests/test_run.py`
+- [ ] **Step 1: Write the failing test**: `tests/test_run.py`
 
 ```python
 import json
@@ -1395,7 +1395,7 @@ def test_one_cycle_offline_logs_a_pick(tmp_path, monkeypatch):
 - [ ] **Step 2: Run test to verify it fails**
 
 Run: `venv/bin/pytest tests/test_run.py -v`
-Expected: FAIL — `ModuleNotFoundError`
+Expected: FAIL (`ModuleNotFoundError`)
 
 - [ ] **Step 3: Write `run.py`**
 
@@ -1404,8 +1404,8 @@ Expected: FAIL — `ModuleNotFoundError`
 
 Grade what's open, look at the biggest open non-sports markets, let the
 crowd form its number, and log a paper pick when the crowd disagrees with
-the market by more than fees could explain. A person places any real bet —
-this only writes CSV rows.
+the market by more than fees could explain. A person places any real bet.
+This only writes CSV rows.
 """
 from __future__ import annotations
 
@@ -1438,7 +1438,7 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None) -> dict:
     ask = ask_fn or llm.ask
     now = datetime.now(timezone.utc).isoformat()
 
-    # 1. Grade open picks (live only — needs per-ticker fetches).
+    # 1. Grade open picks (live only, needs per-ticker fetches).
     graded = {"updated": 0, "settled": 0}
     if live:
         open_tickers = {r["ticker"] for r in ledger.load()
@@ -1489,7 +1489,7 @@ if __name__ == "__main__":
 ```
 
 **Note for the implementer:** the `mode` expression above as written in this
-plan is convoluted — simplify it to read from a single new config knob
+plan is convoluted: simplify it to read from a single new config knob
 `SIM_MODE = "vote"` (add it to config.py next to `SIM_ROLLOUTS_K`, values
 `"vote"` or `"simulate"`), i.e. `mode = config.SIM_MODE`. The test only
 asserts mode lands in `("vote", "simulate")`.
@@ -1503,7 +1503,7 @@ Expected: all green (27 from M0 + ~20 new)
 
 ```bash
 git add run.py config.py tests/test_run.py
-git commit -m "m1: live cycle — grade, crowd, edge rule, paper picks"
+git commit -m "m1: live cycle, grade, crowd, edge rule, paper picks"
 ```
 
 ---
@@ -1513,12 +1513,12 @@ git commit -m "m1: live cycle — grade, crowd, edge rule, paper picks"
 **Files:**
 - Created by running: `data/ledger.csv`, `data/spend.json`, cache files
 
-- [ ] **Step 1: Adapter smoke (keyless)** — `venv/bin/python adapters/kalshi_events.py`
+- [ ] **Step 1: Adapter smoke (keyless)**: `venv/bin/python adapters/kalshi_events.py`
   Expected: a count of live tradeable non-sports markets + top 5 by volume.
   If the API shape differs from the fixture (field names, cursor), fix
   `parse_events` and add a fixture case capturing the real shape.
 
-- [ ] **Step 2 (HUMAN-DEPENDENT): First real crowd run** — requires
+- [ ] **Step 2 (HUMAN-DEPENDENT): First real crowd run**: requires
   `ANTHROPIC_API_KEY` in the environment. Run `venv/bin/python run.py`.
   Expected: per-market lines (`pass` or `PICK`), a cycle summary with total
   spend well under $1, and `data/ledger.csv` gaining rows for any picks.
@@ -1527,16 +1527,16 @@ git commit -m "m1: live cycle — grade, crowd, edge rule, paper picks"
 
 Update README.md's status line to:
 ```markdown
-**Status: the engine is live — crowd votes on real open markets (paper only).
+**Status: the engine is live. Crowd votes on real open markets (paper only).
 NBA evaluation lab: built, deferred until its data arrives.**
 ```
 
 ```bash
 git add README.md
-git commit -m "m1: engine live — status update"
+git commit -m "m1: engine live, status update"
 ```
 
-- [ ] **Step 4: Report** — tell the owner: how many markets were considered,
+- [ ] **Step 4: Report**: tell the owner how many markets were considered,
   any picks with the crowd's reasoning, total spend, and that `run.py` can
   now be run any time (or wired to a GitHub Action hourly, like kayfabe,
   in a follow-up).
@@ -1550,10 +1550,10 @@ git commit -m "m1: engine live — status update"
   Kalshi non-sports adapter ✓ (Task 2), paper ledger + CLV ✓ (Task 8),
   live cycle ✓ (Task 9), budget cap + cache ✓ (Task 1), news ✓ (Task 3).
   Ensemble mode (different model tiers + partitioned evidence) is
-  deliberately deferred to M2 with the learning loop — one crowd
+  deliberately deferred to M2 with the learning loop: one crowd
   architecture goes live first; noted here so the gap is a decision,
   not an oversight.
-- **Placeholders:** none — every step has complete code. The one known
+- **Placeholders:** none; every step has complete code. The one known
   simplification (Task 9's `mode` expression) is flagged inline with the
   exact fix.
 - **Type consistency:** market card keys (`ticker/question/category/yes_bid/
