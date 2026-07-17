@@ -134,8 +134,8 @@
   <div class="hero">
     <h1>MANYWORLDZ</h1>
     <div class="by">A CROWD OF AI FORECASTERS · PAPER ONLY</div>
-    <p class="big-tag">Every question splits into many worlds.<br>The engine watches them all — and keeps score.</p>
-    <p class="sub-tag">A crowd of AI forecasters — a stats nerd, a contrarian, an oddsmaker —
+    <p class="big-tag">Every question splits into many worlds.<br>The engine watches them all, and keeps score.</p>
+    <p class="sub-tag">A crowd of AI forecasters (a stats nerd, a contrarian, an oddsmaker)
       each simulates how the future could play out. Their worlds fold into one honest
       probability, graded against real markets, in public.</p>
     <div class="cta">
@@ -146,7 +146,7 @@
 
   <div class="how">
     <div class="step"><div class="k">1 · THE CROWD FORMS</div>
-      <p>Eight AI characters research each question — headlines, base rates —
+      <p>Eight AI characters research each question (headlines, base rates)
          and think in genuinely different ways, on purpose.</p></div>
     <div class="step"><div class="k">2 · WORLDS BRANCH</div>
       <p>Each agent imagines the event playing out again and again. Gold worlds
@@ -167,16 +167,16 @@
     <div class="ask-form">
       <label>YOUR QUESTION (YES / NO, ABOUT THE FUTURE)</label>
       <input id="ask-q" placeholder="Will the Fed cut rates in September?" maxlength="200">
-      <label>WHAT-IF — OPTIONAL: A FACT TO FORCE TRUE IN A SECOND RUN</label>
+      <label>WHAT-IF (OPTIONAL): A FACT TO FORCE TRUE IN A SECOND RUN</label>
       <input id="ask-w" placeholder="the chair signals a cut in the press conference" maxlength="200">
       <div class="ask-row">
         <div>
           <label>CROWD BRAIN</label>
           <select id="ask-m">
-            <option value="claude-haiku-4-5">haiku — ~1c per ask</option>
-            <option value="claude-sonnet-5">sonnet — smarter, ~3x</option>
-            <option value="claude-opus-4-8">opus — strong, ~5x</option>
-            <option value="claude-fable-5">fable — frontier, ~10x</option>
+            <option value="claude-haiku-4-5">haiku (~1c per ask)</option>
+            <option value="claude-sonnet-5">sonnet (smarter, ~3x)</option>
+            <option value="claude-opus-4-8">opus (strong, ~5x)</option>
+            <option value="claude-fable-5">fable (frontier, ~10x)</option>
           </select>
         </div>
         <div>
@@ -186,7 +186,7 @@
       </div>
       <button class="ask-go" id="ask-go" onclick="askWorlds()">SPLIT THE WORLDS</button>
       <p class="keynote">Your key travels straight from this browser to Anthropic and
-        nowhere else — this page has no server, stores nothing, and never sees it
+        nowhere else. This page has no server, stores nothing, and never sees it
         again after the request. Six AI characters vote; with a what-if, they vote
         twice. Total cost on haiku: about a cent.</p>
       <div id="ask-error" class="ask-error"></div>
@@ -196,7 +196,7 @@
   <section id="receipts" style="display:none"></section>
 
   <footer>
-    Paper picks only — a person makes any real decision, and only if the
+    Paper picks only: a person makes any real decision, and only if the
     pre-registered gates ever pass. The dashboard reads the exact same
     ledger the gates read; it cannot show a rosier number than reality.
   </footer>
@@ -288,20 +288,20 @@ function esc(s) {
 function chip(verdict) {
   if (verdict && verdict.side) return `<span class="chip pick mono">PICK ${verdict.side} +${verdict.edge_cents}c</span>`;
   if (verdict === 'no_quorum') return `<span class="chip noq mono">NO QUORUM</span>`;
-  return `<span class="chip pass mono">NO EDGE — PASS</span>`;
+  return `<span class="chip pass mono">NO EDGE: PASS</span>`;
 }
 
 function renderFutures(data) {
   const el = document.getElementById('futures');
   const markets = (data.cycle && data.cycle.markets) || [];
   if (!markets.length) {
-    el.innerHTML = `<p class="empty">No cycle data yet — the worlds appear after the engine's first cloud run.</p>`;
+    el.innerHTML = `<p class="empty">No cycle data yet. The worlds appear after the engine's first cloud run.</p>`;
     return;
   }
   el.innerHTML = markets.map(m => {
     const worlds = (m.futures || []).length || (m.votes || []).length;
     const stories = (m.futures || []).slice(0, 6).map(f =>
-      `<div class="story"><b class="${f.resolves === 'YES' ? 'y' : 'n'}">${esc(f.resolves)}</b> — ${esc(f.story)} <span class="mono">(${esc(f.agent)})</span></div>`
+      `<div class="story"><b class="${f.resolves === 'YES' ? 'y' : 'n'}">${esc(f.resolves)}</b>: ${esc(f.story)} <span class="mono">(${esc(f.agent)})</span></div>`
     ).join('');
     return `<div class="market">
       <div class="q">${esc(m.question)}</div>
@@ -322,7 +322,7 @@ function renderReceipts(data) {
   const s = data.stats || {};
   const tiles = [
     [s.total_picks ?? 0, 'PICKS'], [s.open ?? 0, 'OPEN'],
-    [s.settled ?? 0, 'SETTLED'], [`${s.wins ?? 0}–${s.losses ?? 0}`, 'RECORD'],
+    [s.settled ?? 0, 'SETTLED'], [`${s.wins ?? 0}-${s.losses ?? 0}`, 'RECORD'],
     [(s.avg_clv_cents >= 0 ? '+' : '') + (s.avg_clv_cents ?? 0) + 'c', 'AVG CLV'],
     ['$' + (s.spend_usd ?? 0).toFixed(2), 'SPEND'],
   ].map(([n, l]) => `<div class="tile"><div class="n mono">${n}</div><div class="l">${l}</div></div>`).join('');
@@ -341,7 +341,7 @@ function renderReceipts(data) {
 
   el.innerHTML = `<div class="tiles">${tiles}</div>` + (rows
     ? `<table><tr><th>DATE</th><th>QUESTION</th><th>SIDE</th><th>ENTRY</th><th>CLV</th><th>STATUS</th></tr>${rows}</table>`
-    : `<p class="empty">No picks yet — the scorecard fills in as the crowd finds edges.</p>`);
+    : `<p class="empty">No picks yet. The scorecard fills in as the crowd finds edges.</p>`);
 }
 
 /* ---- data: real file first, embedded sample as the fallback ------ */
@@ -382,8 +382,8 @@ const SAMPLE = {
 
 /* ---- ask the worlds: the crowd, running in YOUR browser ------------ */
 // Mirrors the Python engine's personas and prompts. The visitor's key goes
-// directly to Anthropic (that's what the special header below permits) —
-// no server, no storage, no middleman.
+// directly to Anthropic (that's what the special header below permits).
+// No server, no storage, no middleman.
 const CAST = [
   ['Ava', 'stats nerd', 'trusts base rates and numbers, distrusts stories'],
   ['Ben', 'contrarian', 'hunts for reasons the crowd is wrong'],
@@ -394,9 +394,9 @@ const CAST = [
 ];
 
 function votePrompt(name, archetype, style, question) {
-  return `You are ${name}, a ${archetype} — ${style}.\n\n` +
+  return `You are ${name}, a ${archetype}: ${style}.\n\n` +
     `The question: "${question}"\n` +
-    `There is no market price for this question — you have nothing to anchor ` +
+    `There is no market price for this question: you have nothing to anchor ` +
     `on except your own reasoning.\n\n` +
     `Start from the base rate: how often do things like this usually happen, ` +
     `historically? Anchor there first, THEN adjust for what you know.\n` +
@@ -456,14 +456,14 @@ async function runBrowserCrowd(key, model, question) {
     if (vote) votes.push({ ...vote, agent: CAST[i][0], archetype: CAST[i][1] });
     else skipped.push(CAST[i][0]);
   });
-  if (!votes.length) throw new Error('The whole crowd came back unusable — try again.');
+  if (!votes.length) throw new Error('The whole crowd came back unusable. Try again.');
   return { question, ...foldVotes(votes), votes, futures: [], skipped: skipped.length, mid: null };
 }
 
 function askCard(title, m) {
   return `<div class="market">
     <div class="q">${esc(title)}</div>
-    <div class="meta mono">${m.votes.length} voices · disagreement ${m.spread}${m.skipped ? ` · ${m.skipped} unusable` : ''} · no market — the crowd is on its own</div>
+    <div class="meta mono">${m.votes.length} voices · disagreement ${m.spread}${m.skipped ? ` · ${m.skipped} unusable` : ''} · no market: the crowd is on its own</div>
     <div class="readout"><span class="bigp">${Math.round(m.probability * 100)}%</span>
       <span class="vs mono">the crowd's chance of YES</span></div>
     ${tree(m)}
@@ -479,7 +479,7 @@ async function askWorlds() {
   const out = document.getElementById('ask-out');
   errEl.textContent = '';
   if (!q) { errEl.textContent = 'Type a yes/no question first.'; return; }
-  if (!key) { errEl.textContent = 'Paste your Anthropic API key (console.anthropic.com) — it never leaves your browser except to Anthropic.'; return; }
+  if (!key) { errEl.textContent = 'Paste your Anthropic API key (console.anthropic.com). It never leaves your browser except to Anthropic.'; return; }
 
   const btn = document.getElementById('ask-go');
   btn.disabled = true; btn.textContent = 'SPLITTING THE WORLDS…';
@@ -489,7 +489,7 @@ async function askWorlds() {
     out.innerHTML = askCard(q, before);
     if (w) {
       btn.textContent = 'RUNNING THE WHAT-IF…';
-      const twisted = `WHAT-IF (treat as definitely true: ${w}) — ${q}`;
+      const twisted = `WHAT-IF (treat as definitely true: ${w}): ${q}`;
       const after = await runBrowserCrowd(key, model, twisted);
       const shift = Math.round((after.probability - before.probability) * 100);
       out.innerHTML += askCard(`WHAT-IF: ${w}`, after) +
@@ -507,7 +507,7 @@ fetch('data.json')
   .then(r => { if (!r.ok) throw 0; return r.json(); })
   .then(d => {
     // Never hide real data behind the sample. If the real file has ANY
-    // picks or ANY cycle markets, it's real — show it exactly as it is,
+    // picks or ANY cycle markets, it's real: show it exactly as it is,
     // even if one of the two tabs happens to be empty this run. Only fall
     // back to the sample when the whole file is genuinely empty (before
     // the first run).
@@ -520,7 +520,7 @@ fetch('data.json')
 function render(d) {
   if (d._sample) {
     document.querySelector('.tagline').innerHTML +=
-      ' <span class="mono" style="color:var(--violet)">· sample data — the real scorecard appears after the first cloud run</span>';
+      ' <span class="mono" style="color:var(--violet)">· sample data: the real scorecard appears after the first cloud run</span>';
   }
   renderFutures(d);
   renderReceipts(d);
