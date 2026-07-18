@@ -1,6 +1,6 @@
 # manyworldz on a cloud timer: runs by itself on GitHub's servers, laptop off.
 #
-# Four times a day it grades the open paper picks, has the AI crowd vote on
+# Four times a day it grades the open tracked picks, has the AI crowd vote on
 # the biggest open non-sports markets, and saves the scorecard back to the
 # repo. It only reads public market data; it never places an order. The
 # ledger is a CSV of pretend picks, graded honestly.

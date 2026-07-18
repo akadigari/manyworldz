@@ -35,7 +35,7 @@ flowchart LR
     end
 
     subgraph outputs [What comes out]
-        PK[Paper picks<br/>only when edge clears costs]
+        PK[Tracked picks<br/>only when edge clears costs]
         RP[report.py -> JSON]
         WEB[knaves.ai dashboard<br/>Multiverse Map]
     end
@@ -53,7 +53,7 @@ flowchart LR
 
 One sentence per box, left to right: adapters and dropped-in evidence feed the
 crowd; the crowd simulates futures and settles on a number; the calibration
-layer corrects its known biases; picks go to a paper ledger; every settled
+layer corrects its known biases; picks go to a simulated-trading ledger; every settled
 event grades every agent; the grades move voice weights, bench the busts, and
 write lessons; and all of it flows to a public dashboard that reads the same
 ledger the gates read.
@@ -87,7 +87,7 @@ ledger the gates read.
    corrects the crowd's known lean (e.g. chronic overconfidence). No
    transformers: at this data size that would be memorizing, not learning.
 7. **The pick.** Only if the calibrated number differs from the market price
-   by more than fees + a buffer does a paper pick go in the ledger, sized by
+   by more than fees + a buffer does a tracked pick go in the ledger, sized by
    fractional Kelly. No edge, no pick.
 8. **The what-if.** Inject a fact ("star player is OUT") and
    the futures re-run with that fact forced true. The dashboard animates the
@@ -194,7 +194,7 @@ manyworldz/
 ├── backtest.py      # replay + Brier/CLV scoring + the experiment arms
 ├── jointable.py     # results x closes join, with a quarantine file
 ├── verdict_m0.py    # applies the pre-registered gates
-├── ledger.py        # paper picks + grading
+├── ledger.py        # tracked picks + grading
 ├── report.py        # REPORT.md + the JSON the dashboard reads
 └── run.py           # one live cycle (future: hourly in CI)
 ```
@@ -206,7 +206,7 @@ rewrite.
 
 ## Design principles
 
-- **Paper-first.** The system makes and grades its own calls; a human places
+- **Simulation-first.** The system makes and grades its own calls; a human places
   any real bet, and only after every gate passes.
 - **Pre-registered honesty.** Pass/fail rules are locked before results
   exist; verdicts are published either way.

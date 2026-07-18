@@ -26,7 +26,7 @@ adapters, not rebuilds.
 Named for the many-worlds interpretation: every question splits reality into
 branches, and the engine watches them all.
 
-**PAPER-FIRST. Pre-registered gates. The verdict gets published either way.**
+**SIMULATION-FIRST. Pre-registered gates. The verdict gets published either way.**
 
 ## Why we believe what we believe (the evidence, honestly)
 
@@ -59,7 +59,7 @@ So manyworldz has two honest goals, in priority order:
    verdict lands.
 2. **The money arm:** the same engine pointed at Kalshi non-sports thin
    markets, which is legal in Maryland regardless of the 4th Circuit sports
-   ruling, gated by its own kill-fast paper test.
+   ruling, gated by its own kill-fast sim test.
 
 We are explicit about expectations: the likely headline is "the crowd ties a
 boring baseline and neither beats the close." If instead something passes every
@@ -106,9 +106,9 @@ agamotto/
 │                        #   (Apr 2025 →); every join hand-auditable
 ├── baseline.py          # boring logistic model on the SAME features (control)
 ├── backtest.py          # replay games, Brier + CLV vs close, per source
-├── ledger.py, report.py # paper picks, grading, live REPORT.md
+├── ledger.py, report.py # tracked picks, grading, live REPORT.md
 └── run.py               # one live cycle: tonight's games → crowd → edge →
-                         #   paper pick (October, only if gates allow)
+                         #   tracked pick (October, only if gates allow)
 ```
 
 Boundaries: the **engine never knows what a rebound is** (stat-sheets in,
@@ -228,9 +228,9 @@ live markets; the NBA backtest lab plugs back in whenever its data arrives
 
 **M1: the engine, live (now).** The crowd core: personas + ensemble modes,
 vote + simulate (K rollouts), one deliberation round, the what-if injector,
-paper ledger with CLV grading, and a **live Kalshi non-sports adapter**:
+simulated-trading ledger with CLV grading, and a **live Kalshi non-sports adapter**:
 the crowd votes on real open markets (entertainment, econ, culture; MD-legal
-year-round) and logs paper picks when the edge clears fees. No leak risk:
+year-round) and logs tracked picks when the edge clears fees. No leak risk:
 live events post-date every model's training.
 
 **M2: the learning loop (as picks settle).** Earned voice, the bench +
@@ -247,7 +247,7 @@ Multiverse Map front door + War Room and Receipts tabs, reading `report.py`'s
 exported JSON. See "The face" section.
 
 **M-money: Kalshi non-sports blend lane (optional, after M1).** Same engine,
-non-sports adapter, LLM + market-mid blend (~0.25 model weight), paper quotes
+non-sports adapter, LLM + market-mid blend (~0.25 model weight), sim quotes
 one tick inside the book on the blend-favored side. Its own 14-day
 pre-registered test: ≥150 strict trade-through fills across a stratified
 ~200-market sample AND fee-adjusted CLV > 0 (bootstrap p < 0.10) AND blend
@@ -361,7 +361,7 @@ The GitHub repo and the site tell **manyworldz's own story**, on its own terms:
   research. Related-work credits go to academic papers, which read stronger
   anyway.)
 - **Don't frame it as a betting product.** Sports is "the first evaluation
-  domain" (rich data, hard benchmark), not the identity. It's a paper-only
+  domain" (rich data, hard benchmark), not the identity. It's a simulation-only
   research lab that scores itself against real-world outcomes and market
   prices. That framing is also the recruiting-friendly one.
 - The internal spec (this doc) keeps the full evidence trail; public docs

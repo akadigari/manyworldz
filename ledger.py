@@ -1,4 +1,4 @@
-"""The paper ledger keeps a record of every pick the crowd makes, and later
+"""The simulated-trading ledger keeps a record of every pick the crowd makes, and later
 checks it against what really happened. Nothing here is real money, it's
 a spreadsheet-style CSV file we can grade over time.
 

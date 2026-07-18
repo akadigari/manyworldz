@@ -62,7 +62,7 @@ def write_outputs(report: dict) -> None:
     lines = [
         "# manyworldz: the live scorecard",
         "",
-        f"_Updated {report['generated_at'][:16]}Z. Paper picks only. A"
+        f"_Updated {report['generated_at'][:16]}Z. Tracked picks only. A"
         " person makes any real decision, and only if the gates pass._",
         "",
         f"- **Picks:** {s['total_picks']} total, {s['open']} open,"

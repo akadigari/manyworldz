@@ -1,6 +1,6 @@
 """Read open Kalshi markets and turn them into simple 'market cards'.
 
-Read-only public API, non-sports only, paper trading only. Known venue
+Read-only public API, non-sports only, simulated trading only. Known venue
 quirk: prices usually arrive as cents (43) but sometimes as dollar
 strings ("0.43"). _cents() accepts both. Live responses (verified
 2026-07-15) use yes_bid_dollars/yes_ask_dollars ("0.1200" = 12 cents)

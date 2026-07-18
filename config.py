@@ -60,4 +60,4 @@ MIN_EDGE_CENTS = 10       # crowd must differ from market by this much...
 FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
 MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
 ENGINE_BUDGET_USD = 10.00 # hard stop for cumulative engine spend
-EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets us paper-trade non-sports ones
+EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets us simulate trades on non-sports ones

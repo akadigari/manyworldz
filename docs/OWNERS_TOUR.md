@@ -35,7 +35,7 @@ That's it. Everything else is detail.
    agents disagree becomes a confidence measure.
 5. **It only "acts" when it strongly disagrees with the market.** If the
    crowd says 65% and the market says 43%, that's a 22-cent gap, bigger than
-   the 13-cent hurdle (edge + fees), so it logs a pretend bet ("paper pick")
+   the 13-cent hurdle (edge + fees), so it logs a pretend bet ("tracked pick")
    in a spreadsheet. No real money ever moves. Ever.
 6. **It grades itself.** Every later run, it re-checks its old picks: did the
    market move toward the crowd's number (good sign, called CLV, "closing
@@ -66,7 +66,7 @@ player is out," and re-run the crowd. You watch the probability move. That's the
 
 ## The three honesty rules (why this isn't a gambling bot)
 
-1. **Paper only.** The machine writes rows in a CSV. It cannot spend money.
+1. **Simulated only.** The machine writes rows in a CSV. It cannot spend money.
 2. **Pre-registered gates.** GATES.md was locked before any results existed:
    to ever count as "real edge," picks must beat the market's closing price,
    beat a boring statistics model, survive a luck test, survive fees, and

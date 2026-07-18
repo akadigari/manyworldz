@@ -1,7 +1,7 @@
 """One live cycle of the engine.
 
 Grade what's open, look at the biggest open non-sports markets, let the
-crowd form its number, and log a paper pick when the crowd disagrees with
+crowd form its number, and log a tracked pick when the crowd disagrees with
 the market by more than fees could explain. A person places any real bet.
 This only writes CSV rows.
 """

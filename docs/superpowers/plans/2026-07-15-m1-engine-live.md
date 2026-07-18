@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** The Dr Strange machine, running live: a crowd of AI agents that votes on (or simulates futures for) real open Kalshi non-sports markets, answers what-if injections, and logs paper picks with CLV grading. Tonight, not in October.
+**Goal:** The Dr Strange machine, running live: a crowd of AI agents that votes on (or simulates futures for) real open Kalshi non-sports markets, answers what-if injections, and logs tracked picks with CLV grading. Tonight, not in October.
 
-**Architecture:** Pure Python on top of the M0 codebase. `engine/llm.py` is the one place that talks to the Anthropic API (disk-cached, budget-capped). `adapters/kalshi_events.py` turns Kalshi's public API into simple "market cards." `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes or simulated futures and folds them into a consensus; `engine/whatif.py` re-runs the crowd with a fact forced true. `ledger.py` logs paper picks and grades them (settlement + CLV). `run.py` wires one live cycle. Every LLM-touching function takes an `ask_fn` parameter so tests inject canned answers: the suite stays 100% offline and key-free.
+**Architecture:** Pure Python on top of the M0 codebase. `engine/llm.py` is the one place that talks to the Anthropic API (disk-cached, budget-capped). `adapters/kalshi_events.py` turns Kalshi's public API into simple "market cards." `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes or simulated futures and folds them into a consensus; `engine/whatif.py` re-runs the crowd with a fact forced true. `ledger.py` logs tracked picks and grades them (settlement + CLV). `run.py` wires one live cycle. Every LLM-touching function takes an `ask_fn` parameter so tests inject canned answers: the suite stays 100% offline and key-free.
 
 **Tech Stack:** Python 3.11+ (existing venv), `anthropic`, `requests` (add to requirements), `pytest`. Kalshi public API (read-only, no key).
 
@@ -17,7 +17,7 @@
 - **Tests are offline and key-free:** no network, no `ANTHROPIC_API_KEY`, no `data/` access. LLM calls injected via `ask_fn`; HTTP parsed from fixtures.
 - **Hard budget cap:** cumulative engine spend tracked in `data/spend.json`; hard stop at `ENGINE_BUDGET_USD = 10.00`. Never fabricate a vote: an unparseable/failed answer is skipped and counted.
 - Default crowd model `claude-haiku-4-5` (spec's cost decision; "go harder" is config-only).
-- Kalshi: read-only public API, non-sports only (`category != "Sports"`), paper picks only. MD-legal lane per spec.
+- Kalshi: read-only public API, non-sports only (`category != "Sports"`), tracked picks only. MD-legal lane per spec.
 - Market prices are in **cents (integers 1-99)**; the API sometimes returns dollar-strings: parse both (known venue quirk).
 - README/public text: never name the commercial product that inspired the idea, not framed as a betting product.
 
@@ -311,7 +311,7 @@ Expected: FAIL (`ModuleNotFoundError`)
 ```python
 """Read open Kalshi markets and turn them into simple 'market cards'.
 
-Read-only public API, non-sports only, paper trading only. Known venue
+Read-only public API, non-sports only, simulated trading only. Known venue
 quirk: prices usually arrive as cents (43) but sometimes as dollar
 strings ("0.43"). _cents() accepts both.
 """
@@ -368,7 +368,7 @@ def parse_events(payload: dict) -> list[dict]:
 
 
 def tradeable(cards: list[dict], now_iso: str) -> list[dict]:
-    """Keep markets a paper trader could actually act on."""
+    """Keep markets a sim trader could actually act on."""
     from datetime import datetime, timedelta
     now = datetime.fromisoformat(now_iso.replace("Z", "+00:00"))
     keep = []
@@ -1170,7 +1170,7 @@ git commit -m "m1: what-if, inject a fact, measure the shift"
 
 ---
 
-### Task 8: Paper ledger (picks, settlement, CLV)
+### Task 8: Simulated-trading ledger (picks, settlement, CLV)
 
 **Files:**
 - Create: `ledger.py`
@@ -1248,7 +1248,7 @@ Expected: FAIL (`ModuleNotFoundError`)
 - [ ] **Step 3: Write `ledger.py`**
 
 ```python
-"""The paper ledger: every pick the crowd makes, graded against reality.
+"""The simulated-trading ledger: every pick the crowd makes, graded against reality.
 
 Append-only CSV. CLV (closing line value) is the honest score: did the
 market move toward our pick after we made it?
@@ -1331,7 +1331,7 @@ Expected: 3 PASS
 
 ```bash
 git add ledger.py tests/test_ledger.py
-git commit -m "m1: paper ledger, picks, duplicate guard, CLV grading, settlement"
+git commit -m "m1: simulated-trading ledger, picks, duplicate guard, CLV grading, settlement"
 ```
 
 ---
@@ -1403,7 +1403,7 @@ Expected: FAIL (`ModuleNotFoundError`)
 """One live cycle of the engine.
 
 Grade what's open, look at the biggest open non-sports markets, let the
-crowd form its number, and log a paper pick when the crowd disagrees with
+crowd form its number, and log a tracked pick when the crowd disagrees with
 the market by more than fees could explain. A person places any real bet.
 This only writes CSV rows.
 """
@@ -1503,7 +1503,7 @@ Expected: all green (27 from M0 + ~20 new)
 
 ```bash
 git add run.py config.py tests/test_run.py
-git commit -m "m1: live cycle, grade, crowd, edge rule, paper picks"
+git commit -m "m1: live cycle, grade, crowd, edge rule, tracked picks"
 ```
 
 ---
@@ -1527,7 +1527,7 @@ git commit -m "m1: live cycle, grade, crowd, edge rule, paper picks"
 
 Update README.md's status line to:
 ```markdown
-**Status: the engine is live. Crowd votes on real open markets (paper only).
+**Status: the engine is live. Crowd votes on real open markets (simulated only).
 NBA evaluation lab: built, deferred until its data arrives.**
 ```
 
@@ -1547,7 +1547,7 @@ git commit -m "m1: engine live, status update"
 
 - **Spec coverage (M1 scope):** persona mode ✓ (Task 4-5), simulate mode ✓
   (Task 6), one deliberation round ✓ (Task 5), what-if ✓ (Task 7), live
-  Kalshi non-sports adapter ✓ (Task 2), paper ledger + CLV ✓ (Task 8),
+  Kalshi non-sports adapter ✓ (Task 2), simulated-trading ledger + CLV ✓ (Task 8),
   live cycle ✓ (Task 9), budget cap + cache ✓ (Task 1), news ✓ (Task 3).
   Ensemble mode (different model tiers + partitioned evidence) is
   deliberately deferred to M2 with the learning loop: one crowd
