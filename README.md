@@ -9,7 +9,8 @@ question about the future: each agent researches, votes (or simulates the
 outcome multiple times), the votes fold into one probability, and every
 prediction gets logged and graded against real prediction-market prices.
 
-Paper only. The engine never places bets. It writes CSV rows and keeps score.
+It predicts; it never bets. Every call is written to a CSV ledger and graded
+against what really happened.
 
 ## See it run
 
@@ -46,7 +47,7 @@ of news moves the odds.
 - **What-if**: re-runs the whole crowd with a fact forced true and shows how
   much the odds move
 - **Live loop**: scans ~4,000 open Kalshi markets (non-sports), votes on the
-  biggest ones, and logs a paper pick when the crowd disagrees with the
+  biggest ones, and logs a prediction when the crowd disagrees with the
   market by more than fees could explain
 - **Scorecard**: every pick graded against closing prices (CLV). Results
   written to CSV and a dashboard automatically
@@ -60,7 +61,7 @@ of news moves the odds.
    throws out junk answers (never invents one), trims the extremes, and
    returns one probability plus a disagreement spread
 3. `run.py` compares the crowd's number to the market price. Gap bigger than
-   edge + fee buffer → paper pick goes in `data/ledger.csv`
+   edge + fee buffer → the call goes in `data/ledger.csv`
 4. Next cycle, `ledger.py` re-checks every open pick: did the market move
    toward us (CLV), did it settle, did we win
 5. `report.py` writes `web/data.json`: the dashboard draws straight from it
@@ -108,7 +109,7 @@ it's spent, no surprises.
 
 ## The rules it can't break
 
-- Paper only: a person makes any real decision, and only if the
+- It never bets: a person makes any real decision, and only if the
   pre-registered gates pass (`GATES.md`, written before any results existed:
   beat the closing line, beat a boring baseline, survive a luck test,
   survive fees)

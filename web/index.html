@@ -66,8 +66,6 @@
   header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
   .wordmark { font-family: Georgia, serif; font-size: 26px; letter-spacing: 8px; color: var(--gold); }
   .sub { color: var(--dim); font-size: 13px; letter-spacing: 2px; }
-  .paper { margin-left: auto; font-size: 11px; letter-spacing: 1px; color: var(--crimson);
-           border: 1px solid var(--crimson); border-radius: 3px; padding: 2px 9px; }
   .tagline { color: var(--dim); margin-bottom: 22px; font-size: 14px; }
 
   /* tabs */
@@ -129,6 +127,11 @@
   .ask-go:disabled { opacity: .45; cursor: wait; }
   .keynote { color: var(--dim); font-size: 12px; margin-top: 10px; line-height: 1.6; }
   .ask-error { color: var(--crimson); font-size: 13px; margin-top: 12px; }
+  /* scenario cards */
+  .scen-h { text-align: center; font-size: 21px; letter-spacing: 3px; margin: 40px 0 4px; }
+  .scen-sub { text-align: center; color: var(--dim); font-size: 14px; margin-bottom: 18px; }
+  .scen { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 14px; margin: 0 0 40px; }
 </style>
 </head>
 <body>
@@ -136,7 +139,7 @@
 <main>
   <div class="hero">
     <h1>MANYWORLDZ</h1>
-    <div class="by">A CROWD OF AI FORECASTERS · PAPER ONLY</div>
+    <div class="by">A CROWD OF AI FORECASTERS · GRADED IN PUBLIC</div>
     <p class="big-tag">Every question splits into many worlds.<br>The engine watches them all, and keeps score.</p>
     <p class="sub-tag">A crowd of AI forecasters (a stats nerd, a contrarian, an oddsmaker)
       each simulates how the future could play out. Their worlds fold into one honest
@@ -158,6 +161,35 @@
     <div class="step"><div class="k">3 · REALITY GRADES IT</div>
       <p>Every pick is logged and scored against real closing prices. The rules
          for "actually good" were locked before any results existed.</p></div>
+  </div>
+
+  <div class="scen-h">BUILT FOR ANY QUESTION</div>
+  <div class="scen-sub">If it resolves yes or no, the worlds will split for it.</div>
+  <div class="scen">
+    <div class="step"><div class="k">FINANCE · MACRO</div>
+      <p>Fed days and data drops. Rate cuts, CPI prints, jobs numbers: ask
+         before the release and watch the worlds split.</p></div>
+    <div class="step"><div class="k">MARKETS · LIVE</div>
+      <p>Prediction markets. The engine already runs on real open markets and
+         grades every call against the closing price.</p></div>
+    <div class="step"><div class="k">SPORTS · ODDS</div>
+      <p>Games and lines. Handicap a matchup or test a hunch, and see how many
+         worlds land the other way before you trust it.</p></div>
+    <div class="step"><div class="k">POLITICS</div>
+      <p>Elections and policy. Who wins, what passes, who gets confirmed. Six
+         kinds of thinker argue it out.</p></div>
+    <div class="step"><div class="k">CULTURE</div>
+      <p>Drops, premieres, awards. Album dates, box office, renewals, and who
+         takes the trophy on the night.</p></div>
+    <div class="step"><div class="k">WORLD NEWS</div>
+      <p>Geopolitics. Ceasefires, summits, sanctions: fresh headlines are
+         pulled in automatically before the crowd votes.</p></div>
+    <div class="step"><div class="k">WHAT-IF</div>
+      <p>Scenario testing. Force one fact to be true and measure exactly how
+         far the odds move. Your own alternate timeline.</p></div>
+    <div class="step"><div class="k">ANYTHING</div>
+      <p>Settle any argument. Will it snow Friday? Will the flight board on
+         time? Ask, split the worlds, get a number.</p></div>
   </div>
 
   <nav id="worlds">
@@ -200,9 +232,11 @@
   <section id="receipts" style="display:none"></section>
 
   <footer>
-    Paper picks only: a person makes any real decision, and only if the
-    pre-registered gates ever pass. The dashboard reads the exact same
-    ledger the gates read; it cannot show a rosier number than reality.
+    manyworldz predicts; it never bets. Every call is logged and graded
+    against real closing prices, wins and losses both, under rules locked
+    before any results existed. A human makes any real decision. This
+    dashboard reads the exact same ledger the grading reads; it cannot show
+    a rosier number than reality. Not financial advice.
   </footer>
 </main>
 
