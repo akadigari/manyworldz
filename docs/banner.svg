@@ -1,54 +1,68 @@
 <svg width="1280" height="320" viewBox="0 0 1280 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="manyworldz banner">
-  <rect width="1280" height="320" fill="#060913"/>
+  <defs>
+    <radialGradient id="nebA" cx="0.35" cy="0.4" r="0.6">
+      <stop offset="0%" stop-color="#2a4a7a" stop-opacity="0.22"/>
+      <stop offset="100%" stop-color="#2a4a7a" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebB" cx="0.75" cy="0.75" r="0.5">
+      <stop offset="0%" stop-color="#2e6b63" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#2e6b63" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
 
-  <!-- stars -->
-  <g fill="#e8ecf5">
-    <circle cx="60" cy="40" r="1.2" opacity="0.7"/>
-    <circle cx="140" cy="250" r="1" opacity="0.4"/>
-    <circle cx="210" cy="90" r="1.5" opacity="0.8"/>
-    <circle cx="320" cy="200" r="1" opacity="0.5"/>
-    <circle cx="400" cy="50" r="1.2" opacity="0.6"/>
-    <circle cx="520" cy="280" r="1" opacity="0.4"/>
-    <circle cx="600" cy="30" r="1.4" opacity="0.7"/>
-    <circle cx="700" cy="240" r="1" opacity="0.5"/>
-    <circle cx="790" cy="70" r="1.2" opacity="0.6"/>
-    <circle cx="880" cy="180" r="1" opacity="0.4"/>
-    <circle cx="960" cy="40" r="1.5" opacity="0.8"/>
-    <circle cx="1040" cy="260" r="1" opacity="0.5"/>
-    <circle cx="1120" cy="110" r="1.2" opacity="0.6"/>
-    <circle cx="1200" cy="220" r="1" opacity="0.4"/>
-    <circle cx="1250" cy="60" r="1.3" opacity="0.7"/>
-    <circle cx="90" cy="150" r="0.8" opacity="0.35"/>
-    <circle cx="470" cy="140" r="0.8" opacity="0.35"/>
-    <circle cx="850" cy="290" r="0.8" opacity="0.35"/>
-    <circle cx="1170" cy="30" r="0.8" opacity="0.35"/>
+  <rect width="1280" height="320" fill="#04060b"/>
+  <rect width="1280" height="320" fill="url(#nebA)"/>
+  <rect width="1280" height="320" fill="url(#nebB)"/>
+
+  <!-- stars: mostly white, a few hot blue and cool orange, like a real field -->
+  <g>
+    <circle cx="60" cy="40" r="1.2" fill="#eef2f7" opacity="0.8"/>
+    <circle cx="140" cy="250" r="0.9" fill="#eef2f7" opacity="0.45"/>
+    <circle cx="210" cy="90" r="1.5" fill="#cfe0ff" opacity="0.9"/>
+    <circle cx="320" cy="200" r="0.9" fill="#eef2f7" opacity="0.5"/>
+    <circle cx="400" cy="50" r="1.1" fill="#eef2f7" opacity="0.65"/>
+    <circle cx="520" cy="280" r="0.9" fill="#f0d9c8" opacity="0.5"/>
+    <circle cx="600" cy="30" r="1.3" fill="#eef2f7" opacity="0.75"/>
+    <circle cx="700" cy="240" r="0.9" fill="#eef2f7" opacity="0.5"/>
+    <circle cx="790" cy="70" r="1.1" fill="#cfe0ff" opacity="0.65"/>
+    <circle cx="880" cy="180" r="0.9" fill="#eef2f7" opacity="0.45"/>
+    <circle cx="960" cy="40" r="1.4" fill="#eef2f7" opacity="0.85"/>
+    <circle cx="1040" cy="260" r="0.9" fill="#f0d9c8" opacity="0.5"/>
+    <circle cx="1120" cy="110" r="1.1" fill="#eef2f7" opacity="0.6"/>
+    <circle cx="1200" cy="220" r="0.9" fill="#eef2f7" opacity="0.45"/>
+    <circle cx="1250" cy="60" r="1.2" fill="#cfe0ff" opacity="0.75"/>
+    <circle cx="90" cy="150" r="0.7" fill="#eef2f7" opacity="0.35"/>
+    <circle cx="470" cy="140" r="0.7" fill="#eef2f7" opacity="0.35"/>
+    <circle cx="850" cy="290" r="0.7" fill="#eef2f7" opacity="0.35"/>
+    <circle cx="1170" cy="30" r="0.7" fill="#eef2f7" opacity="0.35"/>
   </g>
 
-  <!-- one timeline splitting into many worlds -->
+  <!-- one timeline splitting into many worlds:
+       hot blue-white threads = YES worlds, cool red-orange = NO worlds -->
   <g fill="none" stroke-linecap="round">
-    <path d="M 70 160 H 250" stroke="#8b7ff0" stroke-width="2.5"/>
-    <path d="M 250 160 C 360 160 420 60  560 52"  stroke="#f5c542" stroke-width="2" opacity="0.9"/>
-    <path d="M 250 160 C 360 160 430 100 570 92"  stroke="#f5c542" stroke-width="2" opacity="0.7"/>
-    <path d="M 250 160 C 370 160 440 135 580 130" stroke="#f5c542" stroke-width="2" opacity="0.55"/>
-    <path d="M 250 160 C 370 160 440 185 580 190" stroke="#e0435c" stroke-width="2" opacity="0.55"/>
-    <path d="M 250 160 C 360 160 430 220 570 228" stroke="#e0435c" stroke-width="2" opacity="0.7"/>
-    <path d="M 250 160 C 360 160 420 260 560 268" stroke="#e0435c" stroke-width="2" opacity="0.5"/>
+    <path d="M 70 160 H 250" stroke="#5fbdb0" stroke-width="2.5"/>
+    <path d="M 250 160 C 360 160 420 60  560 52"  stroke="#a8c7ff" stroke-width="2" opacity="0.95"/>
+    <path d="M 250 160 C 360 160 430 100 570 92"  stroke="#a8c7ff" stroke-width="2" opacity="0.7"/>
+    <path d="M 250 160 C 370 160 440 135 580 130" stroke="#a8c7ff" stroke-width="2" opacity="0.5"/>
+    <path d="M 250 160 C 370 160 440 185 580 190" stroke="#d97e58" stroke-width="2" opacity="0.5"/>
+    <path d="M 250 160 C 360 160 430 220 570 228" stroke="#d97e58" stroke-width="2" opacity="0.7"/>
+    <path d="M 250 160 C 360 160 420 260 560 268" stroke="#d97e58" stroke-width="2" opacity="0.9"/>
   </g>
-  <circle cx="70" cy="160" r="5" fill="#8b7ff0"/>
-  <circle cx="250" cy="160" r="4" fill="#e8ecf5"/>
-  <g fill="#f5c542">
+  <circle cx="70" cy="160" r="5" fill="#5fbdb0"/>
+  <circle cx="250" cy="160" r="4" fill="#eef2f7"/>
+  <g fill="#a8c7ff">
     <circle cx="560" cy="52" r="3.5"/>
     <circle cx="570" cy="92" r="3"/>
     <circle cx="580" cy="130" r="2.5"/>
   </g>
-  <g fill="#e0435c">
+  <g fill="#d97e58">
     <circle cx="580" cy="190" r="2.5"/>
     <circle cx="570" cy="228" r="3"/>
     <circle cx="560" cy="268" r="3.5"/>
   </g>
 
   <!-- title -->
-  <text x="620" y="150" font-family="Helvetica Neue, Arial, sans-serif" font-size="60" font-weight="700" letter-spacing="10" fill="#f5c542">MANYWORLDZ</text>
-  <text x="623" y="194" font-family="Helvetica Neue, Arial, sans-serif" font-size="17" letter-spacing="4" fill="#7b86a3">A CROWD OF AI FORECASTERS · PAPER ONLY</text>
-  <text x="623" y="228" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" letter-spacing="1" fill="#55617f">every pick logged, graded against real market prices, wins and losses both</text>
+  <text x="620" y="150" font-family="Helvetica Neue, Arial, sans-serif" font-size="60" font-weight="700" letter-spacing="10" fill="#e9f1ff">MANYWORLDZ</text>
+  <text x="623" y="194" font-family="Helvetica Neue, Arial, sans-serif" font-size="17" letter-spacing="4" fill="#8b98ad">A CROWD OF AI FORECASTERS · PAPER ONLY</text>
+  <text x="623" y="228" font-family="Helvetica Neue, Arial, sans-serif" font-size="13" letter-spacing="1" fill="#5b6880">every pick logged, graded against real market prices, wins and losses both</text>
 </svg>

@@ -11,6 +11,30 @@ prediction gets logged and graded against real prediction-market prices.
 
 Paper only. The engine never places bets. It writes CSV rows and keeps score.
 
+## See it run
+
+```
+$ venv/bin/python ask.py "Will the Fed cut rates in September?"
+
+Q: Will the Fed cut rates in September?
+
+  THE CROWD SAYS: 72% chance of YES
+  (disagreement spread 0.08, 0 unusable answers skipped)
+
+    81%  Ava    (stats nerd): three straight soft inflation prints
+    74%  Finn   (narrative fan): every headline this week leans toward a cut
+    72%  Luna   (sharp-money tracker): informed money moved to YES overnight
+    70%  Kai    (oddsmaker): a fair line here feels like the low 70s
+    68%  Iris   (insider brain): two voting members signaled comfort with easing
+    55%  Mo     (contrarian): everyone is sure, which is exactly what worries me
+```
+
+The format is exact, the numbers are invented: run it with your own key for
+real ones. Add `--simulate` and each agent imagines the event playing out K
+different ways before answering. Add `--whatif "some fact"` and the whole
+crowd re-votes with that fact forced true, so you can see how far one piece
+of news moves the odds.
+
 ## What it does
 
 - **Ask it anything**: give it `"Will the Fed cut rates in September?"`; six
@@ -41,19 +65,31 @@ Paper only. The engine never places bets. It writes CSV rows and keeps score.
    toward us (CLV), did it settle, did we win
 5. `report.py` writes `web/data.json`: the dashboard draws straight from it
 
-## Quick Start
+## Set it up
+
+Five minutes from clone to first answer:
 
 ```bash
+# 1. get the code
 git clone https://github.com/akadigari/manyworldz && cd manyworldz
-python3 -m venv venv && venv/bin/pip install -r requirements.txt
-export ANTHROPIC_API_KEY=your-key   # console.anthropic.com
 
+# 2. install (one venv, five small libraries)
+python3 -m venv venv && venv/bin/pip install -r requirements.txt
+
+# 3. add your Anthropic key (console.anthropic.com)
+export ANTHROPIC_API_KEY=your-key
+
+# 4. ask the crowd something
 venv/bin/python ask.py "Will it snow in DC this December?"
-venv/bin/python ask.py "Will the album drop this month?" --simulate --whatif "the label confirmed the date"
-venv/bin/python run.py              # one live market cycle
+
+# 5. or run one full live cycle on real Kalshi markets
+venv/bin/python run.py
 ```
 
-A question costs about a cent. Answers are cached, so asking twice is free.
+A question costs about a cent on the default model. Answers are cached, so
+asking the same thing twice is free. Prefer Docker?
+`docker build -t manyworldz .` then
+`docker run -e ANTHROPIC_API_KEY=your-key manyworldz`.
 
 ## Models
 
@@ -88,6 +124,10 @@ it's spent, no surprises.
 Actions and commits the scorecard back. Setup: push to GitHub, add
 `ANTHROPIC_API_KEY` as a repository secret (Settings → Secrets → Actions).
 Done. Laptop can stay off.
+
+Not your repo? Fork it, add your own key as the secret, and GitHub runs your
+own copy of the crowd four times a day on the free tier, building your own
+ledger. Every fork is its own little forecasting station.
 
 ## Files
 
