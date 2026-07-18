@@ -19,7 +19,7 @@
 - Default crowd model `claude-haiku-4-5` (spec's cost decision; "go harder" is config-only).
 - Kalshi: read-only public API, non-sports only (`category != "Sports"`), paper picks only. MD-legal lane per spec.
 - Market prices are in **cents (integers 1-99)**; the API sometimes returns dollar-strings: parse both (known venue quirk).
-- README/public text: no MiroFish mentions, not framed as a betting product.
+- README/public text: never name the commercial product that inspired the idea, not framed as a betting product.
 
 ---
 
@@ -1070,7 +1070,7 @@ git commit -m "m1: simulate mode, K futures per agent, YES-fraction probability"
 
 ---
 
-### Task 7: What-if (the god's-eye)
+### Task 7: What-if (inject a fact)
 
 **Files:**
 - Create: `engine/whatif.py`
@@ -1126,7 +1126,7 @@ Expected: FAIL (`ModuleNotFoundError`)
 - [ ] **Step 3: Write `engine/whatif.py`**
 
 ```python
-"""The god's-eye: force a fact to be true and watch the crowd's number move.
+"""What-if: force a fact to be true and watch the crowd's number move.
 
 We don't touch the agents. We edit the world they see. The injected fact
 is prepended to the market question so every prompt (vote or simulate)
@@ -1165,7 +1165,7 @@ Expected: 1 PASS
 
 ```bash
 git add engine/whatif.py tests/test_whatif.py
-git commit -m "m1: what-if god's-eye, inject a fact, measure the shift"
+git commit -m "m1: what-if, inject a fact, measure the shift"
 ```
 
 ---

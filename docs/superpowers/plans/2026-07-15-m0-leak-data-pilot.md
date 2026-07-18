@@ -17,7 +17,7 @@
 - All dates are plain `"YYYY-MM-DD"` strings end-to-end: never pandas datetime columns (dodges pandas-3 ns/µs pitfalls that bit MechLab).
 - Determinism: every random choice uses `SEED = 14000605` from `config.py`.
 - API spend: the re-ID probe is the ONLY step that calls a paid API in M0; hard-capped at `PROBE_BUDGET_USD = 5.00`.
-- Public framing: README text never mentions MiroFish and never frames the project as a betting product (owner rule; spec "Public framing").
+- Public framing: README text never names the commercial product that inspired the idea and never frames the project as a betting product (owner rule; spec "Public framing").
 - Data files live in `data/` (gitignored). Tests never touch `data/`: fixtures only.
 - Pre-registered gate values (copied from spec, locked): re-ID demotion at **≥10%**, GO needs **≥350** post-cutoff games with verified closes and **≤1%** errors in a 50-row hand audit.
 

@@ -17,7 +17,7 @@ plugins). knaves.ai remains the site brand.
 
 manyworldz is the "Dr Strange machine": instead of one model guessing an outcome,
 it builds a **crowd of AI forecasters**, lets each one form its own probability,
-and reads the prediction off the crowd. It has a **god's-eye what-if mode**:
+and reads the prediction off the crowd. It has a **what-if mode**:
 inject a scenario ("star player is OUT tonight") and watch the whole crowd's
 number shift. First target: **NBA games**, scored against real market closing
 prices over 3 seasons. Later targets (WNBA, MLB, Kalshi non-sports) are plug-in
@@ -38,10 +38,10 @@ found:
   best published result is *parity with human crowds* (Schoenegger's 12-LLM
   ensemble matched 925 humans), and multi-agent Brier gains are measured
   against LLM baselines, never against market prices.
-- **The viral "$1.49M MiroFish NBA system" story is a mashup.** The real trader
+- **The viral "$1.49M multi-agent NBA system" story is a mashup.** The real trader
   (Polymarket's 0p0jogggg, $1.48M PnL) made their money on elections, Champions
-  League, Norwegian football, Valorant, and Dota 2 (not NBA), and MiroFish's
-  own README makes zero profit claims and contains no betting code.
+  League, Norwegian football, Valorant, and Dota 2 (not NBA), and the tool named
+  in that story makes zero profit claims in its own README and contains no betting code.
 - **Anonymized backtests leak.** Models re-identify "anonymized" games at high
   rates (expect ≥30%). So we don't *trust* the masker: we **measure the leak
   and publish the number**, and the backtest's status depends on it.
@@ -89,7 +89,7 @@ agamotto/
 │   │                    #   retrieved for similar future games
 │   ├── calibrate.py     # logistic layer that learns when the crowd runs
 │   │                    #   hot/cold (train: earlier seasons; test: held out)
-│   └── whatif.py        # god's-eye: inject a scenario, re-run, show the shift
+│   └── whatif.py        # what-if: inject a scenario, re-run, show the shift
 ├── adapters/
 │   └── nba.py           # nba_api → per-game features (last-10 form, home/away
 │                        #   splits, pace, defensive rating, rest/back-to-backs,
@@ -227,7 +227,7 @@ live markets; the NBA backtest lab plugs back in whenever its data arrives
 (M0's code is complete and waiting on the closes CSV + probe run).
 
 **M1: the engine, live (now).** The crowd core: personas + ensemble modes,
-vote + simulate (K rollouts), one deliberation round, the what-if god's-eye,
+vote + simulate (K rollouts), one deliberation round, the what-if injector,
 paper ledger with CLV grading, and a **live Kalshi non-sports adapter**:
 the crowd votes on real open markets (entertainment, econ, culture; MD-legal
 year-round) and logs paper picks when the edge clears fees. No leak risk:
@@ -353,9 +353,9 @@ Rules that keep it honest and cheap:
 The GitHub repo and the site tell **manyworldz's own story**, on its own terms:
 
 - Lead with what it is: a multi-agent outcome-simulation engine, a crowd of
-  AI forecasters, simulated futures, a what-if god's-eye, a learning loop, and
+  AI forecasters, simulated futures, a what-if injector, a learning loop, and
   an honest evaluation lab with pre-registered gates.
-- **No MiroFish mentions** in the README or site: no comparisons, no debunk
+- **Never name the commercial product that sparked the idea** in the README or site: no comparisons, no debunk
   content. That research stays in the private wiki. (Nothing dishonest about
   this: zero shared code, and the underlying idea is decades-old public
   research. Related-work credits go to academic papers, which read stronger
@@ -386,8 +386,8 @@ house style. Commits never carry AI co-author trailers.
 - No real-money execution of any kind; a person places any real bet, and only
   after every gate passes.
 - No Polymarket trading (geo-blocked in MD; data use only).
-- No copy-trading features, ever: the MiroFish-brand copy-trade funnel is the
-  scam this project's honesty is designed to be the opposite of.
+- No copy-trading features, ever: the copy-trade funnel sold under that product's
+  brand is the scam this project's honesty is designed to be the opposite of.
 
 ## Key references
 
@@ -397,6 +397,6 @@ house style. Commits never carry AI co-author trailers.
 - AIA Forecaster: blend weights vs market prices (arXiv 2511.07678)
 - MGM Kaggle NBA closing-odds dataset (2021-22 → 2026 All-Star break)
 - Kalshi single-game NBA candlesticks (Apr 2025 →), via kayfabe's data layer
-- MiroFish (github.com/666ghj/MiroFish): idea lineage; no code used (AGPL)
+- The commercial crowd-sim product that sparked the idea: lineage only, zero code used (we never opened its AGPL source)
 - Our own prior art: kayfabe/sim.py (persona crowd v0), GATES.md pattern,
   wallet_screener's sign-randomization luck test
