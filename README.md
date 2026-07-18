@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/banner.svg" alt="manyworldz: one timeline splitting into many worlds" width="100%"/>
+</p>
+
 # manyworldz
 
 An LLM-driven forecasting engine that runs a crowd of AI agents on any yes/no
