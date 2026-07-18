@@ -5,16 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>manyworldz</title>
 <style>
-  /* ---- Deep Space theme ----------------------------------------- */
+  /* ---- Realistic Space theme ------------------------------------ */
+  /* Colors follow real star temperature: hot stars burn blue-white,
+     cool stars burn red-orange. YES worlds are hot, NO worlds are cool.
+     (Variable names are historical; only the values changed.) */
   :root {
-    --space:   #060913;   /* the void */
-    --panel:   #0b1020;   /* card background */
-    --line:    #1a2340;   /* faint borders */
-    --star:    #e8ecf5;   /* text: star-white */
-    --dim:     #7b86a3;   /* secondary text */
-    --gold:    #f5c542;   /* starlight: chosen worlds, YES */
-    --crimson: #e0435c;   /* nebula: NO branches */
-    --violet:  #8b7ff0;   /* secondary worlds */
+    --space:   #04060b;   /* the void */
+    --panel:   #0a0f18;   /* card background */
+    --line:    #17202e;   /* faint borders */
+    --star:    #eef2f7;   /* text: star-white */
+    --dim:     #8b98ad;   /* secondary text */
+    --gold:    #a8c7ff;   /* hot blue stars: chosen worlds, YES */
+    --crimson: #d97e58;   /* cool red stars: NO branches */
+    --violet:  #5fbdb0;   /* nebula teal: secondary worlds */
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -37,7 +40,7 @@
           justify-content: center; text-align: center; padding: 30px 0 46px; }
   .hero h1 { font-family: Georgia, serif; font-size: clamp(42px, 8vw, 84px);
              letter-spacing: 6px; line-height: 1.05;
-             background: linear-gradient(100deg, #f5c542 20%, #ffe9a8 50%, #f5c542 80%);
+             background: linear-gradient(100deg, #a8c7ff 20%, #e9f1ff 50%, #a8c7ff 80%);
              -webkit-background-clip: text; background-clip: text; color: transparent; }
   .hero .by { color: var(--dim); letter-spacing: 4px; font-size: 13px; margin-top: 10px; }
   .hero .big-tag { color: var(--star); font-size: clamp(16px, 2.6vw, 21px);
@@ -149,8 +152,9 @@
       <p>Eight AI characters research each question (headlines, base rates)
          and think in genuinely different ways, on purpose.</p></div>
     <div class="step"><div class="k">2 · WORLDS BRANCH</div>
-      <p>Each agent imagines the event playing out again and again. Gold worlds
-         resolve YES, crimson worlds NO. Their spread is the crowd's doubt.</p></div>
+      <p>Each agent imagines the event playing out again and again. Hot blue
+         worlds resolve YES, cool red worlds NO, like real stars. Their spread
+         is the crowd's doubt.</p></div>
     <div class="step"><div class="k">3 · REALITY GRADES IT</div>
       <p>Every pick is logged and scored against real closing prices. The rules
          for "actually good" were locked before any results existed.</p></div>
@@ -229,7 +233,7 @@ function show(which) {
 /* ---- the branching worlds map ------------------------------------ */
 // Each market becomes a tree: one root (the question, now) branching into
 // the worlds the crowd saw. Simulate mode -> each imagined future is a
-// branch ending in a star (gold = resolves YES, crimson = NO). Vote mode ->
+// branch ending in a star (hot blue = resolves YES, cool red = NO). Vote mode ->
 // each agent's probability is a branch reaching toward YES (top) or NO
 // (bottom). The big number is the crowd's folded-together answer.
 function tree(market) {
@@ -519,7 +523,9 @@ fetch('data.json')
 
 function render(d) {
   if (d._sample) {
-    document.querySelector('.tagline').innerHTML +=
+    // A missing element must never kill the whole page render.
+    const tag = document.querySelector('.sub-tag');
+    if (tag) tag.innerHTML +=
       ' <span class="mono" style="color:var(--violet)">· sample data: the real scorecard appears after the first cloud run</span>';
   }
   renderFutures(d);
