@@ -22,28 +22,34 @@ Q: Will the Fed cut rates in September?
   THE CROWD SAYS: 72% chance of YES
   (disagreement spread 0.08, 0 unusable answers skipped)
 
-    81%  Ava    (stats nerd): three straight soft inflation prints
-    74%  Finn   (narrative fan): every headline this week leans toward a cut
-    72%  Luna   (sharp-money tracker): informed money moved to YES overnight
-    70%  Kai    (oddsmaker): a fair line here feels like the low 70s
-    68%  Iris   (insider brain): two voting members signaled comfort with easing
-    55%  Mo     (contrarian): everyone is sure, which is exactly what worries me
+    81%  Ava    three straight soft inflation prints
+    74%  Finn   every headline this week leans toward a cut
+    72%  Luna   informed money moved to YES overnight
+    70%  Kai    a fair line here feels like the low 70s
+    68%  Iris   two voting members signaled comfort with easing
+    55%  Mo     everyone is sure, which is exactly what worries me
+
+  FUTURES THE CROWD SAW:
+   + The Fed reads three cooling prints and cuts 25bps  (Ava)
+   + Powell hints at Jackson Hole first, then delivers  (Luna)
+   - A hot jobs report freezes the committee one more meeting  (Mo)
 ```
 
 The format is exact, the numbers are invented: run it with your own key for
-real ones. Add `--simulate` and each agent imagines the event playing out K
-different ways before answering. Add `--whatif "some fact"` and the whole
-crowd re-votes with that fact forced true, so you can see how far one piece
-of news moves the odds.
+real ones. Seeing every outcome is the default: each run imagines the event
+playing out K different ways, and the odds are how many of those futures
+land YES. Add `--vote` for a cheaper single-number mode. Add
+`--whatif "some fact"` and the engine re-runs every world with that fact
+forced true, so you can see how far one piece of news moves the odds.
 
 ## What it does
 
-- **Ask it anything**: give it `"Will the Fed cut rates in September?"`; six
-  to eight AI personas (a stats nerd, a contrarian, an oddsmaker, a
-  sharp-money tracker...) each pull headlines, anchor on a base rate, and
-  return their own probability with a one-line reason
-- **Simulate mode**: each agent imagines the event playing out K different
-  ways; its probability is how many of its futures land YES
+- **Ask it anything**: give it `"Will the Fed cut rates in September?"`; the
+  engine splits it into six to eight independent runs; each pulls headlines,
+  anchors on a base rate, and imagines the event playing out several
+  different ways
+- **Every outcome seen**: a run's probability is how many of its imagined
+  futures land YES; the engine's answer is the fold of all the worlds
 - **What-if**: re-runs the whole crowd with a fact forced true and shows how
   much the odds move
 - **Live loop**: scans ~4,000 open Kalshi markets (non-sports), votes on the

@@ -24,6 +24,8 @@ def test_one_cycle_saves_a_snapshot_for_the_dashboard(tmp_path, monkeypatch):
     # The website draws from latest_cycle.json: make sure a cycle writes it.
     import json
     monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
+    # This test's canned answer is vote-shaped, so pin vote mode.
+    monkeypatch.setattr(config, "SIM_MODE", "vote")
     cards = parse_events(json.loads(FIXTURE.read_text()))
     confident = '{"probability": 0.75, "reason": "sure thing"}'
     snap_file = tmp_path / "snap.json"
@@ -58,6 +60,8 @@ def test_snapshot_records_no_quorum_verdict(tmp_path, monkeypatch):
 
 def test_one_cycle_offline_logs_a_pick(tmp_path, monkeypatch):
     monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
+    # This test's canned answer is vote-shaped, so pin vote mode.
+    monkeypatch.setattr(config, "SIM_MODE", "vote")
     cards = parse_events(json.loads(FIXTURE.read_text()))
     confident = '{"probability": 0.75, "reason": "sure thing"}'
     # Fixed now_iso: pins the clock so fixture close_times (e.g. July 31,
@@ -121,3 +125,21 @@ def test_one_cycle_live_grading_survives_one_bad_ticker_fetch(tmp_path, monkeypa
     rows = {r["ticker"]: r for r in ledger.load(ledger_path)}
     assert int(rows["T-OK"]["latest_mid"]) == 55
     assert int(rows["T-FAIL"]["latest_mid"]) == 43   # untouched, kept old value
+
+def test_one_cycle_default_simulate_mode_logs_a_pick(tmp_path, monkeypatch):
+    # The engine's default is simulate mode: canned futures-shaped answers
+    # must flow through a whole cycle and land a pick in the ledger.
+    monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
+    monkeypatch.setattr(config, "SIM_MODE", "simulate")
+    cards = parse_events(json.loads(FIXTURE.read_text()))
+    futures = ('{"futures": ['
+               '{"story": "it lands cleanly", "resolves": "YES"},'
+               '{"story": "a delay but it happens", "resolves": "YES"},'
+               '{"story": "it happens early", "resolves": "YES"},'
+               '{"story": "momentum carries it", "resolves": "YES"},'
+               '{"story": "a surprise kills it", "resolves": "NO"}]}')
+    out = runner.one_cycle(cards=cards, now_iso="2026-07-15T00:00:00Z",
+                           ask_fn=lambda p, model=None, max_tokens=400: futures)
+    assert out["picks"] >= 1
+    rows = ledger.load(tmp_path / "ledger.csv")
+    assert rows and rows[0]["mode"] == "simulate"

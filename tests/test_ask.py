@@ -35,7 +35,7 @@ def test_agent_vote_works_without_a_market_price():
 def test_ask_question_returns_a_crowd_result_offline():
     confident = '{"probability": 0.8, "reason": "signs point to yes"}'
     result = ask_question("Will the sequel be announced this year?",
-                          with_news=False,
+                          mode="vote", with_news=False,
                           ask_fn=lambda p, model=None, max_tokens=400: confident)
     assert 0.7 <= result["probability"] <= 0.9
     assert len(result["votes"]) >= 1
@@ -69,7 +69,7 @@ def test_ask_question_whatif_reports_shift_offline():
         return '{"probability": 0.4, "reason": "unclear"}'
 
     result = ask_question("Will the deal close?", whatif="the board approved it",
-                          with_news=False, ask_fn=ask)
+                          mode="vote", with_news=False, ask_fn=ask)
     assert result["before"]["probability"] == pytest.approx(0.4)
     assert result["after"]["probability"] == pytest.approx(0.9)
     assert result["shift"] == pytest.approx(0.5)

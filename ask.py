@@ -1,14 +1,15 @@
-"""Ask the crowd anything.
+"""Ask the engine anything.
 
 This is the front door to the whole engine. You type a yes/no question about
-the future; a crowd of AI characters reads it (plus fresh headlines), each
-forms its own probability (or, in simulate mode, imagines the outcome
-playing out several times), and you get one honest number plus everyone's
-reasoning. Add --whatif to force a fact to be true and watch the number move.
+the future; the engine splits it into several independent runs. Each run
+reads the question (plus fresh headlines) and imagines the outcome playing
+out several different ways. The futures fold into one honest number, and you
+see every imagined world. Add --whatif to force a fact to be true and watch
+the number move.
 
 Examples:
     venv/bin/python ask.py "Will the Fed cut rates in September?"
-    venv/bin/python ask.py "Will it snow in DC this December?" --simulate
+    venv/bin/python ask.py "Will it snow in DC this December?" --vote
     venv/bin/python ask.py "Will the album drop this month?" \\
         --whatif "the label just confirmed the release date"
 
@@ -29,7 +30,8 @@ from engine.swarm import run_crowd
 from engine.whatif import run_whatif
 
 
-def ask_question(question: str, whatif: str | None = None, mode: str = "vote",
+def ask_question(question: str, whatif: str | None = None,
+                 mode: str = "simulate",
                  k: int | None = None, n_agents: int | None = None,
                  with_news: bool = True, ask_fn=None,
                  model: str | None = None) -> dict:
@@ -70,7 +72,7 @@ def _print_crowd(result: dict) -> None:
           f"{result['skipped']} unusable answers skipped)\n")
     for vote in result["votes"]:
         print(f"  {vote['probability']:>5.0%}  {vote['agent']:<6} "
-              f"({vote['archetype']}): {vote['reason']}")
+              f"{vote['reason']}")
     if result["futures"]:
         print("\n  FUTURES THE CROWD SAW:")
         for future in result["futures"]:
@@ -86,7 +88,9 @@ def main() -> None:
     parser.add_argument("--whatif", metavar="FACT",
                         help="re-run the crowd with this fact forced true")
     parser.add_argument("--simulate", action="store_true",
-                        help="each agent imagines K futures instead of one vote")
+                        help="(the default) every run imagines K futures")
+    parser.add_argument("--vote", action="store_true",
+                        help="cheaper mode: one probability per run, no futures")
     parser.add_argument("--agents", type=int, default=None,
                         help=f"crowd size (default {config.ENGINE_N_AGENTS})")
     parser.add_argument("--model", default=None,
@@ -96,7 +100,7 @@ def main() -> None:
                         help="skip the headline lookup")
     args = parser.parse_args()
 
-    mode = "simulate" if args.simulate else "vote"
+    mode = "vote" if args.vote else "simulate"
     result = ask_question(args.question, whatif=args.whatif, mode=mode,
                           n_agents=args.agents, with_news=not args.no_news,
                           model=args.model)
