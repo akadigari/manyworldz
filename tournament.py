@@ -33,7 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from adapters import metaculus
 from engine import llm, news
-from engine.methods import build_methods
+from engine.ensemble import build_crowd_for
 from engine.swarm import run_crowd
 
 LOG_COLUMNS = ["qid", "question", "prob", "at"]
@@ -117,7 +117,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
     pending = [c for c in cards if c.get("qid") not in already]
     targets = pending[:config.TOURNAMENT_QUESTIONS_PER_RUN]
 
-    crowd = build_methods(config.ENGINE_N_AGENTS, config.SEED)
+    crowd = build_crowd_for()
     answered = submitted = 0
 
     for card in targets:

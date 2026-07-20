@@ -17,7 +17,7 @@ import config
 import ledger
 from adapters import kalshi_events as kalshi
 from engine import llm, news
-from engine.methods import build_methods
+from engine.ensemble import build_crowd_for
 from engine.swarm import run_crowd
 
 
@@ -80,7 +80,7 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
 
     # 2. The crowd votes on the biggest tradeable markets.
     targets = kalshi.tradeable(cards, now)[:config.MARKETS_PER_RUN]
-    crowd = build_methods(config.ENGINE_N_AGENTS, config.SEED)
+    crowd = build_crowd_for()
     mode = config.SIM_MODE
 
     picks = 0

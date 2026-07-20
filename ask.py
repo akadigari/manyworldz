@@ -25,8 +25,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from engine import llm, news
+from engine.ensemble import build_crowd_for
 from engine.explore import explore_worlds, find_paths
-from engine.methods import build_methods
 from engine.swarm import run_crowd
 from engine.whatif import run_whatif
 
@@ -36,14 +36,20 @@ def _resolve_ask(ask_fn=None, model: str | None = None):
 
     Tests pass their own ask_fn, which always wins. Otherwise, if a
     --model was picked at the command line, carry it into every crowd
-    call. With neither, just use the plain default.
+    call THAT DOESN'T ALREADY HAVE ITS OWN MODEL. An ensemble seat passes
+    its own model straight through (see engine/swarm.py's agent_vote and
+    engine/futures.py's agent_futures), and that per-seat choice always
+    wins: --model is a fallback, not a stomp. A plain methods-mode agent
+    never passes a model of its own, so --model works exactly as before
+    for it. With neither --model nor a per-seat model, just use the plain
+    default.
     """
     if ask_fn is not None:
         return ask_fn
     if model is not None:
         chosen = model
         def ask(prompt, model=None, max_tokens=400):
-            return llm.ask(prompt, model=chosen, max_tokens=max_tokens)
+            return llm.ask(prompt, model=model or chosen, max_tokens=max_tokens)
         return ask
     return llm.ask
 
@@ -52,20 +58,22 @@ def ask_question(question: str, whatif: str | None = None,
                  mode: str = "simulate",
                  k: int | None = None, n_agents: int | None = None,
                  with_news: bool = True, ask_fn=None,
-                 model: str | None = None) -> dict:
+                 model: str | None = None,
+                 crowd_mode: str | None = None) -> dict:
     """Run the crowd on any question and return the full result.
 
     The question becomes a "card" with no market price (mid=None), so the
     agents are told honestly that they have nothing to anchor on. Returns
     the run_crowd dict, or, when a what-if fact is given, the
     before/after/shift dict from run_whatif.
+
+    `crowd_mode` overrides config.CROWD_MODE for this one call ("methods"
+    or "ensemble"); leave it None to use whatever the config/env says.
     """
     card = {"ticker": "ASK", "question": question, "mid": None}
-    if n_agents is None:
-        n_agents = config.ENGINE_N_AGENTS
     if k is None:
         k = config.SIM_ROLLOUTS_K
-    crowd = build_methods(n_agents, config.SEED)
+    crowd = build_crowd_for(n_agents, crowd_mode)
     headlines = news.research(question) if with_news else []
     ask = _resolve_ask(ask_fn, model)
     if whatif:
@@ -146,6 +154,11 @@ def main() -> None:
     parser.add_argument("--model", default=None,
                         help="haiku, sonnet, opus, fable, or any full model ID "
                              f"(default {config.ENGINE_MODEL})")
+    parser.add_argument("--crowd", choices=["methods", "ensemble"], default=None,
+                        help="'methods' (one model, six ways of reasoning) or "
+                             "'ensemble' (different models on different "
+                             f"evidence slices, config.ENSEMBLE_SEATS) "
+                             f"(default {config.CROWD_MODE})")
     parser.add_argument("--no-news", action="store_true",
                         help="skip the headline lookup")
     args = parser.parse_args()
@@ -174,7 +187,7 @@ def main() -> None:
     mode = "vote" if args.vote else "simulate"
     result = ask_question(args.question, whatif=args.whatif, mode=mode,
                           n_agents=args.agents, with_news=not args.no_news,
-                          model=args.model)
+                          model=args.model, crowd_mode=args.crowd)
 
     if args.whatif:
         print(f'\n  BEFORE the what-if:')
