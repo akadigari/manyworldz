@@ -55,6 +55,8 @@ Every `+` and `-` line is one imagined future: a tiny story with an ending. The 
 
 Add `--whatif "some fact"` to re-run every world with that fact forced true and see how far the odds move. Add `--vote` for a cheaper single-number mode with no stories.
 
+Add `--deep` to go further: instead of a fixed batch of futures, it keeps splitting into more of them, round after round. Each new batch gets checked against every world already found, and stories that describe the same mechanism get folded together and counted, not repeated. It keeps splitting until two rounds in a row find nothing new, then shows the map of every distinct world it saw, ranked by how often each one came up. The odds are still the plain count across every future it ever imagined, duplicates included: the map is just for reading, not for the math.
+
 ## 🌌 How it works
 
 ```mermaid
