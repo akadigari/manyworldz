@@ -57,6 +57,10 @@ Add `--whatif "some fact"` to re-run every world with that fact forced true and 
 
 Add `--deep` to go further: instead of a fixed batch of futures, it keeps splitting into more of them, round after round. Each new batch gets checked against every world already found, and stories that describe the same mechanism get folded together and counted, not repeated. It keeps splitting until two rounds in a row find nothing new, then shows the map of every distinct world it saw, ranked by how often each one came up. The odds are still the plain count across every future it ever imagined, duplicates included: the map is just for reading, not for the math.
 
+Two things make `--deep` work harder for its answer instead of just restating its first idea. Right after round 1, one extra "saboteur" call is shown the current map and asked to imagine exactly how the crowd's own read turns out wrong, a forced pre-mortem. And starting at round 2, every other round is told at least one of its new futures must involve a wildcard: a lawsuit, a leak, a rival moving first, the money running out. Both feed into the same map through the same dedupe, they just make it harder for the run to quietly settle for five copies of the same "everything goes as planned" story.
+
+Add `--path YES` or `--path NO` to hunt for distinct, concrete ways one outcome could happen, each with the "gates" (preconditions) it needs, e.g. "Powell signals at Jackson Hole, then the jobs report cools." Every distinct path gets one sober rating: "likely", "possible", or "longshot", anchored on base rates, not on how good the story sounds. It is normal, and often correct, for the rater to call every single path a longshot. **The path search never sets the odds.** A completely separate, ordinary neutral split always runs alongside it, and that plain number is the only one ever reported as "the odds." Finding a vivid way something could happen is not the same as it being likely, and this mode is built so the two can never blur into each other. If nothing believable turns up, it says so plainly: zero paths is a real answer.
+
 ## 🌌 How it works
 
 ```mermaid
