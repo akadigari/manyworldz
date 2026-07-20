@@ -178,7 +178,7 @@
          worlds land the other way before you trust it.</p></div>
     <div class="step"><div class="k">POLITICS</div>
       <p>Elections and policy. Who wins, what passes, who gets confirmed. Six
-         kinds of thinker argue it out.</p></div>
+         analytical methods argue it out.</p></div>
     <div class="step"><div class="k">CULTURE</div>
       <p>Drops, premieres, awards. Album dates, box office, renewals, and who
          takes the trophy on the night.</p></div>
@@ -287,6 +287,8 @@ function tree(market) {
       tip: v.reason, p: v.probability,
     }));
   }
+  // v.agent / f.agent hold the analytical method that produced that
+  // branch (e.g. "base rates"), not a name.
   if (!branches.length) return '';
 
   const n = branches.length;
@@ -395,51 +397,51 @@ const SAMPLE = {
     { ticker: 'SAMPLE-1', question: 'Will the album drop this month? (in July)', category: 'Entertainment',
       mid: 43, probability: 0.62, spread: 0.11, skipped: 0, verdict: { side: 'YES', edge_cents: 19 },
       votes: [], futures: [
-        { story: 'Surprise midnight drop after the tour announcement', resolves: 'YES', agent: 'Ava' },
-        { story: 'Label pushes it to August for a bigger rollout', resolves: 'NO', agent: 'Ben' },
-        { story: 'Lead single lands first, album follows July 30', resolves: 'YES', agent: 'Cleo' },
-        { story: 'Deluxe edition drops July 25 with the film', resolves: 'YES', agent: 'Dev' },
-        { story: 'A leak forces an early official release', resolves: 'YES', agent: 'Ember' },
-        { story: 'Sample clearance drama delays everything', resolves: 'NO', agent: 'Finn' },
-        { story: 'Album arrives with a surprise feature list', resolves: 'YES', agent: 'Gia' },
-        { story: 'Tour rehearsals eat the finish date', resolves: 'NO', agent: 'Hugo' },
+        { story: 'Surprise midnight drop after the tour announcement', resolves: 'YES', agent: 'base rates' },
+        { story: 'Label pushes it to August for a bigger rollout', resolves: 'NO', agent: 'fresh news' },
+        { story: 'Lead single lands first, album follows July 30', resolves: 'YES', agent: 'market logic' },
+        { story: 'Deluxe edition drops July 25 with the film', resolves: 'YES', agent: 'smart money' },
+        { story: 'A leak forces an early official release', resolves: 'YES', agent: 'insider logic' },
+        { story: 'Sample clearance drama delays everything', resolves: 'NO', agent: 'skeptic' },
+        { story: 'Album arrives with a surprise feature list', resolves: 'YES', agent: 'base rates' },
+        { story: 'Tour rehearsals eat the finish date', resolves: 'NO', agent: 'fresh news' },
       ] },
     { ticker: 'SAMPLE-2', question: 'Will the Fed cut rates in September?', category: 'Economics',
       mid: 54, probability: 0.58, spread: 0.14, skipped: 0, verdict: 'pass',
       futures: [], votes: [
-        { probability: 0.7, agent: 'Ava', archetype: 'stats nerd', reason: 'futures pricing leans cut' },
-        { probability: 0.45, agent: 'Ben', archetype: 'contrarian', reason: 'consensus is exactly what slips' },
-        { probability: 0.65, agent: 'Cleo', archetype: 'sharp-money tracker', reason: 'flow says cut' },
-        { probability: 0.5, agent: 'Dev', archetype: 'oddsmaker', reason: 'coin flip at this data' },
-        { probability: 0.6, agent: 'Ember', archetype: 'narrative fan', reason: 'the story wants a cut' },
-        { probability: 0.55, agent: 'Finn', archetype: 'insider brain', reason: 'committee sounds split' },
-        { probability: 0.62, agent: 'Gia', archetype: 'stats nerd', reason: 'inflation trend supports it' },
-        { probability: 0.58, agent: 'Hugo', archetype: 'contrarian', reason: 'mild lean, low conviction' },
+        { probability: 0.7, agent: 'base rates', reason: 'futures pricing leans cut' },
+        { probability: 0.45, agent: 'skeptic', reason: 'consensus is exactly what slips' },
+        { probability: 0.65, agent: 'smart money', reason: 'flow says cut' },
+        { probability: 0.5, agent: 'market logic', reason: 'coin flip at this data' },
+        { probability: 0.6, agent: 'fresh news', reason: 'the story wants a cut' },
+        { probability: 0.55, agent: 'insider logic', reason: 'committee sounds split' },
+        { probability: 0.62, agent: 'base rates', reason: 'inflation trend supports it' },
+        { probability: 0.58, agent: 'skeptic', reason: 'mild lean, low conviction' },
       ] },
   ]},
 };
 
 /* ---- ask the worlds: the crowd, running in YOUR browser ------------ */
-// Mirrors the Python engine's personas and prompts. The visitor's key goes
+// Mirrors the Python engine's methods and prompts. The visitor's key goes
 // directly to Anthropic (that's what the special header below permits).
 // No server, no storage, no middleman.
-const CAST = [
-  ['Ava', 'stats nerd', 'trusts base rates and numbers, distrusts stories'],
-  ['Ben', 'contrarian', 'hunts for reasons the crowd is wrong'],
-  ['Cleo', 'sharp-money tracker', 'cares only where informed money is moving'],
-  ['Dev', 'oddsmaker', 'tries to set a fair line others would bet into'],
-  ['Ember', 'narrative fan', 'feels momentum and hype, follows the story'],
-  ['Finn', 'insider brain', 'obsesses over who actually decides the outcome'],
+const METHODS = [
+  ['base rates', 'start from how often things like this actually happen, then adjust'],
+  ['fresh news', 'weigh the newest information hardest, but say when it is thin'],
+  ['market logic', 'think like someone setting a fair price others would take'],
+  ['smart money', 'focus on where informed people are putting their weight'],
+  ['insider logic', 'focus on who actually decides this outcome and what they want'],
+  ['skeptic', 'hunt for reasons the consensus is wrong'],
 ];
 
-function votePrompt(name, archetype, style, question) {
-  return `You are ${name}, a ${archetype}: ${style}.\n\n` +
+function votePrompt(label, instruction, question) {
+  return `Reason with one method only. Method: ${label}. ${instruction}.\n\n` +
     `The question: "${question}"\n` +
     `There is no market price for this question: you have nothing to anchor ` +
     `on except your own reasoning.\n\n` +
     `Start from the base rate: how often do things like this usually happen, ` +
     `historically? Anchor there first, THEN adjust for what you know.\n` +
-    `Think like your character and give YOUR OWN probability that this ` +
+    `Stick to your one method and give YOUR OWN probability that this ` +
     `resolves YES.\n` +
     `Reply with ONLY JSON like {"probability": 0.42, "reason": "one short sentence"}`;
 }
@@ -487,13 +489,13 @@ function foldVotes(votes) {
 }
 
 async function runBrowserCrowd(key, model, question) {
-  const answers = await Promise.allSettled(CAST.map(([n, a, s]) =>
-    callClaude(key, model, votePrompt(n, a, s, question))));
+  const answers = await Promise.allSettled(METHODS.map(([label, instruction]) =>
+    callClaude(key, model, votePrompt(label, instruction, question))));
   const votes = [], skipped = [];
   answers.forEach((r, i) => {
     const vote = r.status === 'fulfilled' ? parseVote(r.value) : null;
-    if (vote) votes.push({ ...vote, agent: CAST[i][0], archetype: CAST[i][1] });
-    else skipped.push(CAST[i][0]);
+    if (vote) votes.push({ ...vote, agent: METHODS[i][0] });
+    else skipped.push(METHODS[i][0]);
   });
   if (!votes.length) throw new Error('The whole crowd came back unusable. Try again.');
   return { question, ...foldVotes(votes), votes, futures: [], skipped: skipped.length, mid: null };
