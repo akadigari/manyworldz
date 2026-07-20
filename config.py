@@ -115,3 +115,24 @@ METACULUS_TOURNAMENT = _os.environ.get("METACULUS_TOURNAMENT", "minibench")
 # the square of the total, so skipping questions hurts twice. The budget
 # cap in ENGINE_BUDGET_USD is still the real brake on spending.
 TOURNAMENT_QUESTIONS_PER_RUN = 25
+
+# How far short of 0% and 100% every submitted binary probability gets
+# clipped, e.g. 0.98 instead of 0.999. Metaculus scores forecasts with a
+# log rule, and a log rule punishes a confident miss brutally: a 99%
+# "yes" that resolves no scores about as badly as a forecast can. The
+# bots that actually rank near the top of these tournaments clip their
+# extremes for exactly this reason, trading away a sliver of best-case
+# score for a lot less downside if the crowd is confidently wrong.
+TOURNAMENT_CLIP = 0.02
+
+# Scoring reads the LAST forecast on file before a question closes, not
+# the first one. A question this bot answered days ago can still get a
+# stale, worse number graded if nothing refreshes it. Any already
+# answered question whose close time is within this many hours gets one
+# more fresh crowd run before the window shuts.
+TOURNAMENT_REFRESH_HOURS = 24
+
+# How many stale, soon-to-close questions one cycle will re-run and
+# resubmit. Keeps refresh spend bounded the same way
+# TOURNAMENT_QUESTIONS_PER_RUN bounds spend on brand new questions.
+TOURNAMENT_REFRESH_CAP = 10
