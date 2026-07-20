@@ -61,3 +61,7 @@ FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
 MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
 ENGINE_BUDGET_USD = 10.00 # hard stop for cumulative engine spend
 EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets us simulate trades on non-sports ones
+
+# ---- deep split (engine/explore.py: keep imagining until nothing new shows up) ----
+DEEP_MAX_ROUNDS = 8   # give up after this many rounds even if still finding new worlds
+DEEP_DRY_ROUNDS = 2   # stop early once this many rounds in a row add nothing new

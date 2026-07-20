@@ -25,9 +25,27 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from engine import llm, news
+from engine.explore import explore_worlds
 from engine.personas import build_crowd
 from engine.swarm import run_crowd
 from engine.whatif import run_whatif
+
+
+def _resolve_ask(ask_fn=None, model: str | None = None):
+    """Figure out which ask_fn to actually call with.
+
+    Tests pass their own ask_fn, which always wins. Otherwise, if a
+    --model was picked at the command line, carry it into every crowd
+    call. With neither, just use the plain default.
+    """
+    if ask_fn is not None:
+        return ask_fn
+    if model is not None:
+        chosen = model
+        def ask(prompt, model=None, max_tokens=400):
+            return llm.ask(prompt, model=chosen, max_tokens=max_tokens)
+        return ask
+    return llm.ask
 
 
 def ask_question(question: str, whatif: str | None = None,
@@ -49,15 +67,7 @@ def ask_question(question: str, whatif: str | None = None,
         k = config.SIM_ROLLOUTS_K
     crowd = build_crowd(n_agents, config.SEED)
     headlines = news.research(question) if with_news else []
-    if ask_fn is not None:
-        ask = ask_fn
-    elif model is not None:
-        # Carry the chosen model into every crowd call (e.g. --model fable).
-        chosen = model
-        def ask(prompt, model=None, max_tokens=400):
-            return llm.ask(prompt, model=chosen, max_tokens=max_tokens)
-    else:
-        ask = llm.ask
+    ask = _resolve_ask(ask_fn, model)
     if whatif:
         return run_whatif(card, headlines, crowd, whatif, mode, k,
                           config.DELIBERATION, ask)
@@ -81,6 +91,22 @@ def _print_crowd(result: dict) -> None:
     print()
 
 
+def _print_worlds(result: dict) -> None:
+    """Show a --deep run: every distinct world found, YES ones first,
+    ranked by how often each one came up, then the plain odds."""
+    print(f"\n  THE MAP OF WORLDS: {len(result['worlds'])} distinct ways seen "
+          f"across {result['raw_futures']} imagined futures\n")
+    yes_worlds = [w for w in result["worlds"] if w["resolves"] == "YES"]
+    no_worlds = [w for w in result["worlds"] if w["resolves"] == "NO"]
+    for world in yes_worlds:
+        print(f"   + x{world['count']}  {world['story']}")
+    for world in no_worlds:
+        print(f"   - x{world['count']}  {world['story']}")
+    print(f"\n  THE CROWD SAYS: {result['probability']:.0%} chance of YES")
+    print(f"  ({result['rounds']} rounds, "
+          f"{result['skipped']} unusable answers skipped)\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Ask the AI crowd for the odds of anything.")
@@ -91,6 +117,9 @@ def main() -> None:
                         help="(the default) every run imagines K futures")
     parser.add_argument("--vote", action="store_true",
                         help="cheaper mode: one probability per run, no futures")
+    parser.add_argument("--deep", action="store_true",
+                        help="keep splitting into futures until two rounds in a "
+                             "row find nothing new, then show the map of worlds")
     parser.add_argument("--agents", type=int, default=None,
                         help=f"crowd size (default {config.ENGINE_N_AGENTS})")
     parser.add_argument("--model", default=None,
@@ -100,12 +129,22 @@ def main() -> None:
                         help="skip the headline lookup")
     args = parser.parse_args()
 
+    print(f'\nQ: {args.question}')
+
+    if args.deep:
+        card = {"ticker": "ASK", "question": args.question, "mid": None}
+        headlines = news.research(args.question) if not args.no_news else []
+        result = explore_worlds(card, headlines, _resolve_ask(model=args.model))
+        _print_worlds(result)
+        print(f"  total engine spend so far: ${llm.spent_usd():.2f} "
+              f"(cap ${config.ENGINE_BUDGET_USD:.2f})\n")
+        return
+
     mode = "vote" if args.vote else "simulate"
     result = ask_question(args.question, whatif=args.whatif, mode=mode,
                           n_agents=args.agents, with_news=not args.no_news,
                           model=args.model)
 
-    print(f'\nQ: {args.question}')
     if args.whatif:
         print(f'\n  BEFORE the what-if:')
         _print_crowd(result["before"])
