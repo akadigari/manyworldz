@@ -7,7 +7,7 @@
 <p align="center"><i>Simulate every story the future could tell. Keep score against reality.</i></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-80%20passing-2ea44f?style=flat-square" alt="80 tests"/>
+  <img src="https://img.shields.io/badge/tests-119%20passing-2ea44f?style=flat-square" alt="119 tests"/>
   <img src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat-square" alt="python 3.11+"/>
   <img src="https://img.shields.io/badge/cost-about%201%20cent%20per%20question-55c6dd?style=flat-square" alt="about a cent per question"/>
   <img src="https://img.shields.io/badge/bets%20placed-zero%2C%20ever-e0435c?style=flat-square" alt="bets placed: zero, ever"/>
@@ -104,7 +104,7 @@ venv/bin/python run.py
 
 A question costs about a cent on the default model, and answers are cached, so asking twice is free. Prefer Docker? `docker build -t manyworldz .` then `docker run -e ANTHROPIC_API_KEY=your-key manyworldz`.
 
-**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 80 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
+**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 119 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
 
 ## 🧠 Pick the crowd's brain
 
@@ -134,14 +134,30 @@ Fed days and CPI prints. Elections and confirmations. Album drops, box office, a
 
 Not your repo? **Fork it**, add your own key as the secret, and GitHub runs your own copy of the crowd four times a day on the free tier, building your own ledger. Every fork is its own little forecasting station.
 
+## 🏆 Tournament mode
+
+FutureEval (metaculus.com/futureeval) is Metaculus's ongoing bot tournament: AI forecasters answer real open questions and get graded against how the world actually turns out.
+
+Two secrets, one command: `ANTHROPIC_API_KEY` (already needed for everything else) and `METACULUS_TOKEN` (from the tournament account). With both set:
+
+```bash
+venv/bin/python tournament.py
+```
+
+That fetches the tournament's open binary questions, runs the same crowd this whole repo already uses on each one it hasn't answered yet, and submits every answer. `.github/workflows/tournament.yml` runs this every 6 hours and commits `data/tournament_log.csv` back; it's safe to push before the token exists, since a missing `METACULUS_TOKEN` makes the run print a plain message and exit cleanly instead of failing. Add `--dry-run` to see exactly what it would submit without posting anything.
+
+Honest line: this is the engine's public kill-test. The tournament grades against reality, in the open, same as `GATES.md` already promises for real bets. If the crowd cannot beat the official template bot, that result gets published too.
+
 ## 🗂️ Structure
 
 ```
 ask.py            ask the worlds anything (CLI)
 run.py            one live cycle: grade -> split -> log calls
+tournament.py     one FutureEval cycle: fetch -> split -> submit -> log
 engine/           llm client (cached, budget-capped), swarm, simulate
                   mode, what-if, news research
-adapters/         kalshi market cards (+ a dormant NBA backtest lab)
+adapters/         kalshi market cards, metaculus tournament questions
+                  (+ a dormant NBA backtest lab)
 ledger.py         the scorecard: calls, CLV, settlement
 report.py         ledger -> web/data.json + REPORT.md
 web/index.html    the dashboard (static, no server): branching-worlds
