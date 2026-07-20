@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from engine import llm, news
 from engine.explore import explore_worlds, find_paths
-from engine.personas import build_crowd
+from engine.methods import build_methods
 from engine.swarm import run_crowd
 from engine.whatif import run_whatif
 
@@ -65,7 +65,7 @@ def ask_question(question: str, whatif: str | None = None,
         n_agents = config.ENGINE_N_AGENTS
     if k is None:
         k = config.SIM_ROLLOUTS_K
-    crowd = build_crowd(n_agents, config.SEED)
+    crowd = build_methods(n_agents, config.SEED)
     headlines = news.research(question) if with_news else []
     ask = _resolve_ask(ask_fn, model)
     if whatif:
@@ -81,7 +81,7 @@ def _print_crowd(result: dict) -> None:
     print(f"  (disagreement spread {result['spread']:.2f}, "
           f"{result['skipped']} unusable answers skipped)\n")
     for vote in result["votes"]:
-        print(f"  {vote['probability']:>5.0%}  {vote['agent']:<6} "
+        print(f"  {vote['probability']:>5.0%}  {vote['agent']:<13} "
               f"{vote['reason']}")
     if result["futures"]:
         print("\n  FUTURES THE CROWD SAW:")

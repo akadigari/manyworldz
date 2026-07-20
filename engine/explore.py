@@ -52,7 +52,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
-from engine.personas import build_crowd
+from engine.methods import build_methods
 from engine.swarm import extract_json, market_line, run_crowd
 
 # Forced ingredients for the wildcard rounds (see explore_worlds). Each one
@@ -74,7 +74,7 @@ WILDCARDS = [
 
 # Shown to one agent in rounds 2+: here is what has already been found,
 # go imagine k more ways that are actually different.
-_EXPLORE_PROMPT = """You are {name}, a {archetype}: {style}.
+_EXPLORE_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 
 A prediction market asks: "{question}"
 {market_line}
@@ -165,7 +165,7 @@ Give exactly {n} answers, one per candidate, in order."""
 
 # Shown to one agent every path round: imagine ONLY futures where the
 # target happens, with the gates (preconditions) that had to come true.
-_PATH_PROMPT = """You are {name}, a {archetype}: {style}.
+_PATH_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 
 A prediction market asks: "{question}"
 {market_line}
@@ -283,7 +283,7 @@ def _imagine_more(agent: dict, card: dict, headlines: list[str],
     if wildcard:
         wildcard_line = f"\n\nAt least one of your futures must involve: {wildcard}."
     prompt = _EXPLORE_PROMPT.format(
-        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        label=agent["label"], instruction=agent["instruction"],
         question=card["question"], market_line=market_line(card),
         headlines="; ".join(headlines) if headlines else "(none found)",
         worlds=_worlds_bullets(worlds), k=k, wildcard_line=wildcard_line)
@@ -310,7 +310,7 @@ def _imagine_paths(agent: dict, card: dict, headlines: list[str],
     """
     other = "NO" if target == "YES" else "YES"
     prompt = _PATH_PROMPT.format(
-        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        label=agent["label"], instruction=agent["instruction"],
         question=card["question"], market_line=market_line(card),
         headlines="; ".join(headlines) if headlines else "(none found)",
         target=target, other=other, worlds=_worlds_bullets(paths), k=k)
@@ -450,7 +450,7 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
     if dry_rounds is None:
         dry_rounds = config.DEEP_DRY_ROUNDS
     k = k_per_round if k_per_round is not None else config.SIM_ROLLOUTS_K
-    crowd = build_crowd(config.ENGINE_N_AGENTS, config.SEED)
+    crowd = build_methods(config.ENGINE_N_AGENTS, config.SEED)
     wildcard_order = _wildcard_order(config.SEED)
     next_wildcard = 0
 
@@ -468,7 +468,7 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
             candidates = result["futures"]
             skipped += result["skipped"]
         else:
-            # Rotate through the crowd's personas round to round, for variety.
+            # Rotate through the crowd's methods round to round, for variety.
             agent = crowd[(round_num - 2) % len(crowd)]
             wildcard = None
             if round_num % 2 == 0:   # every OTHER round from round 2 on
@@ -558,7 +558,7 @@ def find_paths(card: dict, headlines: list[str], ask_fn, target: str = "YES",
     if max_rounds is None:
         max_rounds = config.PATH_MAX_ROUNDS
     k = k_per_round if k_per_round is not None else config.SIM_ROLLOUTS_K
-    crowd = build_crowd(config.ENGINE_N_AGENTS, config.SEED)
+    crowd = build_methods(config.ENGINE_N_AGENTS, config.SEED)
 
     paths: list[dict] = []
     skipped = 0

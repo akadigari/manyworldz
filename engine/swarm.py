@@ -16,7 +16,7 @@ from engine import llm
 
 # The two prompt templates below are the actual text sent to the model.
 # {curly braces} get filled in with real values before sending.
-_VOTE_PROMPT = """You are {name}, a {archetype}: {style}.
+_VOTE_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 
 The question: "{question}"
 {market_line}
@@ -24,11 +24,11 @@ Recent headlines: {headlines}
 
 Start from the base rate: how often do things like this usually happen,
 historically? Anchor there first, THEN adjust for the evidence above.
-Think like your character and give YOUR OWN probability that this
+Stick to your one method and give YOUR OWN probability that this
 resolves YES. Do not just repeat the market price.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""
 
-_DELIB_PROMPT = """You are {name}, a {archetype}: {style}.
+_DELIB_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 The question: "{question}". {market_line} Your current view: {own}.
 
 Other agents said:
@@ -82,14 +82,14 @@ def agent_vote(agent: dict, card: dict, headlines: list[str],
                ask_fn=llm.ask) -> dict | None:
     """Ask one agent for its probability on one market.
 
-    Fills in the vote prompt with this agent's personality and the
-    market's question, sends it, and pulls out a probability + one-line
-    reason. Returns None if the model's reply couldn't be understood
-    (bad JSON, missing/invalid probability). A bad answer gets skipped,
-    never guessed at.
+    Fills in the vote prompt with this agent's method and the market's
+    question, sends it, and pulls out a probability + one-line reason.
+    Returns None if the model's reply couldn't be understood (bad JSON,
+    missing/invalid probability). A bad answer gets skipped, never
+    guessed at.
     """
     prompt = _VOTE_PROMPT.format(
-        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        label=agent["label"], instruction=agent["instruction"],
         question=card["question"], market_line=market_line(card),
         headlines="; ".join(headlines) if headlines else "(none found)")
     parsed = extract_json(ask_fn(prompt))
@@ -111,7 +111,7 @@ def deliberate(agent: dict, card: dict, own: dict, others: list[str],
     Returns None the same way agent_vote() does, if the reply is unusable.
     """
     prompt = _DELIB_PROMPT.format(
-        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        label=agent["label"], instruction=agent["instruction"],
         question=card["question"], market_line=market_line(card),
         own=f'{own["probability"]:.2f} ("{own["reason"]}")',
         others="\n".join(others))
@@ -168,22 +168,25 @@ def run_crowd(card: dict, headlines: list[str], crowd: list[dict],
         if result is None:
             skipped += 1
             continue
-        result["agent"] = agent["name"]
-        result["archetype"] = agent["archetype"]
+        result["agent"] = agent["label"]
         votes.append(result)
         all_futures.extend(result.get("futures", []))
 
     if deliberation and len(votes) >= 2:
-        # One line of summary text per vote, e.g. "- Ava (stats nerd): 0.62
+        # One line of summary text per vote, e.g. "- base rates: 0.62
         # (trusts the recent form numbers)." This is what gets shown to
-        # each agent as "what everyone else said."
-        digest = [f'- {v["agent"]} ({v["archetype"]}): '
-                  f'{v["probability"]:.2f} ({v["reason"]})' for v in votes]
-        by_name = {a["name"]: a for a in crowd}
+        # each agent as "what everyone else said." Two agents can share
+        # the same method label (a crowd bigger than six wraps around),
+        # so "everyone but this one" is tracked by position, not by label
+        # text, or a repeated method would wrongly hide its own sibling's
+        # line too.
+        digest = [f'- {v["agent"]}: {v["probability"]:.2f} ({v["reason"]})'
+                  for v in votes]
+        by_label = {a["label"]: a for a in crowd}
         revised = []
-        for v in votes:
-            others = [d for d in digest if not d.startswith(f'- {v["agent"]} ')]  # everyone but this agent
-            second = deliberate(by_name[v["agent"]], card, v, others, ask_fn)
+        for i, v in enumerate(votes):
+            others = [d for j, d in enumerate(digest) if j != i]  # everyone but this one
+            second = deliberate(by_label[v["agent"]], card, v, others, ask_fn)
             if second is not None:
                 v = {**v, **second}
             revised.append(v)

@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import llm
 from engine.swarm import extract_json, market_line
 
-_SIM_PROMPT = """You are {name}, a {archetype}: {style}.
+_SIM_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 
 A prediction market asks: "{question}"
 {market_line}
@@ -40,7 +40,7 @@ def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
     futures in a usable shape (a sign it didn't really play along).
     """
     prompt = _SIM_PROMPT.format(
-        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        label=agent["label"], instruction=agent["instruction"],
         question=card["question"], market_line=market_line(card), k=k,
         headlines="; ".join(headlines) if headlines else "(none found)")
     parsed = extract_json(ask_fn(prompt, max_tokens=200 + 80 * k))
@@ -55,7 +55,7 @@ def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
         story = str(future.get("story", "")).strip()
         if verdict in ("YES", "NO") and story:
             futures.append({"story": story[:200], "resolves": verdict,
-                            "agent": agent["name"]})
+                            "agent": agent["label"]})
     if len(futures) < max(k // 2, 2):
         return None      # the model didn't really play along: skip, don't guess
 
