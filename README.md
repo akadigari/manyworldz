@@ -7,7 +7,7 @@
 <p align="center"><i>Simulate every story the future could tell. Keep score against reality.</i></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-119%20passing-2ea44f?style=flat-square" alt="119 tests"/>
+  <img src="https://img.shields.io/badge/tests-120%20passing-2ea44f?style=flat-square" alt="120 tests"/>
   <img src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat-square" alt="python 3.11+"/>
   <img src="https://img.shields.io/badge/cost-about%201%20cent%20per%20question-55c6dd?style=flat-square" alt="about a cent per question"/>
   <img src="https://img.shields.io/badge/bets%20placed-zero%2C%20ever-e0435c?style=flat-square" alt="bets placed: zero, ever"/>
@@ -22,7 +22,7 @@ manyworldz is that trick, for real questions. Ask it anything with a yes or a no
 
 ## ✨ What it does
 
-- **Ask it anything**: give it `"Will the Fed cut rates in September?"` and the engine splits into six to eight independent runs; each pulls fresh headlines, anchors on a base rate, and imagines the event playing out several different ways
+- **Ask it anything**: give it `"Will the Fed cut rates in September?"` and the engine splits into six to eight independent runs, each using its own analytical method; each pulls fresh headlines, anchors on a base rate, and imagines the event playing out several different ways
 - **Every story seen**: a run's probability is how many of its imagined futures land YES; the final answer is the fold of all the worlds
 - **What-if mode**: force one fact to be true (`"the star player is out tonight"`) and watch how far every future shifts
 - **Live loop**: scans ~4,000 open Kalshi markets, and when the crowd of futures disagrees with the market price by more than fees could explain, it logs the call
@@ -35,23 +35,23 @@ $ venv/bin/python ask.py "Will the Fed cut rates in September?"
 
 Q: Will the Fed cut rates in September?
 
-  THE CROWD SAYS: 72% chance of YES
+  THE CROWD SAYS: 71% chance of YES
   (disagreement spread 0.08, 0 unusable answers skipped)
 
-    81%  Ava    three straight soft inflation prints
-    74%  Finn   every headline this week leans toward a cut
-    72%  Luna   informed money moved to YES overnight
-    70%  Kai    a fair line here feels like the low 70s
-    68%  Iris   two voting members signaled comfort with easing
-    55%  Mo     everyone is sure, which is exactly what worries me
+    81%  base rates    three straight soft inflation prints
+    74%  fresh news    every headline this week leans toward a cut
+    72%  market logic  a fair line here feels like the low 70s
+    70%  smart money   informed money moved to YES overnight
+    68%  insider logic two voting members signaled comfort with easing
+    55%  skeptic       everyone is sure, which is exactly what worries me
 
   FUTURES THE CROWD SAW:
-   + The Fed reads three cooling prints and cuts 25bps  (Ava)
-   + Powell hints at Jackson Hole first, then delivers  (Luna)
-   - A hot jobs report freezes the committee one more meeting  (Mo)
+   + The Fed reads three cooling prints and cuts 25bps  (base rates)
+   + Powell hints at Jackson Hole first, then delivers  (smart money)
+   - A hot jobs report freezes the committee one more meeting  (skeptic)
 ```
 
-Every `+` and `-` line is one imagined future: a tiny story with an ending. The odds are just the census of the stories. (The format above is exact; the numbers are invented. Run it with your own key for real ones.)
+Every `+` and `-` line is one imagined future: a tiny story with an ending. The odds are just the census of the stories. Each line is labeled with the method that produced it, not a name: the six methods are base rates, fresh news, market logic, smart money, insider logic, and skeptic. (The format above is exact; the numbers are invented. Run it with your own key for real ones.)
 
 Add `--whatif "some fact"` to re-run every world with that fact forced true and see how far the odds move. Add `--vote` for a cheaper single-number mode with no stories.
 
@@ -104,7 +104,7 @@ venv/bin/python run.py
 
 A question costs about a cent on the default model, and answers are cached, so asking twice is free. Prefer Docker? `docker build -t manyworldz .` then `docker run -e ANTHROPIC_API_KEY=your-key manyworldz`.
 
-**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 119 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
+**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 120 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
 
 ## 🧠 Pick the crowd's brain
 
