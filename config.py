@@ -56,6 +56,31 @@ ENGINE_N_AGENTS = 8       # agents per market
 SIM_ROLLOUTS_K = 5        # "futures" (imagined ways the event could play out) each agent dreams up in simulate mode
 SIM_MODE = "simulate"     # "simulate" (K imagined futures per run, the default) or "vote" (one number each)
 DELIBERATION = False      # one round of agents seeing each other's takes
+
+# Which crowd gets built. "methods" is the classic crowd: one model plays
+# all six analytical methods (engine/methods.py). "ensemble" is the
+# diversity upgrade: DIFFERENT models each look at a DIFFERENT slice of the
+# evidence, so the crowd's disagreement comes from genuinely different
+# inputs, not just different personas talking to the same facts. Set
+# MANYWORLDZ_CROWD_MODE to override without editing this file. --crowd on
+# ask.py overrides both, for one run only.
+CROWD_MODE = _os.environ.get("MANYWORLDZ_CROWD_MODE", "methods")
+
+# The ensemble's seats. Each seat is one model looking at one evidence
+# slice: "headlines" (recent news only, no market price), "base_rates"
+# (neither headlines nor market price, reason from how often things like
+# this happen), "market" (just the market price line, no headlines), or
+# "everything" (all of it, same view a methods-mode agent gets). Edit this
+# list freely: add seats, drop seats, change who sees what. "model" takes
+# a friendly name (haiku, sonnet, opus, fable) or any full model ID the
+# API serves. fable and opus cost more; this default keeps the ensemble
+# cheap by leaning on haiku and sonnet.
+ENSEMBLE_SEATS = [
+    {"model": "haiku", "evidence": "headlines"},
+    {"model": "sonnet", "evidence": "base_rates"},
+    {"model": "haiku", "evidence": "market"},
+    {"model": "sonnet", "evidence": "everything"},
+]
 MIN_EDGE_CENTS = 10       # crowd must differ from market by this much...
 FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
 MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
