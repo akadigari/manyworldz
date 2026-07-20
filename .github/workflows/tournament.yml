@@ -52,9 +52,14 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
-          # cheap voice for the unattended cloud run; change to sonnet/
-          # opus/fable here if you want a smarter (pricier) crowd
-          MANYWORLDZ_MODEL: haiku
+          # Metaculus publishes its own finding on this: "having a SOTA
+          # model matters more than bot infrastructure." Their leaderboard
+          # backs it up (haiku scores about 3, sonnet about 9, the top
+          # models score 15 to 20). So the tournament runs a stronger
+          # voice than the Kalshi loop does, even though it costs more.
+          # Once the free tournament credits land, move this to opus or
+          # fable. The budget cap in config.py still stops all spending.
+          MANYWORLDZ_MODEL: sonnet
         run: python3 tournament.py
 
       - name: save the submission log back to the repo
