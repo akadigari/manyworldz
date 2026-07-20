@@ -8,6 +8,14 @@ trusts an agent's answer if at least half of the requested futures parsed
 (minimum 2). So round-1 imagine payloads below always hand back the full
 batch of k stories; later rounds use engine.explore's own looser rule
 (at least half, minimum 1), so a single story per round is enough there.
+
+Every explore_worlds run now also fires one saboteur call right after
+round 1 (see engine/explore.py). make_ask() defaults that call to an
+unusable answer, which is a real, tested behavior (see
+test_saboteur_failure_is_a_no_op_skip below): it just counts as one more
+skipped sub-call and changes nothing else, so every pre-existing test
+below only needed its "skipped" count bumped by one where it checked it
+at all.
 """
 import sys
 from pathlib import Path
@@ -16,20 +24,28 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
-from engine.explore import explore_worlds
+from engine.explore import WILDCARDS, explore_worlds
 
 CARD = {"ticker": "T", "question": "Will the album drop in July?", "mid": 43}
 
+# The default saboteur answer for tests that don't care about the
+# saboteur: not real JSON, so the call is simply unusable and counted as
+# skipped, same as any other bad answer.
+_NO_SABOTEUR = "not valid json (default: no saboteur answer supplied)"
 
-def make_ask(imagine_answers, classify_answers):
+
+def make_ask(imagine_answers, classify_answers, saboteur_answer=_NO_SABOTEUR):
     """A fake ask_fn that hands out imagine-call answers in order, and
     classify-call answers in order, dispatching on which kind of prompt
-    it was just given (the classify prompt always names the map).
+    it was just given (the classify prompt always names the map, the
+    saboteur prompt always asks the consensus to turn out wrong).
     """
     imagine_stack = list(imagine_answers)
     classify_stack = list(classify_answers)
 
     def ask(prompt, model=None, max_tokens=400):
+        if "turns out WRONG" in prompt:
+            return saboteur_answer
         if "WORLDS FOUND SO FAR" in prompt:
             return classify_stack.pop(0)
         return imagine_stack.pop(0)
@@ -62,7 +78,7 @@ def test_round_one_reuses_simulate_and_classifies(monkeypatch):
     assert out["raw_futures"] == 2
     assert len(out["worlds"]) == 2
     assert {w["count"] for w in out["worlds"]} == {1}
-    assert out["skipped"] == 0
+    assert out["skipped"] == 1   # the default no-op saboteur call after round 1
     assert out["probability"] == pytest.approx(0.5)
 
 
@@ -160,7 +176,8 @@ def test_junk_classification_answers_never_add_worlds(monkeypatch):
 
     assert out["worlds"] == []               # junk never inflates the map
     assert out["raw_futures"] == 2           # the raw futures still count for the math
-    assert out["skipped"] == 1               # the failed classify call is counted
+    assert out["skipped"] == 2               # the failed classify call, plus the
+                                              # default no-op saboteur call
     assert out["probability"] == pytest.approx(0.5)   # 1 YES of 2
 
 
@@ -174,7 +191,8 @@ def test_skipped_counts_a_failed_imagine_call_in_a_later_round(monkeypatch):
     out = explore_worlds(CARD, [], ask, k_per_round=2, max_rounds=2, dry_rounds=1)
 
     assert out["rounds"] == 2
-    assert out["skipped"] == 1
+    assert out["skipped"] == 2   # round 2's imagine call, plus the default
+                                 # no-op saboteur call after round 1
     assert out["raw_futures"] == 2
     assert len(out["worlds"]) == 2
 
@@ -205,3 +223,111 @@ def test_defaults_are_read_from_config_at_call_time(monkeypatch):
     out = explore_worlds(CARD, [], ask, k_per_round=2)
 
     assert out["rounds"] == 2
+
+
+def test_saboteur_runs_once_after_round_one_and_merges(monkeypatch):
+    # A saboteur answer that actually parses should flow through the same
+    # classify-and-merge as any other round: it earns its own world.
+    monkeypatch.setattr(config, "ENGINE_N_AGENTS", 1)
+    ask = make_ask(
+        imagine_answers=[futures_json([("Fed cuts 25bps", "YES"),
+                                        ("Fed holds steady", "NO")])],
+        classify_answers=[classify_json(["new", "new"]),      # round 1's own pair
+                          classify_json(["new"])],             # the saboteur's story
+        saboteur_answer=futures_json([("A surprise scandal sinks the deal", "NO")]))
+
+    out = explore_worlds(CARD, [], ask, k_per_round=2, max_rounds=1)
+
+    assert out["rounds"] == 1
+    assert out["skipped"] == 0                 # both classify calls parsed fine
+    assert out["raw_futures"] == 3             # round 1's 2 plus the saboteur's 1
+    assert len(out["worlds"]) == 3
+    assert any(w["story"] == "A surprise scandal sinks the deal" for w in out["worlds"])
+
+
+def test_saboteur_failure_is_a_no_op_skip(monkeypatch):
+    # An unusable saboteur answer should never invent a world or touch the
+    # raw future count: it is just one more skipped sub-call.
+    monkeypatch.setattr(config, "ENGINE_N_AGENTS", 1)
+    ask = make_ask(
+        imagine_answers=[futures_json([("Fed cuts 25bps", "YES"),
+                                        ("Fed holds steady", "NO")])],
+        classify_answers=[classify_json(["new", "new"])],
+        saboteur_answer="not valid json")
+
+    out = explore_worlds(CARD, [], ask, k_per_round=2, max_rounds=1)
+
+    assert out["skipped"] == 1        # only the saboteur call failed
+    assert out["raw_futures"] == 2    # nothing extra sneaked into the census
+    assert len(out["worlds"]) == 2    # nothing extra sneaked onto the map
+
+
+def _imagine_prompts(prompts: list[str]) -> list[str]:
+    """Filter down to just the round-2+ "imagine more" prompts (round 1
+    goes through futures.py's own prompt, which reads differently).
+    """
+    return [p for p in prompts if "MORE ways this could play out" in p]
+
+
+def _wildcard_in(prompt: str) -> str | None:
+    """Pull the forced wildcard phrase out of a prompt, or None if this
+    prompt did not carry one.
+    """
+    marker = "must involve: "
+    idx = prompt.find(marker)
+    if idx == -1:
+        return None
+    end = prompt.find(".", idx)
+    return prompt[idx + len(marker):end]
+
+
+def test_wildcard_appears_every_other_round_starting_at_round_two(monkeypatch):
+    monkeypatch.setattr(config, "ENGINE_N_AGENTS", 1)
+    seen = []
+
+    def ask(prompt, model=None, max_tokens=400):
+        seen.append(prompt)
+        if "turns out WRONG" in prompt:
+            return _NO_SABOTEUR
+        if "WORLDS FOUND SO FAR" in prompt:
+            return classify_json(["new", "new"])
+        return futures_json([("A", "YES"), ("B", "NO")])
+
+    explore_worlds(CARD, [], ask, k_per_round=2, max_rounds=4, dry_rounds=99)
+
+    imagined = _imagine_prompts(seen)
+    assert len(imagined) == 3   # rounds 2, 3, 4
+    # round 2: wildcard, round 3: none, round 4: wildcard
+    assert _wildcard_in(imagined[0]) is not None
+    assert _wildcard_in(imagined[1]) is None
+    assert _wildcard_in(imagined[2]) is not None
+    assert _wildcard_in(imagined[0]) in WILDCARDS
+    assert _wildcard_in(imagined[2]) in WILDCARDS
+
+
+def test_wildcard_rotates_through_distinct_phrases_deterministically(monkeypatch):
+    monkeypatch.setattr(config, "ENGINE_N_AGENTS", 1)
+
+    def run_once():
+        seen = []
+
+        def ask(prompt, model=None, max_tokens=400):
+            if "turns out WRONG" in prompt:
+                return _NO_SABOTEUR
+            if "WORLDS FOUND SO FAR" in prompt:
+                return classify_json(["new", "new"])
+            seen.append(prompt)
+            return futures_json([("A", "YES"), ("B", "NO")])
+
+        explore_worlds(CARD, [], ask, k_per_round=2, max_rounds=6, dry_rounds=99)
+        return [_wildcard_in(p) for p in _imagine_prompts(seen)]
+
+    first = run_once()
+    second = run_once()
+
+    # rounds 2, 3, 4, 5, 6 -> wildcard on 2, 4, 6 only
+    assert first == second   # same config.SEED, same rotation every time
+    assert first[1] is None and first[3] is None
+    wildcards = [first[0], first[2], first[4]]
+    assert all(w in WILDCARDS for w in wildcards)
+    assert len(set(wildcards)) == 3   # no repeats before the list wraps around

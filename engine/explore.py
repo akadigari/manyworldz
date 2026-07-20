@@ -10,6 +10,23 @@ the map: same underlying mechanism as something already there, or
 genuinely new. We stop once a couple of rounds in a row turn up nothing
 new, or once we hit a round cap, whichever comes first.
 
+Right after round 1, one extra call plays devil's advocate: it is shown
+the map and the current YES-share so far and asked to imagine ways that
+exact consensus turns out wrong. This is the "saboteur": a forced
+pre-mortem, so the crowd does not just keep restating its first take in
+new words. Its stories go through the same classify-and-merge as
+everything else, so a good pre-mortem story earns its own world instead
+of getting waved through for free.
+
+From round 2 on, every other round also forces one wildcard into the
+imagine prompt: an instruction that at least one of the new futures must
+involve something like a lawsuit, a leak, or a rival moving first. This
+is novelty pressure: left alone, an LLM tends to reimagine the same
+"soft landing" and "everything goes as planned" stories in new words.
+The wildcard rotation is picked once per run from config.SEED, so it is
+different from the plain list order but always the same for the same
+seed.
+
 The map (the list of distinct worlds) is a display layer. The
 probability is always the plain census of every future ever seen,
 duplicates included, same as engine/futures.py. Deduping never touches
@@ -20,6 +37,7 @@ stay offline.
 """
 from __future__ import annotations
 
+import random
 import sys
 from pathlib import Path
 
@@ -27,6 +45,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
 from engine.personas import build_crowd
 from engine.swarm import extract_json, market_line, run_crowd
+
+# Forced ingredients for the wildcard rounds (see explore_worlds). Each one
+# is a short phrase dropped into the imagine prompt as "at least one of
+# your futures must involve: <this>". The point is novelty pressure: these
+# are the kinds of things a model tends to forget to imagine on its own.
+WILDCARDS = [
+    "the weather turns",
+    "a lawsuit or ruling lands",
+    "someone's health changes",
+    "something leaks early",
+    "a rival moves first",
+    "a technical failure",
+    "the money runs out",
+    "the schedule slips",
+    "public backlash",
+    "an unexpected ally appears",
+]
 
 # Shown to one agent in rounds 2+: here is what has already been found,
 # go imagine k more ways that are actually different.
@@ -41,7 +76,26 @@ These are the distinct ways this could play out that have ALREADY been found:
 
 Imagine {k} MORE ways this could play out that are genuinely DIFFERENT from
 every one listed above, not just the same idea in different words. Short,
-concrete, one sentence each.
+concrete, one sentence each.{wildcard_line}
+Reply with ONLY JSON like:
+{{"futures": [{{"story": "one sentence", "resolves": "YES"}},
+              {{"story": "another way it goes", "resolves": "NO"}}]}}
+Give exactly {k} futures, each with "resolves" as "YES" or "NO"."""
+
+# The saboteur: one pre-mortem call right after round 1. Shown the map and
+# the crowd's current read, asked to imagine exactly how that consensus
+# turns out wrong.
+_SABOTEUR_PROMPT = """A prediction market asks: "{question}"
+
+MAP SO FAR, the distinct ways this could play out:
+{worlds}
+
+Right now the crowd's read is about a {prob:.0%} chance of YES.
+
+Assume that consensus turns out WRONG. Imagine {k} DIFFERENT futures
+showing exactly how that happens: short, concrete, one sentence each. Do
+not just restate the map above in different words; find the specific way
+the crowd's current read breaks.
 Reply with ONLY JSON like:
 {{"futures": [{{"story": "one sentence", "resolves": "YES"}},
               {{"story": "another way it goes", "resolves": "NO"}}]}}
@@ -81,24 +135,27 @@ def _worlds_bullets(worlds: list[dict]) -> str:
     return "\n".join(f"- {w['story']}" for w in worlds)
 
 
-def _imagine_more(agent: dict, card: dict, headlines: list[str],
-                  worlds: list[dict], k: int, ask_fn) -> list[dict] | None:
-    """Ask one agent to imagine k more futures that do not match any
-    world already on the map.
-
-    Same defensive parsing as engine.futures.agent_futures: if the model
-    did not really give at least half of what was asked, in a usable
-    shape, we return None rather than guess.
+def _wildcard_order(seed: int) -> list[str]:
+    """Shuffle the wildcard list once, seeded so the same seed always
+    gives the same rotation. This just decides the order wildcard rounds
+    cycle through; it wraps back to the start once every wildcard has
+    been used. Uses random.Random(seed), never the bare random module, so
+    a run is always exactly repeatable.
     """
-    prompt = _EXPLORE_PROMPT.format(
-        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
-        question=card["question"], market_line=market_line(card),
-        headlines="; ".join(headlines) if headlines else "(none found)",
-        worlds=_worlds_bullets(worlds), k=k)
-    parsed = extract_json(ask_fn(prompt, max_tokens=200 + 80 * k))
+    rng = random.Random(seed)
+    order = list(WILDCARDS)
+    rng.shuffle(order)
+    return order
+
+
+def _parse_futures(parsed: dict | None, k: int) -> list[dict] | None:
+    """Shared parsing for any "imagine k futures" style call (round-2+
+    imagine, and the saboteur): pull out story + resolves, keep only
+    usable ones, and refuse to guess if the model gave back less than
+    half of what was asked, in a usable shape.
+    """
     if not parsed:
         return None
-
     futures = []
     for future in parsed.get("futures", []):
         if not isinstance(future, dict):
@@ -110,6 +167,37 @@ def _imagine_more(agent: dict, card: dict, headlines: list[str],
     if len(futures) < max(k // 2, 1):
         return None      # the model did not really play along: skip, do not guess
     return futures
+
+
+def _imagine_more(agent: dict, card: dict, headlines: list[str],
+                  worlds: list[dict], k: int, ask_fn,
+                  wildcard: str | None = None) -> list[dict] | None:
+    """Ask one agent to imagine k more futures that do not match any
+    world already on the map. If `wildcard` is set, one extra sentence
+    forces at least one of the new futures to involve it.
+    """
+    wildcard_line = ""
+    if wildcard:
+        wildcard_line = f"\n\nAt least one of your futures must involve: {wildcard}."
+    prompt = _EXPLORE_PROMPT.format(
+        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        question=card["question"], market_line=market_line(card),
+        headlines="; ".join(headlines) if headlines else "(none found)",
+        worlds=_worlds_bullets(worlds), k=k, wildcard_line=wildcard_line)
+    parsed = extract_json(ask_fn(prompt, max_tokens=200 + 80 * k))
+    return _parse_futures(parsed, k)
+
+
+def _saboteur_round(card: dict, worlds: list[dict], probability: float,
+                    k: int, ask_fn) -> list[dict] | None:
+    """One pre-mortem call: show the map and the current YES-share, ask
+    for k futures showing exactly how that consensus turns out wrong.
+    """
+    prompt = _SABOTEUR_PROMPT.format(
+        question=card["question"], worlds=_worlds_bullets(worlds),
+        prob=probability, k=k)
+    parsed = extract_json(ask_fn(prompt, max_tokens=200 + 80 * k))
+    return _parse_futures(parsed, k)
 
 
 def _classify_and_merge(card: dict, worlds: list[dict], candidates: list[dict],
@@ -173,10 +261,16 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
 
     Round 1 reuses the normal simulate machinery: config.ENGINE_N_AGENTS
     agents each imagine a batch of futures, exactly like a plain
-    --simulate run. Every later round is one more single imagine call
-    that is shown the current map and asked for stories that genuinely
-    do not match it yet. After every round, one more ask_fn call sorts
-    that round's new stories into the map.
+    --simulate run. Right after round 1, one extra "saboteur" call is
+    shown the map and the current YES-share and asked to imagine ways
+    that exact consensus turns out wrong: its stories go through the same
+    classify-and-merge as everything else. Every round after that (round
+    2 onward) is one more single imagine call that is shown the current
+    map and asked for stories that genuinely do not match it yet; every
+    OTHER one of those rounds also forces in one wildcard, rotating
+    through WILDCARDS deterministically by config.SEED. After every
+    round (and after the saboteur call), one more ask_fn call sorts that
+    round's new stories into the map.
 
     We stop once `dry_rounds` rounds in a row add nothing new to the map,
     or once `max_rounds` is hit, whichever comes first. `max_rounds` and
@@ -199,6 +293,8 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
         dry_rounds = config.DEEP_DRY_ROUNDS
     k = k_per_round if k_per_round is not None else config.SIM_ROLLOUTS_K
     crowd = build_crowd(config.ENGINE_N_AGENTS, config.SEED)
+    wildcard_order = _wildcard_order(config.SEED)
+    next_wildcard = 0
 
     worlds: list[dict] = []
     raw_futures: list[dict] = []
@@ -216,7 +312,12 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
         else:
             # Rotate through the crowd's personas round to round, for variety.
             agent = crowd[(round_num - 2) % len(crowd)]
-            imagined = _imagine_more(agent, card, headlines, worlds, k, ask_fn)
+            wildcard = None
+            if round_num % 2 == 0:   # every OTHER round from round 2 on
+                wildcard = wildcard_order[next_wildcard % len(wildcard_order)]
+                next_wildcard += 1
+            imagined = _imagine_more(agent, card, headlines, worlds, k, ask_fn,
+                                     wildcard=wildcard)
             if imagined is None:
                 candidates = []
                 skipped += 1
@@ -230,6 +331,23 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
             added, classify_failed = _classify_and_merge(card, worlds, candidates, ask_fn)
             if classify_failed:
                 skipped += 1
+
+        if round_num == 1:
+            # The saboteur: one pre-mortem call, right after round 1, and
+            # only once no matter how many rounds run in total.
+            yes_so_far = sum(1 for f in raw_futures if f["resolves"] == "YES")
+            prob_so_far = min(max(yes_so_far / len(raw_futures), 0.01), 0.99) \
+                if raw_futures else 0.5
+            sab_candidates = _saboteur_round(card, worlds, prob_so_far, k, ask_fn)
+            if sab_candidates is None:
+                skipped += 1
+            else:
+                raw_futures.extend(sab_candidates)
+                sab_added, sab_failed = _classify_and_merge(
+                    card, worlds, sab_candidates, ask_fn)
+                added += sab_added
+                if sab_failed:
+                    skipped += 1
 
         dry_streak = 0 if added else dry_streak + 1
         if dry_streak >= dry_rounds:
