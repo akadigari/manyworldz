@@ -608,10 +608,20 @@ function createStage(container, { question, stageLabel, live, expectedTotal }) {
     const chipEl = stamp.querySelector('.split-verdict-wrap .chip');
     if (chipEl) chipEl.style.setProperty('--bounce-ms', TIMINGS.verdictBounceMs + 'ms');
     const start = performance.now();
+    // Browsers pause animation frames in a hidden tab. Without a safety
+    // net, a visitor who clicks replay and switches tabs comes back to a
+    // number frozen at 0%. This timer finishes the job either way, and
+    // the "settled" flag makes sure it only ever runs once.
+    let settled = false;
+    const safety = window.setTimeout(() => tickCount(start + TIMINGS.consensusCountMs),
+                                     TIMINGS.consensusCountMs + 400);
     function tickCount(now) {
+      if (settled) return;
       const t = Math.min(1, (now - start) / TIMINGS.consensusCountMs);
       numEl.textContent = Math.round(t * pct) + '%';
       if (t < 1) { requestAnimationFrame(tickCount); return; }
+      settled = true;
+      window.clearTimeout(safety);
       if (midPct !== null) {
         const gapEl = stamp.querySelector('.split-gap');
         const gap = pct - midPct;
