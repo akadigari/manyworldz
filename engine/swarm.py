@@ -19,8 +19,7 @@ from engine import llm
 _VOTE_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 
 The question: "{question}"
-{market_line}
-Recent headlines: {headlines}
+{evidence}
 
 Start from the base rate: how often do things like this usually happen,
 historically? Anchor there first, THEN adjust for the evidence above.
@@ -51,6 +50,49 @@ def market_line(card: dict) -> str:
         return f"The market price right now says YES has about a {mid}% chance."
     return ("There is no market price for this question: you have nothing "
             "to anchor on except your own reasoning.")
+
+
+def _headlines_line(headlines: list[str]) -> str:
+    """The headlines half of the evidence block, as one line."""
+    return f'Recent headlines: {"; ".join(headlines) if headlines else "(none found)"}'
+
+
+def evidence_block(card: dict, headlines: list[str], evidence: str = "everything") -> str:
+    """Build the evidence section of a vote/simulate prompt for one seat.
+
+    A plain methods-mode agent always gets "everything": the market line
+    plus the headlines, exactly what every agent saw before ensemble mode
+    existed. That is the default here so nothing about methods mode
+    changes. Ensemble seats can be narrower: "headlines" sees only the
+    headlines, "market" sees only the market price line, and "base_rates"
+    sees neither and is told plainly to reason from how often things like
+    this happen instead. This is the one place evidence actually gets
+    sliced; agent_vote and agent_futures both call it instead of building
+    their own market_line/headlines text.
+    """
+    if evidence == "headlines":
+        return _headlines_line(headlines)
+    if evidence == "market":
+        return market_line(card)
+    if evidence == "base_rates":
+        return ("You are given no headlines and no market price for this "
+                "one. Reason purely from the base rate: how often do "
+                "things like this actually happen, historically?")
+    # "everything" (the default) and anything unrecognized: the original,
+    # full view every agent has always had.
+    return f"{market_line(card)}\n{_headlines_line(headlines)}"
+
+
+def _market_evidence(card: dict, evidence: str = "everything") -> str:
+    """The market-price piece of the deliberation prompt, respecting the
+    seat's evidence slice. A headlines-only or base-rate seat never sees
+    the market price, even in the second, deliberation round: seeing it
+    there but not in round one would quietly widen what it's allowed to
+    use partway through.
+    """
+    if evidence in ("market", "everything"):
+        return market_line(card)
+    return "You were not shown a market price for this one."
 
 
 def extract_json(text: str) -> dict | None:
@@ -87,12 +129,20 @@ def agent_vote(agent: dict, card: dict, headlines: list[str],
     Returns None if the model's reply couldn't be understood (bad JSON,
     missing/invalid probability). A bad answer gets skipped, never
     guessed at.
+
+    Two things come from the agent dict, not just the card: "evidence"
+    (defaults to "everything", the original full view) picks which slice
+    of the market/headlines this seat gets to see, and "model" (defaults
+    to None, meaning "use whatever ask_fn defaults to") sends this one
+    seat's call to its own model. A plain methods-mode agent has neither
+    key set, so both defaults keep methods mode exactly as it always was.
     """
+    evidence = agent.get("evidence", "everything")
     prompt = _VOTE_PROMPT.format(
         label=agent["label"], instruction=agent["instruction"],
-        question=card["question"], market_line=market_line(card),
-        headlines="; ".join(headlines) if headlines else "(none found)")
-    parsed = extract_json(ask_fn(prompt))
+        question=card["question"],
+        evidence=evidence_block(card, headlines, evidence))
+    parsed = extract_json(ask_fn(prompt, model=agent.get("model")))
     if not parsed:
         return None
     prob = _clean_prob(parsed.get("probability"))
@@ -109,13 +159,18 @@ def deliberate(agent: dict, card: dict, own: dict, others: list[str],
     on): the agent sees its own first guess plus a summary of what every
     other agent said, then gets to keep its number or change its mind.
     Returns None the same way agent_vote() does, if the reply is unusable.
+
+    Same as agent_vote: "evidence" keeps a narrow-slice seat from seeing
+    the market price it wasn't given in round one, and "model" sends this
+    seat's second-round call to its own model too.
     """
+    evidence = agent.get("evidence", "everything")
     prompt = _DELIB_PROMPT.format(
         label=agent["label"], instruction=agent["instruction"],
-        question=card["question"], market_line=market_line(card),
+        question=card["question"], market_line=_market_evidence(card, evidence),
         own=f'{own["probability"]:.2f} ("{own["reason"]}")',
         others="\n".join(others))
-    parsed = extract_json(ask_fn(prompt))
+    parsed = extract_json(ask_fn(prompt, model=agent.get("model")))
     if not parsed:
         return None
     prob = _clean_prob(parsed.get("probability"))

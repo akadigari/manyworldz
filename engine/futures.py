@@ -10,13 +10,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import llm
-from engine.swarm import extract_json, market_line
+from engine.swarm import evidence_block, extract_json
 
 _SIM_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 
 A prediction market asks: "{question}"
-{market_line}
-Recent headlines: {headlines}
+{evidence}
 
 Start from the base rate: how often do things like this usually happen,
 historically? Let that shape how many of your futures land each way.
@@ -38,12 +37,19 @@ def agent_futures(agent: dict, card: dict, headlines: list[str], k: int,
     YES: if it imagined 5 futures and 3 resolved YES, that's 0.6. Returns
     None if the model didn't actually give at least half of the requested
     futures in a usable shape (a sign it didn't really play along).
+
+    Same "evidence" and "model" keys as agent_vote in engine/swarm.py: a
+    narrow-slice ensemble seat only sees its own piece of the evidence,
+    and its call goes to its own model. A plain methods-mode agent has
+    neither key, so both default to the original full-view behavior.
     """
+    evidence = agent.get("evidence", "everything")
     prompt = _SIM_PROMPT.format(
         label=agent["label"], instruction=agent["instruction"],
-        question=card["question"], market_line=market_line(card), k=k,
-        headlines="; ".join(headlines) if headlines else "(none found)")
-    parsed = extract_json(ask_fn(prompt, max_tokens=200 + 80 * k))
+        question=card["question"], k=k,
+        evidence=evidence_block(card, headlines, evidence))
+    parsed = extract_json(ask_fn(prompt, model=agent.get("model"),
+                                 max_tokens=200 + 80 * k))
     if not parsed:
         return None
 
