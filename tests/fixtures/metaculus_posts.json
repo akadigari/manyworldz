@@ -1,0 +1,58 @@
+{
+  "count": 5,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 30001,
+      "title": "Will a new AI safety treaty be signed before 2027?",
+      "question": {
+        "id": 500001,
+        "title": "Will a new AI safety treaty be signed before 2027?",
+        "type": "binary",
+        "status": "open",
+        "scheduled_close_time": "2026-12-31T23:59:00Z"
+      }
+    },
+    {
+      "id": 30002,
+      "title": "Which country hosts the next major AI summit?",
+      "question": {
+        "id": 500002,
+        "title": "Which country hosts the next major AI summit?",
+        "type": "multiple_choice",
+        "status": "open",
+        "scheduled_close_time": "2026-11-01T00:00:00Z"
+      }
+    },
+    {
+      "id": 30003,
+      "title": "AI summit outcomes (group)",
+      "questions": [
+        {"id": 500003, "title": "Sub-question A", "type": "binary", "status": "open"},
+        {"id": 500004, "title": "Sub-question B", "type": "binary", "status": "open"}
+      ]
+    },
+    {
+      "id": 30004,
+      "title": "Will the treaty be ratified by all G7 members?",
+      "question": {
+        "id": 500005,
+        "title": "Will the treaty be ratified by all G7 members?",
+        "type": "binary",
+        "status": "closed",
+        "scheduled_close_time": "2026-06-01T00:00:00Z"
+      }
+    },
+    {
+      "id": 30005,
+      "title": "Will a rival treaty also be proposed?",
+      "question": {
+        "id": 500006,
+        "title": "Will a rival treaty also be proposed?",
+        "status": "open",
+        "scheduled_close_time": "2027-01-15T00:00:00Z"
+      }
+    }
+  ]
+}
