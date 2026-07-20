@@ -132,6 +132,57 @@
   .scen-sub { text-align: center; color: var(--dim); font-size: 14px; margin-bottom: 18px; }
   .scen { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 14px; margin: 0 0 40px; }
+
+  /* ---- THE SPLIT: choreographed replay / live stage --------------- */
+  .split-replay-btn { margin-top: 12px; background: none; border: 1px solid var(--line);
+    color: var(--dim); font: 11px "SF Mono", Menlo, monospace; letter-spacing: 1px;
+    padding: 7px 14px; border-radius: 6px; cursor: pointer; }
+  .split-replay-btn:hover { color: var(--star); border-color: var(--gold); }
+  .split-stage { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 18px 20px; margin-top: 14px; }
+  .split-label { font: 11px "SF Mono", Menlo, monospace; letter-spacing: 2px;
+    color: var(--violet); margin-bottom: 10px; }
+  .split-label.live { color: var(--gold); }
+  .split-q { font-size: 15px; color: var(--star); margin-bottom: 14px; }
+  svg.split-svg { width: 100%; height: auto; display: block; }
+  .split-thread { stroke-dasharray: var(--len, 600); stroke-dashoffset: var(--len, 600);
+    transition: stroke-dashoffset var(--grow-ms, 700ms) cubic-bezier(.16,.8,.34,1); }
+  .split-thread.grown { stroke-dashoffset: 0; }
+  .split-thread.lost { stroke-dasharray: var(--len, 120); stroke-dashoffset: var(--len, 120);
+    transition: stroke-dashoffset 400ms ease-out; }
+  .split-thread.lost.grown { animation: splitFlicker 500ms steps(6) 1 400ms; }
+  .split-thread.faded { transition: opacity 500ms ease; }
+  @keyframes splitFlicker { 0%,100% { opacity: .8 } 20% { opacity: .1 } 40% { opacity: .6 }
+    60% { opacity: .15 } 80% { opacity: .5 } }
+  .split-node.pulse { animation: splitPulse var(--pulse-ms, 900ms) ease-in-out infinite; }
+  @keyframes splitPulse { 0%,100% { r: 3px; opacity: .85 } 50% { r: 5px; opacity: 1 } }
+  .split-label-text { opacity: 0; transition: opacity 300ms ease; }
+  .split-label-text.on { opacity: 1; }
+  .split-burst-line { opacity: 0; transition: opacity var(--burst-ms, 260ms) ease; }
+  .split-burst.on .split-burst-line { opacity: .8; }
+  .lost-note { font-size: 10px; fill: var(--crimson); font-family: Menlo, monospace; opacity: .7; }
+  .split-reasons .lost-line { color: var(--crimson); opacity: .75; }
+  .split-stamp { margin-top: 14px; background: var(--space); border: 1px solid var(--line);
+    border-radius: 8px; padding: 14px 16px; transform: translateY(14px); opacity: 0;
+    transition: transform var(--stamp-ms, 500ms) ease, opacity var(--stamp-ms, 500ms) ease; }
+  .split-stamp.in { transform: translateY(0); opacity: 1; }
+  .split-line { color: var(--dim); font-size: 13px; margin-bottom: 6px; }
+  .split-line .num { color: var(--star); font-weight: 700; }
+  .split-gap { font: 700 20px "SF Mono", Menlo, monospace; margin: 2px 0 8px; transition: color 300ms ease; color: var(--dim); }
+  .split-gap.up { color: var(--gold); } .split-gap.down { color: var(--crimson); }
+  .split-verdict-wrap .chip { display: inline-block; transform: scale(.4); opacity: 0;
+    transition: transform var(--bounce-ms, 450ms) cubic-bezier(.34,1.56,.64,1), opacity 200ms ease; }
+  .split-verdict-wrap .chip.in { transform: scale(1); opacity: 1; }
+  .split-restart-btn { margin-top: 14px; background: none; border: 1px solid var(--line);
+    color: var(--dim); font: 11px "SF Mono", Menlo, monospace; letter-spacing: 1px;
+    padding: 7px 14px; border-radius: 6px; cursor: pointer; display: none; }
+  .split-restart-btn:hover { color: var(--star); border-color: var(--gold); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .split-thread, .split-stamp, .split-verdict-wrap .chip, .split-label-text,
+    .split-gap, .split-burst-line { transition: none !important; }
+    .split-node.pulse, .split-thread.lost.grown { animation: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -271,24 +322,27 @@ function show(which) {
 // branch ending in a star (hot blue = resolves YES, cool red = NO). Vote mode ->
 // each agent's probability is a branch reaching toward YES (top) or NO
 // (bottom). The big number is the crowd's folded-together answer.
-function tree(market) {
-  const W = 900, H = 240, rootX = 26, rootY = H / 2;
-  let branches = [];
-
+// Shared by tree() and THE SPLIT animation: turns one market's raw votes
+// or futures into a flat list of branches. v.agent / f.agent hold the
+// analytical method that produced that branch (e.g. "base rates"), not a
+// name.
+function branchesFor(market) {
   if (market.futures && market.futures.length) {
-    branches = market.futures.map(f => ({
+    return market.futures.map(f => ({
       yes: f.resolves === 'YES',
-      label: '', tip: f.story,
-    }));
-  } else {
-    branches = (market.votes || []).map(v => ({
-      yes: v.probability >= 0.5,
-      label: Math.round(v.probability * 100) + '% ' + v.agent,
-      tip: v.reason, p: v.probability,
+      label: '', tip: f.story, story: f.story, agent: f.agent,
     }));
   }
-  // v.agent / f.agent hold the analytical method that produced that
-  // branch (e.g. "base rates"), not a name.
+  return (market.votes || []).map(v => ({
+    yes: v.probability >= 0.5,
+    label: Math.round(v.probability * 100) + '% ' + v.agent,
+    tip: v.reason, reason: v.reason, agent: v.agent, p: v.probability,
+  }));
+}
+
+function tree(market) {
+  const W = 900, H = 240, rootX = 26, rootY = H / 2;
+  const branches = branchesFor(market);
   if (!branches.length) return '';
 
   const n = branches.length;
@@ -332,6 +386,342 @@ function chip(verdict) {
   return `<span class="chip pass mono">NO EDGE: PASS</span>`;
 }
 
+/* ---- THE SPLIT: one choreography, two feeds ----------------------- */
+// REPLAY mode plays back branches that are already fully known (a logged
+// cycle market, the SAMPLE fallback, or a finished LIVE run) on a fixed
+// stagger. LIVE mode drives the exact same stage, but each thread is
+// added the moment its own API call actually resolves, so the stagger is
+// whatever the network gives us. Both feeds land on the same six beats:
+// split, grow, (futures burst), fold, stamp.
+const TIMINGS = {
+  splitStagger: 480,      // ms between each thread forking off, replay mode
+  threadGrow: 750,        // ms for a thread to grow in, ease-out
+  postLandPause: 300,     // ms pause after the last thread lands, before the fold
+  reasonCharMs: 20,       // ms per character, the typewriter reason text
+  burstMs: 260,           // ms for a futures burst: fork, then collapse back
+  foldDriftMs: 800,       // ms for the trim: the extremes fade and drift
+  foldBendMs: 1000,       // ms for the survivors to bend toward the convergence point
+  consensusCountMs: 800,  // ms for the consensus number to count up from 0
+  stampSlideMs: 500,      // ms for the stamp panel to slide in
+  gapFlashMs: 550,        // ms of pause before the gap number flashes its color
+  verdictBounceMs: 450,   // ms for the verdict chip's scale bounce
+  pulseMs: 900,           // ms per pulse cycle on a growing thread's tip
+};
+
+function reducedMotion() {
+  return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+function shortLabel(b) {
+  if (b.p !== undefined) return Math.round(b.p * 100) + '% ' + (b.agent || '');
+  return (b.agent || '') + ' · ' + (b.yes ? 'YES' : 'NO');
+}
+
+// Builds one empty stage (root point of light + question) and returns a
+// controller: addThread()/failThread() can be called any time, whether
+// the caller already has every thread in hand or is streaming them in as
+// network calls resolve. finish() runs the fold, the stamp, and hands the
+// restart button to whatever the caller passes to onRestart().
+function createStage(container, { question, stageLabel, live, expectedTotal }) {
+  const W = 900, H = 260, rootX = 40, rootY = H / 2;
+  const NS = 'http://www.w3.org/2000/svg';
+  container.innerHTML =
+    `<div class="split-stage">
+      <div class="split-label mono${live ? ' live' : ''}">${esc(stageLabel)}</div>
+      <div class="split-q">${esc(question)}</div>
+      <svg class="split-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="the worlds splitting"></svg>
+      <div class="stories split-reasons"></div>
+      <div class="split-stamp-holder"></div>
+      <button type="button" class="split-restart-btn mono">↻ REPLAY AGAIN</button>
+    </div>`;
+  const svg = container.querySelector('svg.split-svg');
+  const reasonsEl = container.querySelector('.split-reasons');
+  const stampHolder = container.querySelector('.split-stamp-holder');
+  const restartBtn = container.querySelector('.split-restart-btn');
+
+  const root = document.createElementNS(NS, 'g');
+  root.innerHTML =
+    `<line x1="${rootX}" y1="${rootY}" x2="${rootX + 40}" y2="${rootY}" stroke="var(--dim)" stroke-width="1" opacity="0.5"/>
+     <circle cx="${rootX}" cy="${rootY}" r="3.5" fill="var(--gold)"/>
+     <text x="${rootX - 10}" y="${rootY + 22}" fill="var(--dim)" font-size="9" font-family="Menlo,monospace">NOW</text>`;
+  svg.appendChild(root);
+
+  const threads = [];   // landed / in-flight thread records
+  let lostCount = 0;
+  const futuresMode = () => threads.some(t => t.branch.p === undefined);
+
+  function layoutY(branch, slot) {
+    const total = Math.max(expectedTotal, 1);
+    const jitter = (slot / Math.max(total - 1, 1)) * (H - 60) + 30;
+    if (branch.p !== undefined) return (1 - branch.p) * (H - 60) + 30;
+    return branch.yes ? Math.min(jitter, H / 2 - 14) : Math.max(H - jitter, H / 2 + 14);
+  }
+
+  function burst(rec) {
+    const g = document.createElementNS(NS, 'g');
+    g.classList.add('split-burst');
+    g.style.setProperty('--burst-ms', TIMINGS.burstMs + 'ms');
+    const sparks = [[-10, -8, true], [-10, 8, true], [-13, 0, false]];
+    sparks.forEach(([dx, dy, yes]) => {
+      const ln = document.createElementNS(NS, 'line');
+      ln.setAttribute('x1', rec.endX); ln.setAttribute('y1', rec.endY);
+      ln.setAttribute('x2', rec.endX + dx); ln.setAttribute('y2', rec.endY + dy);
+      ln.setAttribute('stroke', yes ? 'var(--gold)' : 'var(--crimson)');
+      ln.setAttribute('stroke-width', '1');
+      ln.classList.add('split-burst-line');
+      g.appendChild(ln);
+    });
+    svg.appendChild(g);
+    requestAnimationFrame(() => requestAnimationFrame(() => g.classList.add('on')));
+    window.setTimeout(() => {
+      g.classList.remove('on');
+      window.setTimeout(() => g.remove(), TIMINGS.burstMs);
+    }, TIMINGS.burstMs + 120);
+  }
+
+  function appendReason(rec) {
+    const b = rec.branch;
+    const text = b.reason || b.story || '';
+    const div = document.createElement('div');
+    div.className = 'story';
+    const tag = document.createElement('b');
+    tag.className = b.yes ? 'y' : 'n';
+    tag.textContent = shortLabel(b);
+    div.appendChild(tag);
+    div.appendChild(document.createTextNode(': '));
+    const span = document.createElement('span');
+    div.appendChild(span);
+    reasonsEl.appendChild(div);
+    if (!text) return;
+    let i = 0;
+    (function step() {
+      span.textContent = text.slice(0, i);
+      i++;
+      if (i <= text.length) window.setTimeout(step, TIMINGS.reasonCharMs);
+    })();
+  }
+
+  function land(rec) {
+    rec.tip.classList.remove('pulse');
+    rec.labelText.classList.add('on');
+    appendReason(rec);
+    if (futuresMode()) burst(rec);
+  }
+
+  function addThread(branch) {
+    const slot = threads.length;
+    const endX = W - 170;
+    const endY = layoutY(branch, slot);
+    const color = branch.yes ? 'var(--gold)' : 'var(--crimson)';
+    const midX = rootX + (endX - rootX) * 0.55;
+
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', `M${rootX} ${rootY} C ${midX} ${rootY}, ${midX} ${endY}, ${endX} ${endY}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '1.6');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('opacity', '0.85');
+    path.classList.add('split-thread');
+    svg.appendChild(path);
+    const len = path.getTotalLength() || 500;
+    path.style.setProperty('--len', len);
+    path.style.setProperty('--grow-ms', TIMINGS.threadGrow + 'ms');
+
+    const tip = document.createElementNS(NS, 'circle');
+    tip.setAttribute('cx', endX); tip.setAttribute('cy', endY); tip.setAttribute('r', '3');
+    tip.setAttribute('fill', color);
+    tip.classList.add('split-node', 'pulse');
+    tip.style.setProperty('--pulse-ms', TIMINGS.pulseMs + 'ms');
+    svg.appendChild(tip);
+
+    // Votes-type branches spread out by probability, so their labels
+    // rarely collide; futures-type branches jitter into two tight bands
+    // (YES near the top, NO near the bottom) and 6-8 inline labels there
+    // would just stack on top of each other. Match tree()'s own choice:
+    // only label the branch inline when it has a real probability. The
+    // agent name and story still show in the typed reason line below.
+    const labelText = document.createElementNS(NS, 'text');
+    labelText.setAttribute('x', endX + 8); labelText.setAttribute('y', endY + 3);
+    labelText.setAttribute('fill', 'var(--dim)'); labelText.setAttribute('font-size', '10');
+    labelText.setAttribute('font-family', 'Menlo,monospace');
+    labelText.classList.add('split-label-text');
+    labelText.textContent = branch.p !== undefined ? shortLabel(branch) : '';
+    svg.appendChild(labelText);
+
+    requestAnimationFrame(() => requestAnimationFrame(() => path.classList.add('grown')));
+
+    const rec = { branch, path, tip, labelText, endX, endY, color, lost: false };
+    threads.push(rec);
+    window.setTimeout(() => land(rec), TIMINGS.threadGrow);
+    return rec;
+  }
+
+  function failThread(label) {
+    const idx = lostCount++;
+    const y = rootY + 44 + idx * 16;
+    const x2 = rootX + 70;
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d', `M${rootX} ${rootY} L ${x2} ${y}`);
+    path.setAttribute('stroke', 'var(--dim)');
+    path.setAttribute('stroke-width', '1.2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('opacity', '0.6');
+    path.classList.add('split-thread', 'lost');
+    svg.appendChild(path);
+    const len = path.getTotalLength() || 80;
+    path.style.setProperty('--len', len);
+    requestAnimationFrame(() => requestAnimationFrame(() => path.classList.add('grown')));
+
+    const note = document.createElementNS(NS, 'text');
+    note.setAttribute('x', x2 + 6); note.setAttribute('y', y + 3);
+    note.classList.add('lost-note');
+    note.textContent = 'lost world: ' + label;
+    svg.appendChild(note);
+
+    const div = document.createElement('div');
+    div.className = 'story lost-line mono';
+    div.textContent = 'lost world: ' + label + ' never landed';
+    reasonsEl.appendChild(div);
+
+    window.setTimeout(() => {
+      path.style.opacity = '0.18';
+      note.style.opacity = '0.35';
+    }, 500);
+  }
+
+  function showStamp({ consensus, mid, verdictHtml }) {
+    const pct = Math.round(consensus * 100);
+    const midPct = (mid === null || mid === undefined) ? null : Math.round(mid);
+    const stamp = document.createElement('div');
+    stamp.className = 'split-stamp';
+    stamp.style.setProperty('--stamp-ms', TIMINGS.stampSlideMs + 'ms');
+    stamp.innerHTML =
+      (midPct !== null ? `<div class="split-line">THE MARKET SAYS <span class="num mono">${midPct}%</span></div>` : '') +
+      `<div class="split-line">THE WORLDS SAY <span class="num mono split-consensus-num">0%</span></div>` +
+      (midPct !== null ? `<div class="split-gap mono">-</div>` : '') +
+      `<div class="split-verdict-wrap">${verdictHtml}</div>`;
+    stampHolder.innerHTML = '';
+    stampHolder.appendChild(stamp);
+    requestAnimationFrame(() => requestAnimationFrame(() => stamp.classList.add('in')));
+
+    const numEl = stamp.querySelector('.split-consensus-num');
+    const chipEl = stamp.querySelector('.split-verdict-wrap .chip');
+    if (chipEl) chipEl.style.setProperty('--bounce-ms', TIMINGS.verdictBounceMs + 'ms');
+    const start = performance.now();
+    function tickCount(now) {
+      const t = Math.min(1, (now - start) / TIMINGS.consensusCountMs);
+      numEl.textContent = Math.round(t * pct) + '%';
+      if (t < 1) { requestAnimationFrame(tickCount); return; }
+      if (midPct !== null) {
+        const gapEl = stamp.querySelector('.split-gap');
+        const gap = pct - midPct;
+        gapEl.textContent = (gap >= 0 ? '+' : '') + gap + ' PT GAP';
+        window.setTimeout(() => gapEl.classList.add(gap >= 0 ? 'up' : 'down'), 30);
+      }
+      window.setTimeout(() => { if (chipEl) chipEl.classList.add('in'); },
+        midPct !== null ? TIMINGS.gapFlashMs : 30);
+      window.setTimeout(() => { restartBtn.style.display = 'inline-block'; },
+        (midPct !== null ? TIMINGS.gapFlashMs : 30) + TIMINGS.verdictBounceMs);
+    }
+    requestAnimationFrame(tickCount);
+  }
+
+  function finish({ consensus, mid, verdictHtml }) {
+    const survivors = threads.filter(t => !t.lost);
+    let waitMs = TIMINGS.postLandPause;
+    if (survivors.length >= 5) {
+      const ranked = survivors.map(t => ({ t, pv: t.branch.p !== undefined ? t.branch.p : (t.branch.yes ? 1 : 0) }))
+        .sort((a, b) => a.pv - b.pv);
+      const lowest = ranked[0].t, highest = ranked[ranked.length - 1].t;
+      [lowest, highest].forEach(rec => {
+        rec.path.classList.add('faded');
+        rec.path.style.opacity = '0.3';
+        rec.tip.style.opacity = '0.3';
+        rec.labelText.style.opacity = '0.3';
+        const drift = rec === lowest ? 10 : -10;
+        rec.tip.setAttribute('cy', String(parseFloat(rec.tip.getAttribute('cy')) + drift));
+      });
+      const keep = ranked.map(r => r.t).filter(t => t !== lowest && t !== highest);
+      const convergeX = W - 90, convergeY = H / 2;
+      keep.forEach(rec => {
+        const midBendX = (rootX + convergeX) / 2;
+        rec.path.style.transition = `d ${TIMINGS.foldBendMs}ms ease`;
+        rec.tip.style.transition = `cx ${TIMINGS.foldBendMs}ms ease, cy ${TIMINGS.foldBendMs}ms ease`;
+        requestAnimationFrame(() => {
+          rec.path.setAttribute('d', `M${rootX} ${rootY} C ${midBendX} ${rootY}, ${midBendX} ${convergeY}, ${convergeX} ${convergeY}`);
+          rec.tip.setAttribute('cx', convergeX);
+          rec.tip.setAttribute('cy', convergeY);
+        });
+      });
+      waitMs = TIMINGS.foldDriftMs + TIMINGS.foldBendMs;
+    }
+    window.setTimeout(() => showStamp({ consensus, mid, verdictHtml }), waitMs);
+  }
+
+  return {
+    addThread, failThread, finish,
+    onRestart(fn) { restartBtn.onclick = fn; },
+  };
+}
+
+// Reduced-motion path: skip straight to the finished tree, no animation,
+// same numbers, same copy. Used for both REPLAY and LIVE when the visitor
+// has asked their OS for less motion.
+function renderFinishedStage(container, { question, stageLabel, branches, skipped = [], consensus, mid, verdictHtml, onRestart }) {
+  const pct = Math.round(consensus * 100);
+  const midPct = (mid === null || mid === undefined) ? null : Math.round(mid);
+  const pseudoMarket = branches.length && branches[0].p !== undefined
+    ? { votes: branches.map(b => ({ probability: b.p, agent: b.agent, reason: b.reason })), futures: [] }
+    : { votes: [], futures: branches.map(b => ({ resolves: b.yes ? 'YES' : 'NO', agent: b.agent, story: b.story || b.reason })) };
+  const storiesHtml = branches.map(b =>
+    `<div class="story"><b class="${b.yes ? 'y' : 'n'}">${esc(shortLabel(b))}</b>: ${esc(b.reason || b.story || '')}</div>`
+  ).join('');
+  const lostHtml = skipped.map(s => `<div class="story lost-line mono">lost world: ${esc(s)} never landed</div>`).join('');
+  container.innerHTML =
+    `<div class="split-stage">
+      <div class="split-label mono">${esc(stageLabel)}</div>
+      <div class="split-q">${esc(question)}</div>
+      ${tree(pseudoMarket)}
+      <div class="stories">${storiesHtml}${lostHtml}</div>
+      <div class="split-stamp in">
+        ${midPct !== null ? `<div class="split-line">THE MARKET SAYS <span class="num mono">${midPct}%</span></div>` : ''}
+        <div class="split-line">THE WORLDS SAY <span class="num mono">${pct}%</span></div>
+        ${midPct !== null ? `<div class="split-gap mono ${pct - midPct >= 0 ? 'up' : 'down'}">${pct - midPct >= 0 ? '+' : ''}${pct - midPct} PT GAP</div>` : ''}
+        <div class="split-verdict-wrap">${verdictHtml.replace('class="chip', 'class="chip in')}</div>
+      </div>
+      <button type="button" class="split-restart-btn mono" style="display:inline-block">↻ REPLAY AGAIN</button>
+    </div>`;
+  const btn = container.querySelector('.split-restart-btn');
+  if (btn && onRestart) btn.onclick = onRestart;
+}
+
+// REPLAY: every branch is already known, so it plays on a fixed stagger.
+// Used for the first market card, the SAMPLE fallback, and for replaying
+// a LIVE run again (for free, no new API calls) once it has finished.
+function runReplaySequence(container, cfg) {
+  const { question, stageLabel, branches, skipped = [], consensus, mid, verdictHtml } = cfg;
+  const restart = () => runReplaySequence(container, cfg);
+  if (!branches.length) return;
+  if (reducedMotion()) {
+    renderFinishedStage(container, { question, stageLabel, branches, skipped, consensus, mid, verdictHtml, onRestart: restart });
+    return;
+  }
+  const stage = createStage(container, { question, stageLabel, live: false, expectedTotal: branches.length });
+  let i = 0;
+  (function step() {
+    if (i < branches.length) {
+      stage.addThread(branches[i]); i++;
+      window.setTimeout(step, TIMINGS.splitStagger);
+    } else if (i < branches.length + skipped.length) {
+      stage.failThread(skipped[i - branches.length]); i++;
+      window.setTimeout(step, TIMINGS.splitStagger / 2);
+    } else {
+      window.setTimeout(() => stage.finish({ consensus, mid, verdictHtml }), TIMINGS.threadGrow);
+    }
+  })();
+  stage.onRestart(restart);
+}
+
 function renderFutures(data) {
   const el = document.getElementById('futures');
   const markets = (data.cycle && data.cycle.markets) || [];
@@ -339,11 +729,15 @@ function renderFutures(data) {
     el.innerHTML = `<p class="empty">No cycle data yet. The worlds appear after the engine's first cloud run.</p>`;
     return;
   }
-  el.innerHTML = markets.map(m => {
+  el.innerHTML = markets.map((m, i) => {
     const worlds = (m.futures || []).length || (m.votes || []).length;
     const stories = (m.futures || []).slice(0, 6).map(f =>
       `<div class="story"><b class="${f.resolves === 'YES' ? 'y' : 'n'}">${esc(f.resolves)}</b>: ${esc(f.story)} <span class="mono">(${esc(f.agent)})</span></div>`
     ).join('');
+    const replayBtn = i === 0
+      ? `<button type="button" class="split-replay-btn mono" onclick="playReplay(0)">▶ REPLAY</button>
+         <div id="split-stage-0"></div>`
+      : '';
     return `<div class="market">
       <div class="q">${esc(m.question)}</div>
       <div class="meta mono">${esc(m.category || '')} · ${worlds} worlds seen · disagreement ${m.spread}</div>
@@ -354,8 +748,27 @@ function renderFutures(data) {
       </div>
       ${tree(m)}
       ${stories ? `<div class="stories">${stories}</div>` : ''}
+      ${replayBtn}
     </div>`;
   }).join('');
+}
+
+// The REPLAY button on the first market card. Plays back that card's own
+// recorded votes/futures through the same choreography LIVE asks use.
+let LAST_DATA = null;
+
+function playReplay(idx) {
+  const markets = LAST_DATA && LAST_DATA.cycle && LAST_DATA.cycle.markets || [];
+  const m = markets[idx];
+  const holder = document.getElementById('split-stage-' + idx);
+  if (!m || !holder) return;
+  const stageLabel = LAST_DATA._sample
+    ? 'REPLAY of sample data'
+    : `REPLAY of a real run, ${(LAST_DATA.cycle && LAST_DATA.cycle.at) || ''}`;
+  runReplaySequence(holder, {
+    question: m.question, stageLabel, branches: branchesFor(m), skipped: [],
+    consensus: m.probability, mid: m.mid, verdictHtml: chip(m.verdict),
+  });
 }
 
 function renderReceipts(data) {
@@ -501,6 +914,55 @@ async function runBrowserCrowd(key, model, question) {
   return { question, ...foldVotes(votes), votes, futures: [], skipped: skipped.length, mid: null };
 }
 
+// LIVE mode: the same six calls as runBrowserCrowd, but each method's
+// thread is drawn into `container` the moment its own call resolves, in
+// whatever order the network actually returns them. A failed call gets a
+// small "lost world" thread instead of just vanishing. Needs at least 3
+// survivors to fold into a call; below that, throw the existing plain
+// error and let the caller show it.
+async function runLiveCrowdAnimated(container, key, model, question) {
+  const reduced = reducedMotion();
+  const stage = reduced ? null : createStage(container, {
+    question, stageLabel: 'LIVE', live: true, expectedTotal: METHODS.length,
+  });
+  const votes = [], skipped = [];
+  const tasks = METHODS.map(([label, instruction]) =>
+    callClaude(key, model, votePrompt(label, instruction, question))
+      .then(text => {
+        const vote = parseVote(text);
+        if (vote) {
+          votes.push({ ...vote, agent: label });
+          if (stage) stage.addThread({ yes: vote.probability >= 0.5, p: vote.probability, agent: label, reason: vote.reason });
+        } else {
+          skipped.push(label);
+          if (stage) stage.failThread(label);
+        }
+      })
+      .catch(() => {
+        skipped.push(label);
+        if (stage) stage.failThread(label);
+      })
+  );
+  await Promise.allSettled(tasks);
+  if (votes.length < 3) {
+    throw new Error(`Only ${votes.length} of ${METHODS.length} methods came back usable. Try again.`);
+  }
+  const folded = foldVotes(votes);
+  const pct = Math.round(folded.probability * 100);
+  const branches = votes.map(v => ({ yes: v.probability >= 0.5, p: v.probability, agent: v.agent, reason: v.reason }));
+  const verdictHtml = `<span class="chip pass mono">${pct}% CHANCE OF YES</span>`;
+  const replayCfg = { question, stageLabel: 'REPLAY of that live run', branches, skipped, consensus: folded.probability, mid: null, verdictHtml };
+  if (reduced) {
+    renderFinishedStage(container, Object.assign({}, replayCfg, {
+      stageLabel: 'LIVE', onRestart: () => runReplaySequence(container, replayCfg),
+    }));
+  } else {
+    stage.finish({ consensus: folded.probability, mid: null, verdictHtml });
+    stage.onRestart(() => runReplaySequence(container, replayCfg));
+  }
+  return { question, ...folded, votes, futures: [], skipped: skipped.length, mid: null };
+}
+
 function askCard(title, m) {
   return `<div class="market">
     <div class="q">${esc(title)}</div>
@@ -526,16 +988,15 @@ async function askWorlds() {
   btn.disabled = true; btn.textContent = 'SPLITTING THE WORLDS…';
   out.innerHTML = '';
   try {
-    const before = await runBrowserCrowd(key, model, q);
-    out.innerHTML = askCard(q, before);
+    const before = await runLiveCrowdAnimated(out, key, model, q);
     if (w) {
       btn.textContent = 'RUNNING THE WHAT-IF…';
       const twisted = `WHAT-IF (treat as definitely true: ${w}): ${q}`;
       const after = await runBrowserCrowd(key, model, twisted);
       const shift = Math.round((after.probability - before.probability) * 100);
-      out.innerHTML += askCard(`WHAT-IF: ${w}`, after) +
+      out.insertAdjacentHTML('beforeend', askCard(`WHAT-IF: ${w}`, after) +
         `<div class="market"><div class="readout"><span class="bigp">${shift >= 0 ? '+' : ''}${shift}%</span>
-         <span class="vs mono">how much that fact moves the odds</span></div></div>`;
+         <span class="vs mono">how much that fact moves the odds</span></div></div>`);
     }
   } catch (e) {
     errEl.textContent = e.message;
@@ -559,6 +1020,7 @@ fetch('data.json')
   .catch(() => render(Object.assign({}, SAMPLE, { _sample: true })));
 
 function render(d) {
+  LAST_DATA = d;
   if (d._sample) {
     // A missing element must never kill the whole page render.
     const tag = document.querySelector('.sub-tag');

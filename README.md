@@ -161,7 +161,8 @@ adapters/         kalshi market cards, metaculus tournament questions
 ledger.py         the scorecard: calls, CLV, settlement
 report.py         ledger -> web/data.json + REPORT.md
 web/index.html    the dashboard (static, no server): branching-worlds
-                  map, ask-the-worlds in your browser, the receipts
+                  map, ask-the-worlds in your browser, the receipts,
+                  and a replay animation of the first market's split
 GATES.md          pre-registered pass/fail rules
 docs/             architecture + a plain-English tour
 ```
