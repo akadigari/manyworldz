@@ -25,7 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from engine import llm, news
-from engine.explore import explore_worlds
+from engine.explore import explore_worlds, find_paths
 from engine.personas import build_crowd
 from engine.swarm import run_crowd
 from engine.whatif import run_whatif
@@ -107,6 +107,23 @@ def _print_worlds(result: dict) -> None:
           f"{result['skipped']} unusable answers skipped)\n")
 
 
+def _print_paths(result: dict) -> None:
+    """Show a --path run: every distinct path found to the target, rated
+    against base rates, then the honest neutral odds. Zero paths is
+    printed plainly too: finding nothing believable is a real answer.
+    """
+    print(f"\n  PATHS TO {result['target']}: {len(result['paths'])} distinct ways found\n")
+    if not result["paths"]:
+        print("  (nothing believable found. that is a real answer, not a bug.)\n")
+    for path in result["paths"]:
+        print(f"   [{path['rating']}] {path['story']}  (x{path['count']})")
+        print(f"      gates: {'; '.join(path['gates'])}")
+    print(f"\n  THE CROWD SAYS: {result['probability']:.0%} chance of YES "
+          "(from a neutral split; the path search never changes the odds)")
+    print(f"  ({result['rounds']} rounds, "
+          f"{result['skipped']} unusable answers skipped)\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Ask the AI crowd for the odds of anything.")
@@ -120,6 +137,10 @@ def main() -> None:
     parser.add_argument("--deep", action="store_true",
                         help="keep splitting into futures until two rounds in a "
                              "row find nothing new, then show the map of worlds")
+    parser.add_argument("--path", choices=["YES", "NO"], default=None,
+                        help="hunt for distinct paths to YES or NO, each rated "
+                             "against base rates; the odds still come from a "
+                             "plain neutral split, never from this search")
     parser.add_argument("--agents", type=int, default=None,
                         help=f"crowd size (default {config.ENGINE_N_AGENTS})")
     parser.add_argument("--model", default=None,
@@ -136,6 +157,16 @@ def main() -> None:
         headlines = news.research(args.question) if not args.no_news else []
         result = explore_worlds(card, headlines, _resolve_ask(model=args.model))
         _print_worlds(result)
+        print(f"  total engine spend so far: ${llm.spent_usd():.2f} "
+              f"(cap ${config.ENGINE_BUDGET_USD:.2f})\n")
+        return
+
+    if args.path:
+        card = {"ticker": "ASK", "question": args.question, "mid": None}
+        headlines = news.research(args.question) if not args.no_news else []
+        result = find_paths(card, headlines, _resolve_ask(model=args.model),
+                            target=args.path)
+        _print_paths(result)
         print(f"  total engine spend so far: ${llm.spent_usd():.2f} "
               f"(cap ${config.ENGINE_BUDGET_USD:.2f})\n")
         return

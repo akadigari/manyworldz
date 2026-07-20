@@ -65,3 +65,6 @@ EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets 
 # ---- deep split (engine/explore.py: keep imagining until nothing new shows up) ----
 DEEP_MAX_ROUNDS = 8   # give up after this many rounds even if still finding new worlds
 DEEP_DRY_ROUNDS = 2   # stop early once this many rounds in a row add nothing new
+
+# ---- path mode (engine/explore.py: find_paths, the "beat Thanos" search) ----
+PATH_MAX_ROUNDS = 5   # target-conditioned rounds run this many times, no early stop

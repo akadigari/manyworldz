@@ -32,6 +32,15 @@ probability is always the plain census of every future ever seen,
 duplicates included, same as engine/futures.py. Deduping never touches
 the math.
 
+This file also has find_paths: the "beat Thanos" search. Instead of
+splitting into every way a question could go, it hunts ONLY for ways one
+target outcome happens, with the preconditions ("gates") each path needs.
+It rates each distinct path against base rates, but it NEVER lets that
+search touch the actual odds: those always come from a separate, normal,
+neutral split. Hunting for a story and estimating how likely it is are
+two different jobs; mixing them would let a vivid story quietly move the
+number.
+
 Every function here takes ask_fn so tests can inject canned answers and
 stay offline.
 """
@@ -127,6 +136,77 @@ Reply with ONLY JSON like:
 {{"classifications": ["new", "w2", "c1"]}}
 Give exactly {n} answers, one per candidate, in order."""
 
+# Same dedupe idea, worded for find_paths: paths are the same when the
+# preconditions describe the same underlying mechanism, not just similar
+# words.
+_CLASSIFY_PATHS_PROMPT = """A prediction market asks: "{question}"
+
+We are sorting imagined PATHS to {target} into distinct paths. Two paths
+are the SAME if they describe the same underlying mechanism (the same
+chain of gates), even if worded differently. Different mechanisms are
+different paths, even if the gates look similar on the surface.
+
+PATHS FOUND SO FAR (numbered):
+{worlds}
+
+NEW CANDIDATE PATHS TO SORT (numbered):
+{candidates}
+
+For each candidate, in order, answer one of three ways:
+- "wN" if it is the SAME mechanism as path N above, e.g. "w2"
+- "cN" if it is the SAME mechanism as an EARLIER candidate N in this list,
+  e.g. "c1"
+- "new" if it is a genuinely different mechanism from everything above and
+  everything earlier in this list
+
+Reply with ONLY JSON like:
+{{"classifications": ["new", "w2", "c1"]}}
+Give exactly {n} answers, one per candidate, in order."""
+
+# Shown to one agent every path round: imagine ONLY futures where the
+# target happens, with the gates (preconditions) that had to come true.
+_PATH_PROMPT = """You are {name}, a {archetype}: {style}.
+
+A prediction market asks: "{question}"
+{market_line}
+Recent headlines: {headlines}
+
+Only imagine futures where the answer resolves {target}. Do not imagine
+{other} futures here: that is a different search.
+
+These are the paths to {target} that have ALREADY been found:
+{worlds}
+
+Imagine {k} MORE ways this could resolve {target} that are genuinely
+DIFFERENT from every path listed above. For each one, give the one
+sentence story, plus a list of 1 to 3 short "gates": the concrete
+preconditions that had to come true first, in order, for that story to
+happen.
+Reply with ONLY JSON like:
+{{"futures": [{{"story": "one sentence",
+               "gates": ["precondition one", "precondition two"]}}]}}
+Give exactly {k} futures, each with 1 to 3 gates."""
+
+# The sober rating pass after find_paths finishes hunting: rate each
+# distinct path against base rates, not against how vivid the story felt.
+_RATE_PATHS_PROMPT = """A prediction market asks: "{question}"
+
+Here are the distinct paths found to {target}, each with the gates
+(preconditions) that had to come true, in order:
+
+{paths}
+
+Rate each path "likely", "possible", or "longshot". Anchor on base rates:
+how often do things like these gates actually happen, historically? It is
+completely fine, and often correct, to rate every single path "longshot"
+if that is what the base rates say. Do not be generous just because a
+path sounds plausible in the moment: a vivid story is not the same thing
+as a common one.
+
+Reply with ONLY JSON like:
+{{"ratings": ["likely", "possible", "longshot"]}}
+Give exactly {n} ratings, one per path, in order."""
+
 
 def _worlds_bullets(worlds: list[dict]) -> str:
     """The map so far, as plain bullets for a prompt."""
@@ -169,6 +249,29 @@ def _parse_futures(parsed: dict | None, k: int) -> list[dict] | None:
     return futures
 
 
+def _parse_paths(parsed: dict | None, k: int) -> list[dict] | None:
+    """Same idea as _parse_futures, but for find_paths: each candidate
+    needs a story AND at least one gate. A story with no gates is not a
+    path, it is just a guess, so it gets dropped.
+    """
+    if not parsed:
+        return None
+    paths = []
+    for future in parsed.get("futures", []):
+        if not isinstance(future, dict):
+            continue
+        story = str(future.get("story", "")).strip()
+        gates_raw = future.get("gates", [])
+        if not isinstance(gates_raw, list):
+            continue
+        gates = [str(g).strip()[:120] for g in gates_raw if str(g).strip()][:3]
+        if story and gates:
+            paths.append({"story": story[:200], "gates": gates})
+    if len(paths) < max(k // 2, 1):
+        return None      # the model did not really play along: skip, do not guess
+    return paths
+
+
 def _imagine_more(agent: dict, card: dict, headlines: list[str],
                   worlds: list[dict], k: int, ask_fn,
                   wildcard: str | None = None) -> list[dict] | None:
@@ -200,10 +303,34 @@ def _saboteur_round(card: dict, worlds: list[dict], probability: float,
     return _parse_futures(parsed, k)
 
 
+def _imagine_paths(agent: dict, card: dict, headlines: list[str],
+                   target: str, paths: list[dict], k: int, ask_fn) -> list[dict] | None:
+    """Ask one agent to imagine k more paths to `target` that are not
+    already on the map, each with its own gates.
+    """
+    other = "NO" if target == "YES" else "YES"
+    prompt = _PATH_PROMPT.format(
+        name=agent["name"], archetype=agent["archetype"], style=agent["style"],
+        question=card["question"], market_line=market_line(card),
+        headlines="; ".join(headlines) if headlines else "(none found)",
+        target=target, other=other, worlds=_worlds_bullets(paths), k=k)
+    parsed = extract_json(ask_fn(prompt, max_tokens=250 + 100 * k))
+    return _parse_paths(parsed, k)
+
+
 def _classify_and_merge(card: dict, worlds: list[dict], candidates: list[dict],
-                        ask_fn) -> tuple[int, bool]:
+                        ask_fn, prompt_template: str = _CLASSIFY_PROMPT,
+                        build_world=None,
+                        target: str | None = None) -> tuple[int, bool]:
     """One ask_fn call: sort this round's candidate stories into the
-    growing map of distinct worlds.
+    growing map of distinct worlds (or, for find_paths, distinct paths).
+
+    `build_world` turns one candidate dict into the fields a new world
+    should carry (everything except "count", which this function always
+    sets to 1 itself). Defaults to the plain story+resolves shape that
+    explore_worlds and the saboteur use; find_paths passes its own that
+    keeps "gates" instead. `target` is only used to fill in the paths
+    version of the prompt; explore_worlds's default prompt ignores it.
 
     Mutates `worlds` in place, appending any genuinely new ones. Returns
     (how many new worlds got added, whether the classify call itself came
@@ -211,6 +338,9 @@ def _classify_and_merge(card: dict, worlds: list[dict], candidates: list[dict],
     of is just dropped: it never creates a new world and never bumps an
     existing count, since junk answers should never inflate the map.
     """
+    if build_world is None:
+        build_world = lambda c: {"story": c["story"], "resolves": c["resolves"]}
+
     worlds_before = len(worlds)   # only these can be referenced as "wN"; this
                                   # round's own new worlds are not numbered yet
     worlds_block = "\n".join(
@@ -218,9 +348,9 @@ def _classify_and_merge(card: dict, worlds: list[dict], candidates: list[dict],
         "(none yet, this is the first round)"
     cand_block = "\n".join(
         f"{i + 1}. {c['story']}" for i, c in enumerate(candidates))
-    prompt = _CLASSIFY_PROMPT.format(
-        question=card["question"], worlds=worlds_block, candidates=cand_block,
-        n=len(candidates))
+    prompt = prompt_template.format(
+        question=card["question"], target=target, worlds=worlds_block,
+        candidates=cand_block, n=len(candidates))
     parsed = extract_json(ask_fn(prompt, max_tokens=100 + 20 * len(candidates)))
     labels = parsed.get("classifications") if isinstance(parsed, dict) else None
     if not isinstance(labels, list):
@@ -231,8 +361,7 @@ def _classify_and_merge(card: dict, worlds: list[dict], candidates: list[dict],
     for i, candidate in enumerate(candidates):
         label = str(labels[i]).strip().lower() if i < len(labels) else ""
         if label == "new":
-            world = {"story": candidate["story"], "resolves": candidate["resolves"],
-                     "count": 1}
+            world = {**build_world(candidate), "count": 1}
             worlds.append(world)
             landed_in[i] = world
             added += 1
@@ -250,6 +379,35 @@ def _classify_and_merge(card: dict, worlds: list[dict], candidates: list[dict],
             # else: forward reference or points at a dropped candidate, junk, drop it.
         # anything else is unparseable and gets dropped the same way: never guessed at.
     return added, False
+
+
+def _rate_paths(card: dict, target: str, paths: list[dict], ask_fn) -> bool:
+    """Mutates `paths` in place, adding a "rating" key to each one.
+
+    Skipped entirely (no call made) if there is nothing to rate. Returns
+    whether the whole rating call came back unusable. A rating we cannot
+    parse, or a call that fails outright, always defaults to "longshot":
+    junk should never make a path look more credible than it is.
+    """
+    if not paths:
+        return False
+    block = "\n".join(
+        f"{i + 1}. {p['story']}\n   gates: {'; '.join(p['gates'])}"
+        for i, p in enumerate(paths))
+    prompt = _RATE_PATHS_PROMPT.format(
+        question=card["question"], target=target, paths=block, n=len(paths))
+    parsed = extract_json(ask_fn(prompt, max_tokens=100 + 20 * len(paths)))
+    ratings = parsed.get("ratings") if isinstance(parsed, dict) else None
+    call_failed = not isinstance(ratings, list)
+
+    for i, path in enumerate(paths):
+        rating = None
+        if isinstance(ratings, list) and i < len(ratings):
+            candidate = str(ratings[i]).strip().lower()
+            if candidate in ("likely", "possible", "longshot"):
+                rating = candidate
+        path["rating"] = rating or "longshot"   # unparseable or junk never upgrades a path
+    return call_failed
 
 
 def explore_worlds(card: dict, headlines: list[str], ask_fn,
@@ -364,4 +522,80 @@ def explore_worlds(card: dict, headlines: list[str], ask_fn,
     worlds_sorted = sorted(worlds, key=lambda w: -w["count"])
     return {"worlds": worlds_sorted, "probability": probability,
            "rounds": rounds_run, "raw_futures": len(raw_futures),
+           "skipped": skipped}
+
+
+def find_paths(card: dict, headlines: list[str], ask_fn, target: str = "YES",
+              k_per_round: int | None = None, max_rounds: int | None = None) -> dict:
+    """The "beat Thanos" search: hunt for distinct, concrete paths to one
+    outcome instead of splitting into every way the question could go.
+
+    Every round only imagines futures where `target` happens, each one
+    coming back with its "gates": the 1 to 3 preconditions that had to be
+    true first. Distinct paths get folded together with the same
+    classify-and-merge machinery explore_worlds uses (a path duplicates
+    another one when it is the same mechanism, not just similar wording).
+    Once the search is done, one sober rating call anchors every distinct
+    path against base rates: "likely", "possible", or "longshot". The
+    rater is explicitly told it is fine to call everything "longshot",
+    and an unparseable rating always defaults to "longshot", never up.
+
+    CRITICAL HONESTY RULE: this also always runs one completely normal,
+    neutral split (run_crowd, mode="simulate", the same machinery a plain
+    --simulate run uses), and its probability is the only number this
+    function ever returns as "the odds". The target-conditioned rounds
+    above NEVER touch that number: they only exist to find and rate
+    stories, not to move the probability. Searching for a path to YES and
+    estimating the odds are two different jobs, and mixing them would let
+    a vivid found story quietly inflate the number.
+
+    `max_rounds` defaults to config.PATH_MAX_ROUNDS, read fresh at call
+    time. Returns the target, the distinct paths (sorted likely, then
+    possible, then longshot, then by how often each one came up), the
+    neutral probability, how many path rounds ran, and how many sub-calls
+    (imagine, classify, or rating) came back unusable.
+    """
+    if max_rounds is None:
+        max_rounds = config.PATH_MAX_ROUNDS
+    k = k_per_round if k_per_round is not None else config.SIM_ROLLOUTS_K
+    crowd = build_crowd(config.ENGINE_N_AGENTS, config.SEED)
+
+    paths: list[dict] = []
+    skipped = 0
+    rounds_run = 0
+    build_path = lambda c: {"story": c["story"], "gates": c["gates"]}
+
+    for round_num in range(1, max_rounds + 1):
+        rounds_run = round_num
+        agent = crowd[(round_num - 1) % len(crowd)]
+        imagined = _imagine_paths(agent, card, headlines, target, paths, k, ask_fn)
+        if imagined is None:
+            skipped += 1
+            continue
+        _added, classify_failed = _classify_and_merge(
+            card, paths, imagined, ask_fn,
+            prompt_template=_CLASSIFY_PATHS_PROMPT, build_world=build_path,
+            target=target)
+        if classify_failed:
+            skipped += 1
+
+    rating_failed = _rate_paths(card, target, paths, ask_fn)
+    if rating_failed:
+        skipped += 1
+
+    order = {"likely": 0, "possible": 1, "longshot": 2}
+    paths_sorted = sorted(paths, key=lambda p: (order.get(p["rating"], 3), -p["count"]))
+
+    # The honest number: a plain, neutral split, never touched by the
+    # target-conditioned rounds above.
+    neutral = run_crowd(card, headlines, crowd, mode="simulate", k=k,
+                        deliberation=False, ask_fn=ask_fn)
+    skipped += neutral["skipped"]
+
+    return {"target": target,
+           "paths": [{"story": p["story"], "gates": p["gates"],
+                      "count": p["count"], "rating": p["rating"]}
+                     for p in paths_sorted],
+           "probability": neutral["probability"],
+           "rounds": rounds_run,
            "skipped": skipped}
