@@ -1,10 +1,11 @@
 venv/
-# Keep the scorecard and the spending meter in the repo (the cloud runs
-# need them to persist between runs); ignore everything else in data/
-# (caches, downloads, all rebuildable).
+# Keep the scorecard, the spending meter, and the tournament log in the
+# repo (the cloud runs need them to persist between runs); ignore
+# everything else in data/ (caches, downloads, all rebuildable).
 data/*
 !data/ledger.csv
 !data/spend.json
+!data/tournament_log.csv
 __pycache__/
 *.pyc
 .env

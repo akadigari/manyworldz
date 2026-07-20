@@ -68,3 +68,14 @@ DEEP_DRY_ROUNDS = 2   # stop early once this many rounds in a row add nothing ne
 
 # ---- path mode (engine/explore.py: find_paths, the "beat Thanos" search) ----
 PATH_MAX_ROUNDS = 5   # target-conditioned rounds run this many times, no early stop
+
+# ---- Metaculus FutureEval tournament (tournament.py + adapters/metaculus.py) ----
+# The tournament to forecast on, by ID or slug. FutureEval runs three
+# seasons a year under a new slug each time. As of 2026-07-19 the live
+# one is "summer-futureeval-2026" (metaculus.com/tournament/
+# summer-futureeval-2026/), which is also the official bot template's
+# own default tournament for this season. Seasons rotate, so this reads
+# from the environment: set METACULUS_TOURNAMENT to the current slug
+# (or numeric ID) once a new season starts, no code change needed.
+METACULUS_TOURNAMENT = _os.environ.get("METACULUS_TOURNAMENT", "summer-futureeval-2026")
+TOURNAMENT_QUESTIONS_PER_RUN = 5   # new questions the crowd answers per cycle, same cost-control idea as MARKETS_PER_RUN
