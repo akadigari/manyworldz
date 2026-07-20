@@ -102,5 +102,16 @@ PATH_MAX_ROUNDS = 5   # target-conditioned rounds run this many times, no early 
 # own default tournament for this season. Seasons rotate, so this reads
 # from the environment: set METACULUS_TOURNAMENT to the current slug
 # (or numeric ID) once a new season starts, no code change needed.
-METACULUS_TOURNAMENT = _os.environ.get("METACULUS_TOURNAMENT", "summer-futureeval-2026")
-TOURNAMENT_QUESTIONS_PER_RUN = 5   # new questions the crowd answers per cycle, same cost-control idea as MARKETS_PER_RUN
+# Default target is MiniBench, not the big seasonal tournament. MiniBench
+# starts fresh every two weeks with about 60 questions, so a late entrant
+# carries no deficit and gets a real answer in two weeks instead of four
+# months. The seasonal tournament scores by a running SUM, so joining it
+# late means every question that already closed is a permanent zero.
+# Point this at "summer-futureeval-2026" (or the current season slug) when
+# a season starts fresh and the prize run is worth it.
+METACULUS_TOURNAMENT = _os.environ.get("METACULUS_TOURNAMENT", "minibench")
+# How many unanswered questions one cycle takes on. Coverage is the whole
+# game here: an unanswered question scores zero, and prize share goes with
+# the square of the total, so skipping questions hurts twice. The budget
+# cap in ENGINE_BUDGET_USD is still the real brake on spending.
+TOURNAMENT_QUESTIONS_PER_RUN = 25

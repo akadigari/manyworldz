@@ -26,7 +26,12 @@ name: tournament
 
 on:
   schedule:
-    - cron: "17 */6 * * *"   # every 6 hours, at :17 (off the busy top of the hour)
+    # Every 20 minutes, on purpose. Tournament rank is the SUM of scores
+    # over questions, and a question you never answered scores zero. Some
+    # questions open and close inside a few hours, so a slow schedule
+    # quietly skips them and the bot looks like a bad forecaster when it
+    # was really just absent. Coverage first, cleverness second.
+    - cron: "*/20 * * * *"
   workflow_dispatch: {}       # also lets you run it by hand from the Actions tab
 
 permissions:
