@@ -18,9 +18,7 @@
 
 In the movie, Doctor Strange goes forward in time and watches **14,000,605 possible futures** to find the one that matters.
 
-manyworldz is my version of that trick, for real questions. Ask it anything with a yes or a no. It splits the question into independent runs, each run **imagines the event playing out as short stories**, and the answer is read off how many of those stories end in YES. Then reality grades every answer, in public, wins and losses both.
-
-I am not a company and this is not a product. I built this for myself, because I wanted to watch the futures split. It stays honest because the only person it could ever fool is me.
+manyworldz is that trick, for real questions. Ask it anything with a yes or a no. It splits the question into independent runs, each run **imagines the event playing out as short stories**, and the answer is read off how many of those stories end in YES. Then reality grades every answer, in public, wins and losses both.
 
 ## ✨ What it does
 
@@ -148,6 +146,6 @@ docs/             architecture + a plain-English tour
 
 ## 📜 License
 
-MIT. Built for the love of it, not for a job. Wins and losses both get published.
+MIT. Wins and losses both get published.
 
 *One more thing: the engine's random seed is `14000605`. If you know, you know.*
