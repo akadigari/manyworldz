@@ -1,0 +1,67 @@
+# manyworldz entering the Metaculus FutureEval bot tournament, on a timer.
+#
+# Every 6 hours it fetches the tournament's open binary questions, runs
+# the same crowd this whole repo already uses, submits an answer to any
+# question it has not already answered, and commits the submission log
+# back to the repo. It never touches Kalshi or the ledger; this is a
+# separate public scorecard.
+#
+# Safe to push before the tournament account exists. tournament.py's own
+# main() checks for METACULUS_TOKEN first: if it is missing, the run
+# prints a plain message and exits 0 (success, not a failure), so the
+# schedule can stay ACTIVE with no red X's while the owner is still
+# waiting on the account and the token.
+#
+# To turn it on once the account exists:
+#   1. Create the bot account on metaculus.com, generate an API token
+#      (see the FutureEval participate page).
+#   2. On github.com: repo Settings -> Secrets and variables -> Actions
+#      -> New repository secret -> name METACULUS_TOKEN, paste it.
+#   3. Make sure ANTHROPIC_API_KEY is already set as a secret too (the
+#      manyworldz.yml workflow needs the same one).
+#   4. That's it. The Actions tab shows every run; data/tournament_log.csv
+#      fills up with every submission, question by question.
+
+name: tournament
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"   # every 6 hours, at :17 (off the busy top of the hour)
+  workflow_dispatch: {}       # also lets you run it by hand from the Actions tab
+
+permissions:
+  contents: write             # so it can commit the submission log back
+
+concurrency:
+  group: tournament
+  cancel-in-progress: false   # never cut a run off partway through
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: fetch open questions, run the crowd, submit answers
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          # cheap voice for the unattended cloud run; change to sonnet/
+          # opus/fable here if you want a smarter (pricier) crowd
+          MANYWORLDZ_MODEL: haiku
+        run: python3 tournament.py
+
+      - name: save the submission log back to the repo
+        run: |
+          git config user.name "manyworldz-bot"
+          git config user.email "actions@users.noreply.github.com"
+          # || true: a cycle with nothing new to answer leaves the file untouched
+          git add data/tournament_log.csv 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "tournament: cycle log update"
+          git push
