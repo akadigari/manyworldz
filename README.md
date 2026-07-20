@@ -2,17 +2,35 @@
   <img src="docs/banner.svg" alt="manyworldz: one timeline splitting into many worlds" width="100%"/>
 </p>
 
-# manyworldz
+<h1 align="center">manyworldz</h1>
 
-An LLM-driven forecasting engine that runs a crowd of AI agents on any yes/no
-question about the future: each agent researches, votes (or simulates the
-outcome multiple times), the votes fold into one probability, and every
-prediction gets logged and graded against real prediction-market prices.
+<p align="center"><i>Simulate every story the future could tell. Keep score against reality.</i></p>
 
-It predicts; it never bets. Every call is written to a CSV ledger and graded
-against what really happened.
+<p align="center">
+  <img src="https://img.shields.io/badge/tests-80%20passing-2ea44f?style=flat-square" alt="80 tests"/>
+  <img src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat-square" alt="python 3.11+"/>
+  <img src="https://img.shields.io/badge/cost-about%201%20cent%20per%20question-55c6dd?style=flat-square" alt="about a cent per question"/>
+  <img src="https://img.shields.io/badge/bets%20placed-zero%2C%20ever-e0435c?style=flat-square" alt="bets placed: zero, ever"/>
+  <img src="https://img.shields.io/badge/license-MIT-8a713b?style=flat-square" alt="MIT"/>
+</p>
 
-## See it run
+---
+
+In the movie, Doctor Strange goes forward in time and watches **14,000,605 possible futures** to find the one that matters.
+
+manyworldz is my version of that trick, for real questions. Ask it anything with a yes or a no. It splits the question into independent runs, each run **imagines the event playing out as short stories**, and the answer is read off how many of those stories end in YES. Then reality grades every answer, in public, wins and losses both.
+
+I am not a company and this is not a product. I built this for myself, because I wanted to watch the futures split. It stays honest because the only person it could ever fool is me.
+
+## ✨ What it does
+
+- **Ask it anything**: give it `"Will the Fed cut rates in September?"` and the engine splits into six to eight independent runs; each pulls fresh headlines, anchors on a base rate, and imagines the event playing out several different ways
+- **Every story seen**: a run's probability is how many of its imagined futures land YES; the final answer is the fold of all the worlds
+- **What-if mode**: force one fact to be true (`"the star player is out tonight"`) and watch how far every future shifts
+- **Live loop**: scans ~4,000 open Kalshi markets, and when the crowd of futures disagrees with the market price by more than fees could explain, it logs the call
+- **The scorecard**: every call is graded against real closing prices. The ledger is public. It cannot show a rosier number than reality
+
+## 🔮 See the stories
 
 ```
 $ venv/bin/python ask.py "Will the Fed cut rates in September?"
@@ -35,44 +53,31 @@ Q: Will the Fed cut rates in September?
    - A hot jobs report freezes the committee one more meeting  (Mo)
 ```
 
-The format is exact, the numbers are invented: run it with your own key for
-real ones. Seeing every outcome is the default: each run imagines the event
-playing out K different ways, and the odds are how many of those futures
-land YES. Add `--vote` for a cheaper single-number mode. Add
-`--whatif "some fact"` and the engine re-runs every world with that fact
-forced true, so you can see how far one piece of news moves the odds.
+Every `+` and `-` line is one imagined future: a tiny story with an ending. The odds are just the census of the stories. (The format above is exact; the numbers are invented. Run it with your own key for real ones.)
 
-## What it does
+Add `--whatif "some fact"` to re-run every world with that fact forced true and see how far the odds move. Add `--vote` for a cheaper single-number mode with no stories.
 
-- **Ask it anything**: give it `"Will the Fed cut rates in September?"`; the
-  engine splits it into six to eight independent runs; each pulls headlines,
-  anchors on a base rate, and imagines the event playing out several
-  different ways
-- **Every outcome seen**: a run's probability is how many of its imagined
-  futures land YES; the engine's answer is the fold of all the worlds
-- **What-if**: re-runs the whole crowd with a fact forced true and shows how
-  much the odds move
-- **Live loop**: scans ~4,000 open Kalshi markets (non-sports), votes on the
-  biggest ones, and logs a prediction when the crowd disagrees with the
-  market by more than fees could explain
-- **Scorecard**: every pick graded against closing prices (CLV). Results
-  written to CSV and a dashboard automatically
+## 🌌 How it works
 
-## How it works
+```mermaid
+flowchart LR
+    Q["your question"] --> S["the split:<br/>6-8 independent runs"]
+    S --> F["each run imagines<br/>K futures as stories"]
+    F --> C["the fold: trim extremes,<br/>one honest probability"]
+    C --> M{"disagrees with the<br/>market by more than fees?"}
+    M -- yes --> L["the call goes in<br/>the ledger"]
+    M -- no --> P["pass, no call"]
+    L --> G["reality grades it:<br/>settlement + closing prices"]
+    G --> D["public scorecard"]
+```
 
-1. `adapters/kalshi_events.py` pulls open markets and turns them into simple
-   "cards" (question, price, volume). `engine/news.py` grabs headlines from
-   two search angles, no API key needed
-2. `engine/personas.py` builds the crowd; `engine/swarm.py` collects votes,
-   throws out junk answers (never invents one), trims the extremes, and
-   returns one probability plus a disagreement spread
-3. `run.py` compares the crowd's number to the market price. Gap bigger than
-   edge + fee buffer → the call goes in `data/ledger.csv`
-4. Next cycle, `ledger.py` re-checks every open pick: did the market move
-   toward us (CLV), did it settle, did we win
-5. `report.py` writes `web/data.json`: the dashboard draws straight from it
+1. `adapters/kalshi_events.py` turns open markets into simple cards; `engine/news.py` pulls fresh headlines, no key needed
+2. `engine/swarm.py` runs the split, throws out junk answers (never invents one), trims the extremes, and returns one probability plus a disagreement spread
+3. `run.py` compares the crowd's number to the market price; a real gap becomes a logged call in `data/ledger.csv`
+4. Next cycle, `ledger.py` re-grades every open call: did the market move toward us, did it settle, did we win
+5. `report.py` writes the dashboard data; the site draws straight from the same ledger the grading reads
 
-## Set it up
+## 🚀 Set it up
 
 Five minutes from clone to first answer:
 
@@ -86,81 +91,63 @@ python3 -m venv venv && venv/bin/pip install -r requirements.txt
 # 3. add your Anthropic key (console.anthropic.com)
 export ANTHROPIC_API_KEY=your-key
 
-# 4. ask the crowd something
+# 4. ask the worlds something
 venv/bin/python ask.py "Will it snow in DC this December?"
 
-# 5. or run one full live cycle on real Kalshi markets
+# 5. or run one full live cycle on real markets
 venv/bin/python run.py
 ```
 
-A question costs about a cent on the default model. Answers are cached, so
-asking the same thing twice is free. Prefer Docker?
-`docker build -t manyworldz .` then
-`docker run -e ANTHROPIC_API_KEY=your-key manyworldz`.
+A question costs about a cent on the default model, and answers are cached, so asking twice is free. Prefer Docker? `docker build -t manyworldz .` then `docker run -e ANTHROPIC_API_KEY=your-key manyworldz`.
 
-## Models
+**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 80 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
 
-Pick the crowd's brain with `--model` or the `MANYWORLDZ_MODEL` env var:
+## 🧠 Pick the crowd's brain
 
 | Name | Model | Cost |
 |---|---|---|
-| `haiku` | claude-haiku-4-5 | ~1c per question (default) |
+| `haiku` | claude-haiku-4-5 | about 1 cent per question (default) |
 | `sonnet` | claude-sonnet-5 | ~3x |
 | `opus` | claude-opus-4-8 | ~5x |
 | `fable` | claude-fable-5 | ~10x |
 
-Any full model ID also works. Hard budget cap in `config.py`
-(`ENGINE_BUDGET_USD`, default $10). The engine stops calling the API when
-it's spent, no surprises.
+Set it with `--model` or the `MANYWORLDZ_MODEL` env var; any full model ID works too. There is a hard budget cap (`ENGINE_BUDGET_USD` in `config.py`, default $10): when it's spent, the engine stops asking. No surprises.
 
-## The rules it can't break
+## 🗺️ Things worth asking
 
-- It never bets: a person makes any real decision, and only if the
-  pre-registered gates pass (`GATES.md`, written before any results existed:
-  beat the closing line, beat a boring baseline, survive a luck test,
-  survive fees)
-- Junk model answers get skipped and counted, never fabricated. All-junk
-  crowd → no pick
-- Questions with no market price are told so, the crowd never gets a fake
-  anchor
+Fed days and CPI prints. Elections and confirmations. Album drops, box office, award night. Ceasefires and summits. Whether your flight boards on time Friday. If it resolves yes or no, the worlds will split for it.
+
+## 📏 The rules it can't break
+
+- **It never bets.** There is no order-placing code path in this repo. A person makes any real decision, and only if the pre-registered gates pass (`GATES.md`, written before any results existed: beat the closing line, beat a boring baseline, survive a luck test, survive fees)
+- Junk answers get skipped and counted, never fabricated; an all-junk crowd means no call at all
+- Questions with no market price are told so honestly, the crowd never gets a fake anchor
 - The dashboard reads the exact same ledger the gates read
 
-## Run it in the cloud
+## ☁️ Run it in the cloud
 
-`.github/workflows/manyworldz.yml` runs the live loop 4x/day on GitHub
-Actions and commits the scorecard back. Setup: push to GitHub, add
-`ANTHROPIC_API_KEY` as a repository secret (Settings → Secrets → Actions).
-Done. Laptop can stay off.
+`.github/workflows/manyworldz.yml` runs the live loop four times a day on GitHub Actions and commits the scorecard back. Setup: add `ANTHROPIC_API_KEY` as a repository secret (Settings, then Secrets and variables, then Actions). Done. The laptop can stay off.
 
-Not your repo? Fork it, add your own key as the secret, and GitHub runs your
-own copy of the crowd four times a day on the free tier, building your own
-ledger. Every fork is its own little forecasting station.
+Not your repo? **Fork it**, add your own key as the secret, and GitHub runs your own copy of the crowd four times a day on the free tier, building your own ledger. Every fork is its own little forecasting station.
 
-## Files
+## 🗂️ Structure
 
 ```
-ask.py            ask the crowd anything (CLI)
-run.py            one live cycle: grade -> vote -> log picks
-engine/           llm client (cached, budget-capped), personas, swarm,
-                  simulate mode, what-if, news research
+ask.py            ask the worlds anything (CLI)
+run.py            one live cycle: grade -> split -> log calls
+engine/           llm client (cached, budget-capped), swarm, simulate
+                  mode, what-if, news research
 adapters/         kalshi market cards (+ a dormant NBA backtest lab)
-ledger.py         the scorecard: picks, CLV, settlement
+ledger.py         the scorecard: calls, CLV, settlement
 report.py         ledger -> web/data.json + REPORT.md
-web/index.html    the dashboard (static, no server): branching-worlds map,
-                  browser ask-the-crowd on your own key, receipts
+web/index.html    the dashboard (static, no server): branching-worlds
+                  map, ask-the-worlds in your browser, the receipts
 GATES.md          pre-registered pass/fail rules
-docs/             architecture + a plain-English owner's tour
+docs/             architecture + a plain-English tour
 ```
 
-## Requirements
+## 📜 License
 
-- Python 3.11+
-- An Anthropic API key (only for asking/voting; market scanning and the
-  dashboard need none)
-- `pip install -r requirements.txt` (anthropic, requests, pandas, pytest)
+MIT. Built for the love of it, not for a job. Wins and losses both get published.
 
-79 tests, all offline: `venv/bin/pytest` runs without a key or network.
-
-## License
-
-MIT
+*One more thing: the engine's random seed is `14000605`. If you know, you know.*
