@@ -4,14 +4,14 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from engine.personas import build_crowd
+from engine.methods import build_methods
 from engine.whatif import run_whatif
 
 CARD = {"ticker": "T", "question": "Will the album drop in July?", "mid": 43}
 
 
 def test_whatif_reruns_and_reports_shift():
-    crowd = build_crowd(2, seed=1)
+    crowd = build_methods(2)
     seen_prompts = []
 
     def ask(prompt, model=None, max_tokens=400):

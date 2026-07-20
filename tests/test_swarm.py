@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from engine.personas import build_crowd
+from engine.methods import build_methods
 from engine.swarm import agent_vote, consensus, extract_json, run_crowd
 
 CARD = {"ticker": "T", "question": "Will the album drop in July?", "mid": 43,
@@ -27,14 +27,14 @@ def test_extract_json_finds_object_in_noise():
 
 
 def test_agent_vote_parses_and_clamps():
-    agent = build_crowd(1, seed=1)[0]
+    agent = build_methods(1)[0]
     ask = canned_ask(['{"probability": 1.7, "reason": "too sure"}'])
     vote = agent_vote(agent, CARD, ["headline"], ask_fn=ask)
     assert vote["probability"] == 0.99  # clamped into [0.01, 0.99]
 
 
 def test_agent_vote_returns_none_on_junk():
-    agent = build_crowd(1, seed=1)[0]
+    agent = build_methods(1)[0]
     assert agent_vote(agent, CARD, [], ask_fn=canned_ask(["garbage"])) is None
 
 
@@ -45,7 +45,7 @@ def test_consensus_trims_extremes_with_five_plus():
 
 
 def test_run_crowd_vote_mode_counts_skips():
-    crowd = build_crowd(4, seed=1)
+    crowd = build_methods(4)
     answers = ['{"probability": 0.6, "reason": "a"}',
                '{"probability": 0.7, "reason": "b"}',
                "junk",
@@ -58,7 +58,7 @@ def test_run_crowd_vote_mode_counts_skips():
 
 
 def test_deliberation_second_round_updates():
-    crowd = build_crowd(2, seed=1)
+    crowd = build_methods(2)
     answers = ['{"probability": 0.2, "reason": "low"}',
                '{"probability": 0.8, "reason": "high"}',
                # deliberation round answers:

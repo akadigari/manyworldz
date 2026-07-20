@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ask import ask_question
-from engine.personas import build_crowd
+from engine.methods import build_methods
 from engine.swarm import agent_vote, market_line
 
 
@@ -18,7 +18,7 @@ def test_market_line_tells_the_truth_both_ways():
 
 
 def test_agent_vote_works_without_a_market_price():
-    agent = build_crowd(1, seed=1)[0]
+    agent = build_methods(1)[0]
     seen = []
 
     def ask(prompt, model=None, max_tokens=400):

@@ -4,7 +4,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine import news
-from engine.personas import build_crowd
+from engine.methods import build_methods
 from engine.swarm import agent_vote
 
 
@@ -46,6 +46,6 @@ def test_vote_prompt_teaches_base_rates():
         seen.append(prompt)
         return '{"probability": 0.5, "reason": "even"}'
 
-    agent = build_crowd(1, seed=1)[0]
+    agent = build_methods(1)[0]
     agent_vote(agent, {"question": "Will it rain?", "mid": 50}, [], ask_fn=ask)
     assert "base rate" in seen[0]                   # the superforecaster habit

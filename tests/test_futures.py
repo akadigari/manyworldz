@@ -5,10 +5,10 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from engine.futures import agent_futures
-from engine.personas import build_crowd
+from engine.methods import build_methods
 
 CARD = {"ticker": "T", "question": "Will the album drop in July?", "mid": 43}
-AGENT = build_crowd(1, seed=1)[0]
+AGENT = build_methods(1)[0]
 
 
 def ask_with(payload):
@@ -26,7 +26,7 @@ def test_probability_is_yes_fraction_of_futures():
     out = agent_futures(AGENT, CARD, [], k=5, ask_fn=ask_with(payload))
     assert out["probability"] == pytest.approx(0.6)
     assert len(out["futures"]) == 5
-    assert out["futures"][0]["agent"] == AGENT["name"]
+    assert out["futures"][0]["agent"] == AGENT["label"]
 
 
 def test_too_few_parsed_futures_returns_none():
