@@ -25,6 +25,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from engine import llm, news
+from engine.carlo import run_carlo
 from engine.ensemble import build_crowd_for
 from engine.explore import explore_worlds, find_paths
 from engine.swarm import run_crowd
@@ -132,6 +133,21 @@ def _print_paths(result: dict) -> None:
           f"{result['skipped']} unusable answers skipped)\n")
 
 
+def _print_carlo(result: dict) -> None:
+    """Show a --carlo run: the share of a million (or however many)
+    rolled futures that landed YES, the crowd's 80 percent belief band,
+    and how many minds actually went into the mixture."""
+    draws = result["draws"]
+    # Only says "ONE MILLION" when it truly is a million, so this line
+    # never claims something that isn't so if CARLO_DRAWS is ever changed.
+    label = "ONE MILLION" if draws == 1_000_000 else f"{draws:,}"
+    print(f"\n  {label} FUTURES ROLLED: {result['probability']:.1%} ended YES")
+    print(f"  the crowd's belief band: {result['p10']:.0%} to {result['p90']:.0%} "
+          "(80% of futures fell here)")
+    print(f"  ({result['agents_used']} minds elicited, {result['skipped']} junk "
+          f"skipped, seed {result['seed']})\n")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="Ask the AI crowd for the odds of anything.")
@@ -167,6 +183,11 @@ def main() -> None:
                              f"(default {config.CROWD_MODE})")
     parser.add_argument("--no-news", action="store_true",
                         help="skip the headline lookup")
+    parser.add_argument("--carlo", action="store_true",
+                        help="roll config.CARLO_DRAWS (default 1,000,000) simulated "
+                             "futures through the crowd's elicited belief bands, "
+                             "and report the share that land YES plus the crowd's "
+                             "80%% belief band; composes with --crowd and --agents")
     args = parser.parse_args()
 
     print(f'\nQ: {args.question}')
@@ -186,6 +207,17 @@ def main() -> None:
         result = find_paths(card, headlines, _resolve_ask(model=args.model),
                             target=args.path)
         _print_paths(result)
+        print(f"  total engine spend so far: ${llm.spent_usd():.2f} "
+              f"(cap ${config.ENGINE_BUDGET_USD:.2f})\n")
+        return
+
+    if args.carlo:
+        card = {"ticker": "ASK", "question": args.question, "mid": None}
+        headlines = news.research(args.question) if not args.no_news else []
+        crowd = build_crowd_for(args.agents, args.crowd)
+        result = run_carlo(card, headlines, crowd,
+                           ask_fn=_resolve_ask(model=args.model))
+        _print_carlo(result)
         print(f"  total engine spend so far: ${llm.spent_usd():.2f} "
               f"(cap ${config.ENGINE_BUDGET_USD:.2f})\n")
         return

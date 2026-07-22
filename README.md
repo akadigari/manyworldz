@@ -61,6 +61,18 @@ Two things make `--deep` work harder for its answer instead of just restating it
 
 Add `--path YES` or `--path NO` to hunt for distinct, concrete ways one outcome could happen, each with the "gates" (preconditions) it needs, e.g. "Powell signals at Jackson Hole, then the jobs report cools." Every distinct path gets one sober rating: "likely", "possible", or "longshot", anchored on base rates, not on how good the story sounds. It is normal, and often correct, for the rater to call every single path a longshot. **The path search never sets the odds.** A completely separate, ordinary neutral split always runs alongside it, and that plain number is the only one ever reported as "the odds." Finding a vivid way something could happen is not the same as it being likely, and this mode is built so the two can never blur into each other. If nothing believable turns up, it says so plainly: zero paths is a real answer.
 
+Add `--carlo` to make "a million simulated outcomes" literally true. Every agent gives its probability plus its own honest 80 percent band on that number (how sure it is about its own guess). The engine then rolls `CARLO_DRAWS` (config, default 1,000,000) simulated futures through the mixture of those beliefs: pick one agent's belief, sample a probability from a triangular distribution shaped by its own low/peak/high, flip a weighted coin, repeat a million times. The draws are free, pure stdlib random math with no API calls; only the elicitation before it costs money, same as one normal crowd run. `--carlo` composes with `--crowd` and `--agents`.
+
+```
+$ venv/bin/python ask.py "Will the Fed cut rates in September?" --carlo
+
+  ONE MILLION FUTURES ROLLED: 71.8% ended YES
+  the crowd's belief band: 62% to 81% (80% of futures fell here)
+  (8 minds elicited, 0 junk skipped, seed 14000605)
+```
+
+Honest limit: rolling a million dice through the same beliefs cannot make the beliefs smarter. It measures the crowd's belief precisely and exposes the true uncertainty band; it does not create new knowledge, and the marketing never gets to outrun the math.
+
 ## 🌌 How it works
 
 ```mermaid
