@@ -7,7 +7,7 @@
 <p align="center"><i>Simulate every story the future could tell. Keep score against reality.</i></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/tests-120%20passing-2ea44f?style=flat-square" alt="120 tests"/>
+  <img src="https://img.shields.io/badge/tests-207%20passing-2ea44f?style=flat-square" alt="207 tests"/>
   <img src="https://img.shields.io/badge/python-3.11%2B-3776ab?style=flat-square" alt="python 3.11+"/>
   <img src="https://img.shields.io/badge/cost-about%201%20cent%20per%20question-55c6dd?style=flat-square" alt="about a cent per question"/>
   <img src="https://img.shields.io/badge/bets%20placed-zero%2C%20ever-e0435c?style=flat-square" alt="bets placed: zero, ever"/>
@@ -116,7 +116,7 @@ venv/bin/python run.py
 
 A question costs about a cent on the default model, and answers are cached, so asking twice is free. Prefer Docker? `docker build -t manyworldz .` then `docker run -e ANTHROPIC_API_KEY=your-key manyworldz`.
 
-**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 120 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
+**Requirements:** Python 3.11+ and an Anthropic API key (only for asking; the market scan and dashboard need none). 207 tests, all offline: `venv/bin/pytest` runs green with no key and no network.
 
 ## 🧠 Pick the crowd's brain
 
