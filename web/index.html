@@ -53,6 +53,16 @@
   .btn.ghost { border: 1px solid var(--line); color: var(--star); }
   .btn.ghost:hover, .btn.gold:hover { filter: brightness(1.12); }
 
+  /* the five questions strip */
+  .fiveq-label { text-align: center; color: var(--dim); font: 11px "SF Mono", Menlo, monospace;
+                 letter-spacing: 2px; margin-bottom: 10px; }
+  .fiveq { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+           gap: 10px; margin: 0 0 34px; }
+  .fq { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+        padding: 12px 14px; text-align: center; }
+  .fq-q { color: var(--star); font-size: 13px; margin-bottom: 6px; }
+  .fq-c { font-size: 11px; letter-spacing: 1px; color: var(--gold); }
+
   /* how it works */
   .how { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
          gap: 14px; margin: 40px 0 10px; }
@@ -190,15 +200,24 @@
 <main>
   <div class="hero">
     <h1>MANYWORLDZ</h1>
-    <div class="by">A CROWD OF AI FORECASTERS · GRADED IN PUBLIC</div>
-    <p class="big-tag">Every question splits into many worlds.<br>The engine watches them all, and keeps score.</p>
-    <p class="sub-tag">Ask anything with a yes or a no. The engine splits the question
-      into many independent runs; each run imagines how the future could play out.
-      The worlds fold into one honest probability, graded against real markets, in public.</p>
+    <div class="by">A DECISION SIMULATOR · GRADED IN PUBLIC</div>
+    <p class="big-tag">Test the decision before you make it.</p>
+    <p class="sub-tag">Ask anything with a yes or a no. The question splits into many
+      worlds; a crowd of different minds imagines every way it could go. The worlds
+      fold into one honest probability, graded against real markets, in public.</p>
     <div class="cta">
       <a class="btn gold" href="#worlds">SEE THE WORLDS ↓</a>
       <a class="btn ghost" href="https://github.com/akadigari/manyworldz">READ THE CODE</a>
     </div>
+  </div>
+
+  <div class="fiveq-label mono">FIVE QUESTIONS IT ANSWERS</div>
+  <div class="fiveq">
+    <div class="fq"><div class="fq-q">"What are the odds?"</div><div class="fq-c mono">ask.py</div></div>
+    <div class="fq"><div class="fq-q">"What happens if I do X?"</div><div class="fq-c mono">--whatif</div></div>
+    <div class="fq"><div class="fq-q">"What are all the ways this could go?"</div><div class="fq-c mono">--deep</div></div>
+    <div class="fq"><div class="fq-q">"Is there a path to the outcome I want?"</div><div class="fq-c mono">--path</div></div>
+    <div class="fq"><div class="fq-q">"How sure are we, really?"</div><div class="fq-c mono">--carlo</div></div>
   </div>
 
   <div class="how">
