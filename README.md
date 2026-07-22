@@ -18,15 +18,21 @@
 
 In the movie, Doctor Strange goes forward in time and watches **14,000,605 possible futures** to find the one that matters.
 
-manyworldz is that trick, for real questions. Ask it anything with a yes or a no. It splits the question into independent runs, each run **imagines the event playing out as short stories**, and the answer is read off how many of those stories end in YES. Then reality grades every answer, in public, wins and losses both.
+**Test the decision before you make it.** manyworldz runs your question through a crowd of different minds, imagines every way it could go, and keeps score against reality in public.
+
+That trick is real here. Ask it anything with a yes or a no. It splits the question into independent runs, each run **imagines the event playing out as short stories**, and the answer is read off how many of those stories end in YES. Then reality grades every answer, in public, wins and losses both.
 
 ## ✨ What it does
 
-- **Ask it anything**: give it `"Will the Fed cut rates in September?"` and the engine splits into six to eight independent runs, each using its own analytical method; each pulls fresh headlines, anchors on a base rate, and imagines the event playing out several different ways
-- **Every story seen**: a run's probability is how many of its imagined futures land YES; the final answer is the fold of all the worlds
-- **What-if mode**: force one fact to be true (`"the star player is out tonight"`) and watch how far every future shifts
-- **Live loop**: scans ~4,000 open Kalshi markets, and when the crowd of futures disagrees with the market price by more than fees could explain, it logs the call
-- **The scorecard**: every call is graded against real closing prices. The ledger is public. It cannot show a rosier number than reality
+Five plain questions you already ask before a decision, and the mode that answers each one:
+
+- **"What are the odds?"** The default ask: the crowd splits, imagines the event as short stories, and folds them into one honest number
+- **"What happens if I do X?"** `--whatif` forces one fact to be true and shows how far every future shifts
+- **"What are all the ways this could go?"** `--deep` keeps splitting until nothing new turns up, then draws the map of every distinct world it saw
+- **"Is there a path to the outcome I want?"** `--path` is Dr Strange mode: it hunts for concrete routes to the outcome, rates each one soberly, and never lets a good story set the odds
+- **"How sure are we, really?"** `--carlo` rolls a million simulated futures through the crowd's beliefs and shows the doubt band around the answer
+
+Under all five, the same loop: every live call is logged, graded against real closing prices, and published, wins and losses both.
 
 ## 🔮 See the stories
 
