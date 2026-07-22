@@ -94,6 +94,14 @@ MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
 ENGINE_BUDGET_USD = 10.00 # hard stop for cumulative engine spend
 EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets us simulate trades on non-sports ones
 
+# ---- monte carlo fusion layer (engine/carlo.py: elicit + roll + report) ----
+# How many simulated futures get rolled through the crowd's elicited
+# beliefs. The draws themselves are free: no API call happens while
+# rolling, it is pure stdlib random.Random(config.SEED) math. The only
+# real money cost is the elicitation step before it, one call per agent,
+# same as one normal crowd run.
+CARLO_DRAWS = 1_000_000
+
 # ---- deep split (engine/explore.py: keep imagining until nothing new shows up) ----
 DEEP_MAX_ROUNDS = 8   # give up after this many rounds even if still finding new worlds
 DEEP_DRY_ROUNDS = 2   # stop early once this many rounds in a row add nothing new
