@@ -61,9 +61,16 @@ DELIBERATION = False      # one round of agents seeing each other's takes
 # all six analytical methods (engine/methods.py). "ensemble" is the
 # diversity upgrade: DIFFERENT models each look at a DIFFERENT slice of the
 # evidence, so the crowd's disagreement comes from genuinely different
-# inputs, not just different personas talking to the same facts. Set
+# inputs, not just different personas talking to the same facts. "pool" is
+# the big-crowd option: engine/pool.py composes every agent from three
+# independent pools (a reasoning method, an emotional/risk temperament, and
+# a lens naming what to weigh heaviest), so a crowd of hundreds or
+# thousands of agents can each get a genuinely different blend instead of
+# repeating the same few voices. With the current pools (6 methods x 10
+# temperaments x 8 lenses) that is 480 distinct combinations before any
+# repeat; see engine.pool.POOL_MAX_DISTINCT for the exact ceiling. Set
 # MANYWORLDZ_CROWD_MODE to override without editing this file. --crowd on
-# ask.py overrides both, for one run only.
+# ask.py overrides all three, for one run only.
 CROWD_MODE = _os.environ.get("MANYWORLDZ_CROWD_MODE", "methods")
 
 # The ensemble's seats. Each seat is one model looking at one evidence

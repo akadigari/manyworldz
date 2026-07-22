@@ -22,6 +22,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
 from engine.methods import build_methods
+from engine.pool import build_pool_crowd
 
 # One line of instruction per evidence slice, telling the seat plainly
 # what it does and doesn't get to see. This is the ensemble's version of
@@ -86,10 +87,16 @@ def build_crowd_for(n_agents: int | None = None,
     `n_agents` (falls back to config.ENGINE_N_AGENTS). "ensemble" builds
     the fixed-seat crowd from config.ENSEMBLE_SEATS: `n_agents` is ignored
     there, since ensemble seats are configured directly, not sized per
-    run.
+    run. "pool" builds engine/pool.py's diversity crowd, sized by
+    `n_agents` the same way "methods" is: every agent blends an
+    independent method, temperament, and lens, so no two agents in a
+    pool crowd think the same way until the combinations run out (see
+    engine.pool.POOL_MAX_DISTINCT).
     """
     mode = crowd_mode if crowd_mode is not None else config.CROWD_MODE
     if mode == "ensemble":
         return build_ensemble()
     n = config.ENGINE_N_AGENTS if n_agents is None else n_agents
+    if mode == "pool":
+        return build_pool_crowd(n, config.SEED)
     return build_methods(n, config.SEED)

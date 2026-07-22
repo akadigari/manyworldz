@@ -150,14 +150,20 @@ def main() -> None:
                              "against base rates; the odds still come from a "
                              "plain neutral split, never from this search")
     parser.add_argument("--agents", type=int, default=None,
-                        help=f"crowd size (default {config.ENGINE_N_AGENTS})")
+                        help=f"crowd size (default {config.ENGINE_N_AGENTS}). "
+                             "Large values, hundreds or thousands with "
+                             "--crowd pool, cost real money per agent: "
+                             "ENGINE_BUDGET_USD still hard-stops spend either way")
     parser.add_argument("--model", default=None,
                         help="haiku, sonnet, opus, fable, or any full model ID "
                              f"(default {config.ENGINE_MODEL})")
-    parser.add_argument("--crowd", choices=["methods", "ensemble"], default=None,
-                        help="'methods' (one model, six ways of reasoning) or "
+    parser.add_argument("--crowd", choices=["methods", "ensemble", "pool"], default=None,
+                        help="'methods' (one model, six ways of reasoning), "
                              "'ensemble' (different models on different "
-                             f"evidence slices, config.ENSEMBLE_SEATS) "
+                             "evidence slices, config.ENSEMBLE_SEATS), or "
+                             "'pool' (big diversity crowd, each agent blends "
+                             "an independent method + emotional temperament + "
+                             "lens, engine/pool.py, sized by --agents) "
                              f"(default {config.CROWD_MODE})")
     parser.add_argument("--no-news", action="store_true",
                         help="skip the headline lookup")
