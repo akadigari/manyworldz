@@ -1,5 +1,6 @@
 logged_at,ticker,question,side,entry_mid,crowd_prob,edge_cents,mode,status,result,latest_mid,clv_cents,settled_at
-2026-08-06T23:54:45.595187+00:00,KXPRESNOMD-28-GN,2028 Democratic presidential nominee (Gavin Newsom),YES,18,0.4,22,simulate,open,,18,0,
+2026-08-06T23:54:45.595187+00:00,KXPRESNOMD-28-GN,2028 Democratic presidential nominee (Gavin Newsom),YES,18,0.4,22,simulate,open,,16,-2,
 2026-08-06T23:54:45.595187+00:00,KXPRESNOMD-28-AOC,2028 Democratic presidential nominee (Alexandria Ocasio-Cortez),YES,14,0.3333,19,simulate,open,,14,0,
 2026-08-06T23:54:45.595187+00:00,KXPRESNOMD-28-MK,2028 Democratic presidential nominee (Mark Kelly),YES,6,0.4,34,simulate,open,,6,0,
 2026-08-06T23:54:45.595187+00:00,KXPRESNOMD-28-KH,2028 Democratic presidential nominee (Kamala Harris),YES,10,0.4333,33,simulate,open,,10,0,
+2026-08-07T00:49:00.022739+00:00,KXCITRINI-28JUL01,Will the Citrini scenario happen? (Yes),YES,19,0.3667,18,simulate,open,,19,0,
