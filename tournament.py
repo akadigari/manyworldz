@@ -634,6 +634,17 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
                   f'moving on')
 
     all_time_answered = len(_log_history(log_path))
+    # A small status receipt for the daily-brief routine: its cloud
+    # sandbox cannot reach metaculus.com, so the bot records what it
+    # saw. Committed back with the log by the workflow.
+    status_path = config.DATA / "tournament_status.json"
+    status_path.parent.mkdir(parents=True, exist_ok=True)
+    status_path.write_text(json.dumps({
+        "at": now, "tournament": tournament, "open_seen": len(cards),
+        "answered_all_time": all_time_answered,
+        "answered_this_cycle": counts["answered"],
+        "fallbacks_this_cycle": counts["fallbacks"],
+    }))
     print(f'tournament cycle done: {len(cards)} open, '
          f'{counts["answered"]} answered this cycle, '
          f'{counts["fallbacks"]} fallback(s), '

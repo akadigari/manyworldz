@@ -706,3 +706,19 @@ def test_dry_run_counts_mc_and_numeric_fallbacks_too(tmp_path):
         cards=[dict(MC_CARD)], ask_fn=lambda p, model=None, max_tokens=400: "junk",
         token="tok", dry_run=True, log_path=tmp_path / "log.csv")
     assert out["fallbacks"] == 1
+
+
+def test_every_cycle_writes_a_status_file_for_the_daily_brief(tmp_path, monkeypatch):
+    """The cloud briefer cannot reach metaculus.com (egress proxy), so
+    the bot records what it saw: open-question count, tournament slug,
+    answered-all-time, and when. Written even on an empty cycle."""
+    import config, json
+    monkeypatch.setattr(config, "DATA", tmp_path)
+    tournament.one_cycle(cards=[], ask_fn=ask_futures, token="tok",
+                         log_path=tmp_path / "log.csv", now_iso=NOW_ISO,
+                         submit_fn=lambda qid, prob, token: None)
+    status = json.loads((tmp_path / "tournament_status.json").read_text())
+    assert status["open_seen"] == 0
+    assert status["at"] == NOW_ISO
+    assert status["tournament"] == config.METACULUS_TOURNAMENT
+    assert status["answered_all_time"] == 0
