@@ -8,7 +8,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import sys
+import threading
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -66,33 +69,112 @@ def _call_api(prompt: str, model: str, max_tokens: int):
     return _extract_text(msg), msg.usage.input_tokens, msg.usage.output_tokens
 
 
+_SPEND_LOCK = threading.Lock()
+
+
+def _this_month() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m")
+
+
+def _read_spend_state() -> dict:
+    """The current month's spend window.
+
+    The budget is a monthly allowance, not a lifetime total: a
+    FutureEval season runs 300 to 500 questions over four months, and
+    a lifetime cap would silence the bot partway through while every
+    unanswered question scored zero. A state file from an earlier
+    month reads as a fresh window.
+    """
+    state = {"calls": 0, "est_usd": 0.0, "month": _this_month()}
+    if SPEND_FILE.exists():
+        try:
+            saved = json.loads(SPEND_FILE.read_text())
+        except (json.JSONDecodeError, OSError):
+            return state
+        if saved.get("month") == state["month"]:
+            saved.setdefault("calls", 0)
+            saved.setdefault("est_usd", 0.0)
+            return saved
+    return state
+
+
 def spent_usd() -> float:
-    """How much money we estimate has been spent on API calls so far.
+    """Estimated API spend inside the current month's window, in
+    dollars. 0.0 if nothing has been spent yet this month."""
+    return _read_spend_state().get("est_usd", 0.0)
 
-    Reads the running total from disk and returns it in dollars. Returns
-    0.0 if nothing has been spent yet.
+
+def _reserve_spend(model: str, est_tokens_in: int, max_tokens_out: int) -> float:
+    """Atomically claim a call's worst-case cost against the budget.
+
+    Raises the budget RuntimeError if the month's window is already at
+    the cap. Returns the dollars reserved so the caller can settle the
+    difference once the real token counts are known.
     """
-    if SPEND_FILE.exists():
-        return json.loads(SPEND_FILE.read_text()).get("est_usd", 0.0)
-    return 0.0
+    price_in, price_out = _PRICES.get(model.split("/")[-1],
+                                      _PRICES.get(model, _DEFAULT_PRICE))
+    cost = est_tokens_in * price_in / 1e6 + max_tokens_out * price_out / 1e6
+    with _SPEND_LOCK:
+        state = _read_spend_state()
+        if state["est_usd"] >= config.ENGINE_BUDGET_USD:
+            raise RuntimeError(
+                f"engine budget cap hit (${config.ENGINE_BUDGET_USD:.2f}): "
+                "raise ENGINE_BUDGET_USD in config.py to keep going")
+        state["est_usd"] = round(state["est_usd"] + cost, 6)
+        SPEND_FILE.parent.mkdir(parents=True, exist_ok=True)
+        SPEND_FILE.write_text(json.dumps(state))
+    return cost
 
 
-def _record_spend(model: str, tokens_in: int, tokens_out: int) -> None:
-    """Add one API call's estimated cost to the running total saved on disk.
+def _adjust_spend(delta_usd: float, count_call: bool) -> None:
+    """Settle a reservation: apply the actual-minus-reserved difference
+    (negative releases money) and count the call if one happened."""
+    with _SPEND_LOCK:
+        state = _read_spend_state()
+        state["est_usd"] = round(max(state["est_usd"] + delta_usd, 0.0), 6)
+        if count_call:
+            state["calls"] += 1
+        SPEND_FILE.parent.mkdir(parents=True, exist_ok=True)
+        SPEND_FILE.write_text(json.dumps(state))
 
-    Turns the token counts into a dollar estimate using the rough prices
-    above, then updates the running total so spent_usd() can read it back
-    next time.
+
+def _openrouter_model(model: str) -> str:
+    """Map a resolved model ID onto its OpenRouter slug.
+
+    Overridable with OPENROUTER_MODEL_MAP, a JSON dict from our model
+    IDs to OpenRouter slugs, because slug spellings are OpenRouter's
+    to change: check openrouter.ai/models when the donated key arrives
+    and set the map if the default "anthropic/<id>" guess is wrong.
     """
-    price_in, price_out = _PRICES.get(model, _DEFAULT_PRICE)
-    cost = tokens_in * price_in / 1e6 + tokens_out * price_out / 1e6
-    state = {"calls": 0, "est_usd": 0.0}
-    if SPEND_FILE.exists():
-        state = json.loads(SPEND_FILE.read_text())
-    state["calls"] += 1
-    state["est_usd"] = round(state["est_usd"] + cost, 6)
-    SPEND_FILE.parent.mkdir(parents=True, exist_ok=True)
-    SPEND_FILE.write_text(json.dumps(state))
+    override = os.environ.get("OPENROUTER_MODEL_MAP", "")
+    if override:
+        try:
+            mapped = json.loads(override).get(model)
+            if mapped:
+                return mapped
+        except json.JSONDecodeError:
+            pass
+    return model if "/" in model else f"anthropic/{model}"
+
+
+def _call_openrouter(prompt: str, model: str, max_tokens: int):
+    """Metaculus's donated credits arrive as an OpenRouter key, so when
+    OPENROUTER_API_KEY is set, calls route through OpenRouter's
+    OpenAI-compatible endpoint instead of the Anthropic API. Same
+    return shape as _call_api; split out so tests can replace it."""
+    import requests
+    resp = requests.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        headers={"Authorization": f"Bearer {os.environ['OPENROUTER_API_KEY']}"},
+        json={"model": model, "max_tokens": max_tokens,
+              "messages": [{"role": "user", "content": prompt}]},
+        timeout=120,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    text = (data.get("choices") or [{}])[0].get("message", {}).get("content", "") or ""
+    usage = data.get("usage") or {}
+    return text, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0)
 
 
 def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
@@ -108,14 +190,36 @@ def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     cache_file = CACHE_DIR / f"{key}.json"
     if cache_file.exists():
-        return json.loads(cache_file.read_text())["text"]
+        try:
+            return json.loads(cache_file.read_text())["text"]
+        except (json.JSONDecodeError, KeyError, OSError):
+            pass    # a truncated cache entry is a miss, not a permanent error
 
-    if spent_usd() >= config.ENGINE_BUDGET_USD:
-        raise RuntimeError(
-            f"engine budget cap hit (${config.ENGINE_BUDGET_USD:.2f}): "
-            "raise ENGINE_BUDGET_USD in config.py to keep going")
+    # Reserve the call's worst-case cost under the lock BEFORE calling.
+    # Checking the total and calling afterwards was a race: N parallel
+    # seats could all pass the check together and overshoot the budget
+    # by N-1 calls. The reservation is adjusted to the real cost after
+    # the call returns, and released entirely if the call raises.
+    est_in = max(len(prompt) // 4, 1)
+    reserved = _reserve_spend(model, est_in, max_tokens)
 
-    text, tokens_in, tokens_out = _call_api(prompt, model, max_tokens)
-    _record_spend(model, tokens_in, tokens_out)
-    cache_file.write_text(json.dumps({"text": text}))
+    try:
+        if os.environ.get("OPENROUTER_API_KEY"):
+            or_model = _openrouter_model(model)
+            text, tokens_in, tokens_out = _call_openrouter(prompt, or_model, max_tokens)
+            model = or_model
+        else:
+            text, tokens_in, tokens_out = _call_api(prompt, model, max_tokens)
+    except Exception:
+        _adjust_spend(-reserved, count_call=False)
+        raise
+    price_in, price_out = _PRICES.get(model.split("/")[-1],
+                                      _PRICES.get(model, _DEFAULT_PRICE))
+    actual = tokens_in * price_in / 1e6 + tokens_out * price_out / 1e6
+    _adjust_spend(actual - reserved, count_call=True)
+    # temp file + os.replace so a killed process can never leave a
+    # half-written entry that poisons this prompt forever
+    tmp = cache_file.with_suffix(".tmp")
+    tmp.write_text(json.dumps({"text": text}))
+    os.replace(tmp, cache_file)
     return text

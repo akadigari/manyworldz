@@ -1,5 +1,5 @@
 {
-  "count": 5,
+  "count": 7,
   "next": null,
   "previous": null,
   "results": [
@@ -11,7 +11,11 @@
         "title": "Will a new AI safety treaty be signed before 2027?",
         "type": "binary",
         "status": "open",
-        "scheduled_close_time": "2026-12-31T23:59:00Z"
+        "scheduled_close_time": "2026-12-31T23:59:00Z",
+        "description": "Several blocs have proposed treaty language since 2025.",
+        "resolution_criteria": "Resolves YES if a treaty is signed by at least 20 states before 2027-01-01.",
+        "fine_print": "Signature suffices; ratification is not required.",
+        "my_forecasts": {"latest": null}
       }
     },
     {
@@ -22,7 +26,10 @@
         "title": "Which country hosts the next major AI summit?",
         "type": "multiple_choice",
         "status": "open",
-        "scheduled_close_time": "2026-11-01T00:00:00Z"
+        "scheduled_close_time": "2026-11-01T00:00:00Z",
+        "options": ["France", "United Kingdom", "Singapore", "Other"],
+        "resolution_criteria": "Resolves to the host country of the next summit.",
+        "my_forecasts": {"latest": null}
       }
     },
     {
@@ -52,6 +59,42 @@
         "title": "Will a rival treaty also be proposed?",
         "status": "open",
         "scheduled_close_time": "2027-01-15T00:00:00Z"
+      }
+    },
+    {
+      "id": 30006,
+      "title": "How many states sign the treaty in 2026?",
+      "question": {
+        "id": 500007,
+        "title": "How many states sign the treaty in 2026?",
+        "type": "numeric",
+        "status": "open",
+        "scheduled_close_time": "2026-12-01T00:00:00Z",
+        "unit": "states",
+        "open_upper_bound": true,
+        "open_lower_bound": false,
+        "scaling": {"range_min": 0, "range_max": 60, "zero_point": null,
+                    "inbound_outcome_count": 200,
+                    "continuous_range": null},
+        "my_forecasts": {"latest": {"start_time": "2026-08-20T00:00:00Z"}}
+      }
+    },
+    {
+      "id": 30007,
+      "title": "How many jobs will the US economy add in August 2026?",
+      "question": {
+        "id": 500008,
+        "title": "How many jobs will the US economy add in August 2026?",
+        "type": "discrete",
+        "status": "open",
+        "scheduled_close_time": "2026-09-05T00:00:00Z",
+        "unit": "jobs",
+        "open_upper_bound": true,
+        "open_lower_bound": true,
+        "scaling": {"range_min": -49500, "range_max": 150500, "zero_point": null,
+                    "inbound_outcome_count": 200,
+                    "continuous_range": null},
+        "my_forecasts": {"latest": null}
       }
     }
   ]

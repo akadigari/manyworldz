@@ -91,7 +91,11 @@ ENSEMBLE_SEATS = [
 MIN_EDGE_CENTS = 10       # crowd must differ from market by this much...
 FEE_BUFFER_CENTS = 3      # ...plus this cushion for fees/spread, to log a pick
 MARKETS_PER_RUN = 5       # markets the crowd votes on per cycle
-ENGINE_BUDGET_USD = 10.00 # hard stop for cumulative engine spend
+# Hard stop for engine spend inside the current month (engine/llm.py
+# tracks a monthly window, not a lifetime total). Overridable from the
+# environment so the tournament workflow can raise it without a code
+# change once donated credits exist.
+ENGINE_BUDGET_USD = float(_os.environ.get("ENGINE_BUDGET_USD", "10.00"))
 EXCLUDED_CATEGORIES = {"Sports"}  # skip sports markets: Maryland law only lets us simulate trades on non-sports ones
 
 # ---- monte carlo fusion layer (engine/carlo.py: elicit + roll + report) ----
@@ -125,6 +129,13 @@ PATH_MAX_ROUNDS = 5   # target-conditioned rounds run this many times, no early 
 # Point this at "summer-futureeval-2026" (or the current season slug) when
 # a season starts fresh and the prize run is worth it.
 METACULUS_TOURNAMENT = _os.environ.get("METACULUS_TOURNAMENT", "minibench")
+
+# Arm-by date. An unset METACULUS_TOKEN is tolerated (exit 0) until this
+# date, then the cycle fails loudly. Fall FutureEval opens in September and
+# the Summer season was lost to a quiet, unarmed schedule.
+from datetime import datetime as _dt, timezone as _tz
+TOURNAMENT_ARM_BY = _dt.fromisoformat(
+    _os.environ.get("TOURNAMENT_ARM_BY", "2026-09-01")).replace(tzinfo=_tz.utc)
 # How many unanswered questions one cycle takes on. Coverage is the whole
 # game here: an unanswered question scores zero, and prize share goes with
 # the square of the total, so skipping questions hurts twice. The budget
@@ -140,14 +151,10 @@ TOURNAMENT_QUESTIONS_PER_RUN = 25
 # score for a lot less downside if the crowd is confidently wrong.
 TOURNAMENT_CLIP = 0.02
 
-# Scoring reads the LAST forecast on file before a question closes, not
-# the first one. A question this bot answered days ago can still get a
-# stale, worse number graded if nothing refreshes it. Any already
-# answered question whose close time is within this many hours gets one
-# more fresh crowd run before the window shuts.
-TOURNAMENT_REFRESH_HOURS = 24
-
-# How many stale, soon-to-close questions one cycle will re-run and
-# resubmit. Keeps refresh spend bounded the same way
-# TOURNAMENT_QUESTIONS_PER_RUN bounds spend on brand new questions.
-TOURNAMENT_REFRESH_CAP = 10
+# Hard wall-clock limit for answering ONE question, in seconds. The
+# tournament's questions are only open for 1.5 to 3 hours, so a single
+# hung model call must never eat the whole window: past the deadline
+# the fallback ladder takes over. Matches the spirit of No-Stream's
+# per-question deadline (theirs is 3510s; ours is tighter because the
+# whole cycle shares a 20-minute cron slot).
+QUESTION_DEADLINE_S = 300

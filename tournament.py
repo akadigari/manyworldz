@@ -4,10 +4,10 @@ FutureEval (metaculus.com/futureeval) is Metaculus's ongoing bot
 tournament: AI forecasters answer real open questions, and the
 tournament grades them against how the world actually turns out. This
 file is the one command that lets manyworldz's own crowd take part in
-it: fetch the tournament's open binary questions, run the existing
-crowd on each one this run hasn't already answered, clamp the crowd's
-probability into the range Metaculus accepts, submit it, and log every
-submission to data/tournament_log.csv.
+it: fetch the tournament's open questions of every type it runs
+(binary, multiple choice, numeric, discrete), answer each one this
+account hasn't already answered, submit it with the required private
+comment, and log every submission to data/tournament_log.csv.
 
 A person only ever does two things by hand: create the bot account on
 Metaculus and generate its METACULUS_TOKEN. Everything after that is
@@ -36,15 +36,28 @@ below all serve that one goal:
    crash, so there is nothing to retry into being different.
 2. config.TOURNAMENT_CLIP. Every submitted probability is clipped a
    bit short of 0% and 100% before it goes out, see _tournament_clip.
-3. A refresh pass. Scoring reads the LAST forecast on file before a
-   question closes, so an already-answered question whose close time
-   is coming up soon gets one more fresh look, see _pick_refresh_targets.
-4. A one-line, plain-English coverage report printed every cycle.
+3. One forecast per question, never more. The tournament rules say bot
+   makers should only submit one forecast per question, so an already
+   answered question is left alone, whether the record of it comes
+   from the local log or from the API's own my_forecasts flag.
+4. A per-question deadline (config.QUESTION_DEADLINE_S). The questions
+   are only open 1.5 to 3 hours; a hung call degrades to the ladder
+   instead of eating the window.
+5. A one-line, plain-English coverage report printed every cycle.
+
+Question types: binary goes through the full crowd. Multiple choice
+and numeric/discrete get one direct model call each (options ->
+probabilities, or five percentiles -> engine/cdf.py's full CDF), with
+an honest uniform fallback if the reply is unusable, because an
+unanswered question scores a hard zero and a flat answer does not.
+Every submission is followed by the required private comment; a failed
+comment never takes the forecast down with it.
 """
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -53,11 +66,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
 from adapters import metaculus
+from engine import cdf as cdf_mod
 from engine import llm, news
 from engine.ensemble import build_crowd_for
 from engine.swarm import run_crowd
 
-LOG_COLUMNS = ["qid", "question", "raw_prob", "prob", "at", "source"]
+LOG_COLUMNS = ["qid", "question", "qtype", "raw_prob", "prob", "at", "source"]
 LOG_PATH = config.DATA / "tournament_log.csv"
 
 # The honest last-resort answer when both the full crowd and a single
@@ -66,15 +80,6 @@ LOG_PATH = config.DATA / "tournament_log.csv"
 # it always gets logged with source="fallback" so it is never mistaken
 # for a real crowd answer later.
 LAST_RESORT_PROBABILITY = 0.5
-
-# How old a question's last submission needs to be, in hours, before the
-# refresh pass (see _pick_refresh_targets) will touch it again, on top
-# of also being close to closing. Matched to
-# .github/workflows/tournament.yml's own 6-hour cron cadence: a question
-# answered less than one cycle ago is already fresh, no need to spend
-# another crowd run on it yet.
-RESUBMIT_STALE_HOURS = 6
-
 
 def _clamp(probability: float) -> float:
     """Metaculus's accepted range for a binary forecast: never a claimed
@@ -148,43 +153,6 @@ def _already_answered(log_path: Path) -> set:
     return set(_log_history(log_path).keys())
 
 
-def _pick_refresh_targets(cards: list[dict], history: dict, now_dt: datetime,
-                          refresh_hours: float, stale_hours: float,
-                          cap: int) -> list[dict]:
-    """Already-answered questions worth one more fresh crowd run this
-    cycle: still open, close time coming up inside `refresh_hours`, and
-    the last submission on file is older than `stale_hours`.
-
-    Scoring reads the LAST forecast before close, so a stale answer
-    sitting on a soon-to-close question is worth spending another crowd
-    run on. Candidates are sorted soonest-to-close first, then capped
-    at `cap`: if there are more stale, urgent questions than the budget
-    allows, the most urgent ones win. Anything with a missing or
-    unparsable close_time or last-submission timestamp is skipped, not
-    guessed at.
-    """
-    candidates = []
-    for card in cards:
-        qid = card.get("qid")
-        if qid not in history:
-            continue                  # never answered yet: that's targets, not refresh
-        close_dt = _parse_iso(card.get("close_time", ""))
-        if close_dt is None:
-            continue
-        hours_to_close = (close_dt - now_dt).total_seconds() / 3600.0
-        if hours_to_close < 0 or hours_to_close > refresh_hours:
-            continue                  # already closed, or not urgent yet
-        last_dt = _parse_iso(history[qid])
-        if last_dt is None:
-            continue
-        age_hours = (now_dt - last_dt).total_seconds() / 3600.0
-        if age_hours < stale_hours:
-            continue                  # already fresh enough, leave it alone
-        candidates.append((hours_to_close, card))
-    candidates.sort(key=lambda pair: pair[0])
-    return [card for _, card in candidates[:cap]]
-
-
 def _append_log(row: dict, log_path: Path) -> None:
     """Append one submission's row right away, not batched at the end.
 
@@ -195,12 +163,47 @@ def _append_log(row: dict, log_path: Path) -> None:
     pattern.
     """
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    _migrate_log(log_path)
     is_new = not log_path.exists()
     with open(log_path, "a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=LOG_COLUMNS)
         if is_new:
             writer.writeheader()
         writer.writerow(row)
+
+
+def _migrate_log(log_path: Path) -> None:
+    """Bring an old-format log up to LOG_COLUMNS before appending.
+
+    The pre-hardening log had four columns (qid,question,prob,at).
+    Appending seven-field rows under that header would land values in
+    the wrong columns and silently corrupt the ledger. Old rows keep
+    their values under their own column names; the fields they never
+    had are filled with honest blanks (qtype defaults to binary, the
+    only type that existed back then).
+    """
+    if not log_path.exists():
+        return
+    with open(log_path, newline="") as f:
+        reader = csv.reader(f)
+        header = next(reader, None)
+    if header is None or header == LOG_COLUMNS:
+        return
+    with open(log_path, newline="") as f:
+        old_rows = list(csv.DictReader(f))
+    with open(log_path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=LOG_COLUMNS, restval="")
+        writer.writeheader()
+        for old in old_rows:
+            writer.writerow({
+                "qid": old.get("qid", ""),
+                "question": old.get("question", ""),
+                "qtype": old.get("qtype", "binary"),
+                "raw_prob": old.get("raw_prob", old.get("prob", "")),
+                "prob": old.get("prob", ""),
+                "at": old.get("at", ""),
+                "source": old.get("source", ""),
+            })
 
 
 def _is_budget_error(exc: Exception) -> bool:
@@ -213,6 +216,164 @@ def _is_budget_error(exc: Exception) -> bool:
     fallback on every question still left in the batch.
     """
     return "budget cap hit" in str(exc)
+
+
+def _question_text(card: dict) -> str:
+    """The full question the model should forecast: title plus the
+    resolution rules. Forecasting the title alone means forecasting a
+    headline; the criteria are what actually resolves the question.
+    Trimmed so one enormous description can't blow up every prompt."""
+    criteria = (card.get("criteria") or "").strip()
+    if not criteria:
+        return card["question"]
+    return f"{card['question']}\n\n{criteria[:1500]}"
+
+
+def _with_deadline(fn, seconds: float):
+    """Run fn() with a hard wall-clock limit.
+
+    On timeout raises TimeoutError so the caller's ladder catches it
+    like any other failure. The worker thread itself can't be killed,
+    but the cycle stops waiting on it, which is what protects the
+    window. Deadlines under a year run through the executor; the
+    tests set tiny ones, real runs use config.QUESTION_DEADLINE_S."""
+    import threading
+    box: dict = {}
+
+    def _worker():
+        try:
+            box["result"] = fn()
+        except BaseException as exc:          # delivered to the caller below
+            box["error"] = exc
+
+    # A plain daemon thread, not a ThreadPoolExecutor: executor workers
+    # are non-daemon and concurrent.futures joins them at interpreter
+    # exit, so one hung call would block the process AFTER the cycle
+    # printed "done". A daemon thread is simply abandoned.
+    thread = threading.Thread(target=_worker, daemon=True)
+    thread.start()
+    thread.join(timeout=seconds)
+    if thread.is_alive():
+        raise TimeoutError(f"no answer within {seconds}s")
+    if "error" in box:
+        raise box["error"]
+    return box.get("result")
+
+
+_MC_PROMPT = """You are forecasting a multiple choice question.
+
+The question: "{question}"
+{evidence}
+
+The options, exactly as written: {options}
+
+Start from base rates: how often does each kind of outcome actually
+happen? Then adjust for the evidence. Probabilities must sum to 1.
+Reply with ONLY JSON mapping every option to its probability, like
+{{"Option A": 0.5, "Option B": 0.3, "Option C": 0.2}}"""
+
+
+def _skip_reason(card: dict) -> str | None:
+    """Why a question can't be answered honestly, or None if it can.
+
+    Malformed or unsupported cards get skipped with a printed reason,
+    never guessed at and never allowed to crash the cycle: an MC card
+    with no options has nothing to submit, a numeric card without
+    range bounds has no grid to build, and a log-scaled question
+    (zero_point set) without its own continuous_range would get a
+    badly mis-shaped CDF from a linear grid.
+    """
+    qtype = card.get("qtype", "binary")
+    if qtype == "multiple_choice" and not card.get("options"):
+        return "multiple choice with no options"
+    if qtype in ("numeric", "discrete"):
+        scaling = card.get("scaling") or {}
+        if not scaling.get("continuous_range"):
+            if scaling.get("range_min") is None or scaling.get("range_max") is None:
+                return "numeric with no range bounds"
+            if scaling.get("zero_point") is not None:
+                return "log-scaled with no continuous_range"
+    return None
+
+
+def _answer_mc(card: dict, headlines: list[str], ask) -> dict:
+    """One direct model call for a multiple choice question.
+
+    The crowd machinery is binary; a single well-prompted call per MC
+    question is what the official template does too. An unusable reply
+    degrades to the uniform distribution, logged as a fallback: a flat
+    answer scores better than the hard zero of no answer."""
+    from engine.swarm import extract_json
+    options = card.get("options") or []
+    evidence = f'Recent headlines: {"; ".join(headlines) if headlines else "(none found)"}'
+    prompt = _MC_PROMPT.format(question=_question_text(card),
+                               evidence=evidence, options=options)
+    probs = None
+    try:
+        parsed = extract_json(ask(prompt, model="sonnet"))
+        if isinstance(parsed, dict):
+            got = {opt: float(parsed[opt]) for opt in options if opt in parsed}
+            if len(got) == len(options) and all(v >= 0 for v in got.values())                     and sum(got.values()) > 0:
+                probs = got
+    except Exception as exc:
+        if _is_budget_error(exc):
+            raise
+        print(f'  MC call failed on qid {card["qid"]} ({exc})')
+    if probs is None:
+        probs = {opt: 1.0 / len(options) for opt in options}
+        return {"probs": probs, "source": "fallback"}
+    return {"probs": probs, "source": "mc"}
+
+
+_NUMERIC_PROMPT = """You are forecasting a numeric question.
+
+The question: "{question}"
+{evidence}
+
+The answer is measured in: {unit}
+The plausible range runs from {lo} to {hi}.{bounds_note}
+
+Start from base rates and any relevant historical figures, then adjust
+for the evidence. Give your 5th, 25th, 50th, 75th and 95th percentile
+estimates, in the question's own units, wide enough to be honest about
+your uncertainty. Reply with ONLY JSON like
+{{"p05": 10, "p25": 20, "p50": 30, "p75": 40, "p95": 50}}"""
+
+
+def _answer_numeric(card: dict, headlines: list[str], ask) -> dict:
+    """One direct model call for a numeric or discrete question: five
+    percentiles in, engine/cdf.py's full CDF out. An unusable reply
+    degrades to the uniform CDF over the question's own range, logged
+    as a fallback, for the same coverage-first reason as _answer_mc."""
+    scaling = card.get("scaling") or {}
+    lo, hi = scaling.get("range_min"), scaling.get("range_max")
+    notes = []
+    if card.get("open_lower_bound"):
+        notes.append("values below the range are possible")
+    if card.get("open_upper_bound"):
+        notes.append("values above the range are possible")
+    bounds_note = f" ({'; '.join(notes)})" if notes else ""
+    evidence = f'Recent headlines: {"; ".join(headlines) if headlines else "(none found)"}'
+    prompt = _NUMERIC_PROMPT.format(question=_question_text(card),
+                                    evidence=evidence,
+                                    unit=card.get("unit") or "(unitless)",
+                                    lo=lo, hi=hi, bounds_note=bounds_note)
+    percentiles, source = None, "numeric"
+    try:
+        percentiles = cdf_mod.percentiles_from_json(ask(prompt, model="sonnet"))
+    except Exception as exc:
+        if _is_budget_error(exc):
+            raise
+        print(f'  numeric call failed on qid {card["qid"]} ({exc})')
+    if percentiles is None:
+        # the honest flat answer: percentiles evenly spread over the range
+        span = float(hi) - float(lo)
+        percentiles = {p: float(lo) + span * p for p in (0.05, 0.25, 0.5, 0.75, 0.95)}
+        source = "fallback"
+    values = cdf_mod.build_cdf(percentiles, scaling,
+                               open_lower=card.get("open_lower_bound", False),
+                               open_upper=card.get("open_upper_bound", False))
+    return {"cdf": values, "percentiles": percentiles, "source": source}
 
 
 def _run_full_crowd(market_card: dict, headlines: list[str], crowd: list[dict], ask):
@@ -260,10 +421,12 @@ def _answer_one(card: dict, headlines: list[str], crowd: list[dict], ask) -> dic
     every question still left in the batch.
     """
     market_card = {"ticker": f"META-{card['qid']}",
-                   "question": card["question"], "mid": None}
+                   "question": _question_text(card), "mid": None}
 
     try:
-        result = _run_full_crowd(market_card, headlines, crowd, ask)
+        result = _with_deadline(
+            lambda: _run_full_crowd(market_card, headlines, crowd, ask),
+            config.QUESTION_DEADLINE_S)
     except Exception as exc:
         if _is_budget_error(exc):
             raise
@@ -282,7 +445,9 @@ def _answer_with_single_or_fallback(card: dict, headlines: list[str],
     """The fallback ladder's second and third tiers, called only after
     the full crowd itself has already raised a non-budget exception."""
     try:
-        result = _run_single(market_card, headlines, crowd, ask)
+        result = _with_deadline(
+            lambda: _run_single(market_card, headlines, crowd, ask),
+            config.QUESTION_DEADLINE_S)
     except Exception as exc:
         if _is_budget_error(exc):
             raise
@@ -304,55 +469,130 @@ def _answer_with_single_or_fallback(card: dict, headlines: list[str],
 def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
              dry_run: bool = False, token: str | None = None,
              now_iso: str | None = None, log_path: Path | None = None,
-             fetch_fn=None, submit_fn=None) -> dict:
+             fetch_fn=None, submit_fn=None, submit_mc_fn=None,
+             submit_numeric_fn=None, comment_fn=None) -> dict:
     """Run one full tournament cycle.
 
     Pass `cards` (fake question cards) and `ask_fn` (a fake crowd) to
     run the whole cycle in tests, with no network calls at all. Leave
     both blank for a real run: cards come from
     adapters/metaculus.fetch_open_questions, and unless dry_run is set,
-    every answer gets posted through adapters/metaculus.submit_prediction.
+    every answer gets posted through the matching adapters/metaculus
+    submit function for its question type, followed by the required
+    private comment (adapters/metaculus.post_comment; a failed comment
+    never blocks anything).
 
-    Every question this cycle touches, fresh or refreshed, goes through
-    the fallback ladder in _answer_one, so a broken model call or a
-    dead seat degrades to a worse answer instead of no answer at all.
-    Every actual submission (crowd, single, or fallback) appends one
-    row to the ledger with both the crowd's raw number and the clipped,
-    submitted one; see LOG_COLUMNS. A budget RuntimeError from
-    engine/llm.py is never caught: it propagates straight out of this
-    function so the whole cycle stops cleanly, with no fallback-spam
-    on whatever questions were still left.
+    One forecast per question, per the tournament rules: a question is
+    skipped when the local log has it OR the API's own my_forecasts
+    flag says this account already answered it. Binary questions go
+    through the fallback ladder in _answer_one under a per-question
+    deadline; multiple choice and numeric/discrete get one direct call
+    each with an honest uniform fallback. A budget RuntimeError from
+    engine/llm.py is never caught: it propagates so the cycle stops
+    cleanly.
 
     Returns a small summary: how many open questions were seen, how
-    many got a fresh answer this cycle, how many stale near-close
-    answers got refreshed, how many total submissions went out, and how
-    many of those were last-resort fallbacks.
+    many were answered, how many submissions went out, and how many
+    were last-resort fallbacks.
     """
     live = cards is None            # no fake cards given -> this is a real, live run
     ask = ask_fn or llm.ask
     fetch_fn = fetch_fn or metaculus.fetch_open_questions
     submit_fn = submit_fn or metaculus.submit_prediction
+    submit_mc_fn = submit_mc_fn or metaculus.submit_mc_prediction
+    submit_numeric_fn = submit_numeric_fn or metaculus.submit_numeric_prediction
+    comment_fn = comment_fn or metaculus.post_comment
     tournament = tournament or config.METACULUS_TOURNAMENT
     log_path = log_path or LOG_PATH
     now = now_iso or datetime.now(timezone.utc).isoformat()
-    now_dt = _parse_iso(now) or datetime.now(timezone.utc)
 
     if live:
         cards = fetch_fn(tournament, token)
 
-    history = _log_history(log_path)
-    already = set(history.keys())
-    pending = [c for c in cards if c.get("qid") not in already]
+    already = _already_answered(log_path)
+    pending = [c for c in cards
+               if c.get("qid") not in already
+               and not c.get("already_forecast")]
     targets = pending[:config.TOURNAMENT_QUESTIONS_PER_RUN]
-    refresh_targets = _pick_refresh_targets(
-        cards, history, now_dt, config.TOURNAMENT_REFRESH_HOURS,
-        RESUBMIT_STALE_HOURS, config.TOURNAMENT_REFRESH_CAP)
 
     crowd = build_crowd_for()
-    counts = {"answered": 0, "refreshed": 0, "submitted": 0, "fallbacks": 0}
+    counts = {"answered": 0, "submitted": 0, "fallbacks": 0}
 
-    def _process(card: dict, is_refresh: bool) -> None:
+    def _comment(card: dict, text: str) -> None:
+        post_id = card.get("post_id")
+        if post_id is None:
+            return
+        try:
+            comment_fn(post_id, text, token)
+        except Exception as exc:
+            print(f'  comment on post {post_id} failed ({exc}); forecast stands')
+
+    def _record(card: dict, raw, submitted, source: str) -> None:
+        counts["answered"] += 1
+        if source == "fallback":
+            counts["fallbacks"] += 1
+        row = {"qid": card["qid"], "question": card["question"],
+              "qtype": card.get("qtype", "binary"), "raw_prob": raw,
+              "prob": submitted, "at": now, "source": source}
+        _append_log(row, log_path)
+        counts["submitted"] += 1
+
+    def _process(card: dict) -> None:
+        qtype = card.get("qtype", "binary")
         headlines = news.research(card["question"]) if live else []
+
+        if qtype == "multiple_choice":
+            try:
+                outcome = _with_deadline(
+                    lambda: _answer_mc(card, headlines, ask),
+                    config.QUESTION_DEADLINE_S)
+            except Exception as exc:
+                if _is_budget_error(exc):
+                    raise
+                options = card.get("options") or []
+                outcome = {"probs": {o: 1.0 / len(options) for o in options},
+                          "source": "fallback"}
+            if dry_run:
+                counts["answered"] += 1
+                if outcome["source"] == "fallback":
+                    counts["fallbacks"] += 1
+                print(f'  DRY RUN would submit {outcome["probs"]} on qid {card["qid"]}')
+                return
+            submit_mc_fn(card["qid"], outcome["probs"], token)
+            _record(card, json.dumps(outcome["probs"]),
+                    json.dumps(outcome["probs"]), outcome["source"])
+            _comment(card, f'manyworldz {outcome["source"]} forecast: '
+                          f'{json.dumps(outcome["probs"])}')
+            print(f'  SUBMIT MC (source={outcome["source"]}) on qid '
+                  f'{card["qid"]} | {card["question"][:60]}')
+            return
+
+        if qtype in ("numeric", "discrete"):
+            try:
+                outcome = _with_deadline(
+                    lambda: _answer_numeric(card, headlines, ask),
+                    config.QUESTION_DEADLINE_S)
+            except Exception as exc:
+                if _is_budget_error(exc):
+                    raise
+                print(f'  numeric path failed on qid {card["qid"]} ({exc}), skipping')
+                return
+            if dry_run:
+                counts["answered"] += 1
+                if outcome["source"] == "fallback":
+                    counts["fallbacks"] += 1
+                print(f'  DRY RUN would submit a {len(outcome["cdf"])}-point CDF '
+                      f'on qid {card["qid"]}')
+                return
+            submit_numeric_fn(card["qid"], outcome["cdf"], token)
+            _record(card, json.dumps(outcome["percentiles"]),
+                    f'cdf:{len(outcome["cdf"])}', outcome["source"])
+            _comment(card, f'manyworldz {outcome["source"]} forecast, '
+                          f'percentiles: {json.dumps(outcome["percentiles"])}')
+            print(f'  SUBMIT {qtype.upper()} (source={outcome["source"]}) on qid '
+                  f'{card["qid"]} | {card["question"][:60]}')
+            return
+
         outcome = _answer_one(card, headlines, crowd, ask)
         if outcome["prob"] is None:
             print(f'  no quorum (all {outcome["skipped"]} answers unusable), '
@@ -361,41 +601,87 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
 
         raw_prob = outcome["prob"]
         submit_prob = _tournament_clip(raw_prob)
-        counts["refreshed" if is_refresh else "answered"] += 1
-        if outcome["source"] == "fallback":
-            counts["fallbacks"] += 1
-
         if dry_run:
-            tag = "REFRESH (dry run)" if is_refresh else "DRY RUN"
-            print(f'  {tag} would submit {submit_prob:.2f} '
+            counts["answered"] += 1
+            if outcome["source"] == "fallback":
+                counts["fallbacks"] += 1
+            print(f'  DRY RUN would submit {submit_prob:.2f} '
                   f'(source={outcome["source"]}) on qid {card["qid"]} '
                   f'| {card["question"][:60]}')
             return
 
         submit_fn(card["qid"], submit_prob, token)
-        row = {"qid": card["qid"], "question": card["question"],
-              "raw_prob": raw_prob, "prob": submit_prob, "at": now,
-              "source": outcome["source"]}
-        _append_log(row, log_path)
-        counts["submitted"] += 1
-        label = "REFRESH" if is_refresh else "SUBMIT"
-        print(f'  {label} {submit_prob:.2f} (source={outcome["source"]}) '
+        _record(card, raw_prob, submit_prob, outcome["source"])
+        _comment(card, f'manyworldz {outcome["source"]} forecast: '
+                      f'probability {submit_prob} that this resolves YES')
+        print(f'  SUBMIT {submit_prob:.2f} (source={outcome["source"]}) '
               f'on qid {card["qid"]} | {card["question"][:60]}')
 
     for card in targets:
-        _process(card, is_refresh=False)
-    for card in refresh_targets:
-        _process(card, is_refresh=True)
+        reason = _skip_reason(card)
+        if reason:
+            print(f'  skipping qid {card.get("qid")} ({reason})')
+            continue
+        try:
+            _process(card)
+        except Exception as exc:
+            # One question's failure (a rejected submit, a malformed
+            # field) must never zero out the rest of the batch. The
+            # budget cap is the one exception: it means stop spending.
+            if _is_budget_error(exc):
+                raise
+            print(f'  qid {card.get("qid")} failed this cycle ({exc}); '
+                  f'moving on')
 
     all_time_answered = len(_log_history(log_path))
     print(f'tournament cycle done: {len(cards)} open, '
          f'{counts["answered"]} answered this cycle, '
-         f'{counts["refreshed"]} refreshed, {counts["fallbacks"]} fallback(s), '
+         f'{counts["fallbacks"]} fallback(s), '
          f'{all_time_answered} answered all time, '
          f'${llm.spent_usd():.2f} spent')
     return {"considered": len(cards), "answered": counts["answered"],
-           "refreshed": counts["refreshed"], "submitted": counts["submitted"],
-           "fallbacks": counts["fallbacks"]}
+           "submitted": counts["submitted"], "fallbacks": counts["fallbacks"]}
+
+
+class TokenState:
+    """Whether this cycle is armed, still waiting, or overdue.
+
+    An unset token exits 0 on purpose so the schedule can stay active before
+    the bot account exists. That grace has an end date: past it, a silent
+    no-op is a failure, not a pending task.
+    """
+
+    def __init__(self, status: str, message: str, exit_code: int):
+        self.status = status
+        self.message = message
+        self.exit_code = exit_code
+
+
+def token_state(token, now=None, arm_by=None) -> TokenState:
+    now = now or datetime.now(timezone.utc)
+    arm_by = arm_by or config.TOURNAMENT_ARM_BY
+
+    if token:
+        return TokenState("armed", "METACULUS_TOKEN present; forecasting.", 0)
+
+    if now < arm_by:
+        days = (arm_by - now).days
+        return TokenState(
+            "waiting",
+            f"METACULUS_TOKEN is not set. Nothing fetched or submitted. "
+            f"{days} days left to arm this before {arm_by.date()} "
+            f"(Fall FutureEval). Set it as a GitHub Actions secret.",
+            0,
+        )
+
+    overdue = (now - arm_by).days
+    return TokenState(
+        "overdue",
+        f"METACULUS_TOKEN still unset {overdue} days past the "
+        f"{arm_by.date()} arm-by date. This bot has been scoring zero on "
+        f"every question. Failing loudly on purpose.",
+        1,
+    )
 
 
 def main() -> None:
@@ -409,12 +695,14 @@ def main() -> None:
     args = parser.parse_args()
 
     token = os.environ.get("METACULUS_TOKEN")
-    if not token:
-        print("METACULUS_TOKEN is not set. Nothing was fetched or "
-              "submitted this cycle. Once the tournament account and "
-              "its token exist, export METACULUS_TOKEN and run this "
-              "again: venv/bin/python tournament.py")
-        return
+    state = token_state(token)
+    if state.status != "armed":
+        # ::warning:: / ::error:: surface as annotations in the Actions UI,
+        # so an unarmed bot is visible without opening the log.
+        level = "error" if state.status == "overdue" else "warning"
+        print(f"::{level}::{state.message}")
+        print(state.message)
+        raise SystemExit(state.exit_code)
 
     one_cycle(tournament=args.tournament, dry_run=args.dry_run, token=token)
 

@@ -68,3 +68,37 @@ def test_deliberation_second_round_updates():
                     deliberation=True, ask_fn=canned_ask(answers))
     probs = sorted(v["probability"] for v in out["votes"])
     assert probs == [0.4, 0.6]  # final numbers are the revised ones
+
+
+# ---- parallel seats ----
+
+def test_crowd_seats_run_concurrently_and_keep_their_order():
+    from engine import swarm
+    """Four seats at 0.2s each must finish in well under 0.8s, and the
+    votes must still come back in crowd order."""
+    import time
+    crowd = [{"label": f"seat{i}", "instruction": "vote"} for i in range(4)]
+
+    def slow_ask(prompt, model=None, max_tokens=400):
+        time.sleep(0.2)
+        for i in range(4):
+            if f"seat{i}" in prompt:
+                return '{"probability": 0.%d1, "reason": "r"}' % (i + 1)
+        return '{"probability": 0.5, "reason": "r"}'
+
+    t0 = time.monotonic()
+    out = swarm.run_crowd({"ticker": "T", "question": "Q?", "mid": None},
+                          [], crowd, mode="vote", k=1, ask_fn=slow_ask)
+    elapsed = time.monotonic() - t0
+    assert elapsed < 0.65
+    assert [v["agent"] for v in out["votes"]] == [f"seat{i}" for i in range(4)]
+    assert [v["probability"] for v in out["votes"]] == [0.11, 0.21, 0.31, 0.41]
+
+
+# ---- outside view scaffold ----
+
+def test_vote_prompt_carries_the_outside_view_scaffold():
+    from engine import swarm
+    assert "reference class" in swarm._VOTE_PROMPT.lower()
+    assert "status quo" in swarm._VOTE_PROMPT.lower()
+    assert "my base rate was" in swarm._VOTE_PROMPT.lower()

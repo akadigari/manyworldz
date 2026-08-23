@@ -54,20 +54,42 @@ def _headers(token: str) -> dict:
     return {"Authorization": f"Token {token}"}
 
 
+SUPPORTED_TYPES = {"binary", "multiple_choice", "numeric", "discrete"}
+
+
+def _criteria_text(question: dict) -> str:
+    """The resolution rules a forecaster actually needs, as one block.
+
+    Ranked bots pass description, resolution criteria, and fine print
+    into the prompt; forecasting the title alone means forecasting a
+    headline instead of the rules. Missing pieces are simply left out.
+    """
+    parts = []
+    for key, label in (("description", "Background"),
+                       ("resolution_criteria", "Resolution criteria"),
+                       ("fine_print", "Fine print")):
+        text = question.get(key)
+        if text:
+            parts.append(f"{label}: {text}")
+    return "\n".join(parts)
+
+
 def parse_questions(payload: dict) -> list[dict]:
     """Turn Metaculus's raw /posts/ response into simple question cards.
 
     A "post" wraps one question most of the time, but it can also wrap
     a group of questions, or carry no question at all (an article, a
-    discussion thread). Group posts and non-binary questions (multiple
-    choice, numeric, discrete) get skipped: this project's crowd only
-    knows how to give a single YES/NO probability, so only binary
-    questions are usable. A post missing the fields we actually need
-    (an id, a title) is skipped too, never guessed at.
+    discussion thread). Group posts get skipped (FutureEval currently
+    has none). All four tournament question types come through: binary,
+    multiple choice, numeric, and discrete. A post missing the fields
+    we actually need (an id, a title) is skipped too, never guessed at.
 
-    Card shape: {"qid": <question id, used to submit later>,
-    "question": <title text>, "close_time": <ISO string or "">,
-    "url": <the question's page on metaculus.com>}.
+    Card shape: {"qid", "post_id", "qtype", "question" (the title),
+    "criteria" (background + resolution criteria + fine print),
+    "close_time", "url", "already_forecast" (from the API's own
+    my_forecasts record, so a fresh checkout can't re-answer),
+    and for multiple choice "options", for numeric/discrete "scaling",
+    "open_lower_bound", "open_upper_bound", "unit"}.
     """
     cards = []
     for post in payload.get("results", []) or []:
@@ -76,11 +98,10 @@ def parse_questions(payload: dict) -> list[dict]:
         question = post.get("question")
         if not isinstance(question, dict):
             continue          # a group/multi-question post, or no question attached
-        # The listing call already asks for forecast_type=binary, so a
-        # missing "type" key is treated as binary too; an explicit,
-        # different type is trusted and skipped.
+        # A missing "type" key is treated as binary (the listing filter
+        # already narrows types); an unsupported type is skipped.
         qtype = question.get("type", "binary")
-        if qtype != "binary":
+        if qtype not in SUPPORTED_TYPES:
             continue
         if question.get("status") not in (None, "open"):
             continue
@@ -89,12 +110,25 @@ def parse_questions(payload: dict) -> list[dict]:
         title = question.get("title") or post.get("title") or ""
         if qid is None or post_id is None or not title:
             continue          # missing what we actually need: skip, don't guess
-        cards.append({
+        my = question.get("my_forecasts") or {}
+        card = {
             "qid": qid,
+            "post_id": post_id,
+            "qtype": qtype,
             "question": title,
+            "criteria": _criteria_text(question),
             "close_time": question.get("scheduled_close_time", ""),
             "url": f"https://www.metaculus.com/questions/{post_id}/",
-        })
+            "already_forecast": bool(my.get("latest")),
+        }
+        if qtype == "multiple_choice":
+            card["options"] = question.get("options") or []
+        if qtype in ("numeric", "discrete"):
+            card["scaling"] = question.get("scaling") or {}
+            card["open_lower_bound"] = bool(question.get("open_lower_bound"))
+            card["open_upper_bound"] = bool(question.get("open_upper_bound"))
+            card["unit"] = question.get("unit", "")
+        cards.append(card)
     return cards
 
 
@@ -105,7 +139,8 @@ def _get_posts(tournament, token: str, offset: int) -> dict:
     import requests
     params = {
         "limit": PAGE_SIZE, "offset": offset, "order_by": "-hotness",
-        "forecast_type": "binary", "tournaments": [tournament],
+        "forecast_type": ["binary", "multiple_choice", "numeric", "discrete"],
+        "tournaments": [tournament],
         "statuses": "open", "include_description": "true",
     }
     resp = requests.get(POSTS_URL, headers=_headers(token), params=params,
@@ -203,6 +238,103 @@ def submit_prediction(qid: int, probability: float, token: str,
         raise RuntimeError(
             f"metaculus rejected the forecast for question {qid}: {text}")
     return {"qid": qid, "probability": prob}
+
+
+def submit_mc_prediction(qid: int, probs_by_option: dict, token: str,
+                         post_fn=None) -> dict:
+    """Post one multiple-choice forecast: one probability per option.
+
+    Each option's probability is floored at 0.01 and capped at 0.99
+    (never a claimed 0% or 100% on any option), then the whole set is
+    renormalized to sum to 1, which is what the API requires. Payload
+    shape confirmed against forecasting-tools
+    post_multiple_choice_question_prediction: the same forecast list as
+    a binary post, but with "probability_yes_per_category" carrying the
+    option-name-to-probability dict.
+    """
+    post_fn = post_fn or _post_forecast
+    clipped = {opt: min(max(float(p), 0.01), 0.99)
+               for opt, p in probs_by_option.items()}
+    total = sum(clipped.values())
+    normed = {opt: p / total for opt, p in clipped.items()}
+    payload = [{
+        "question": qid, "source": "api",
+        "probability_yes_per_category": normed,
+    }]
+    resp = _retry_once(lambda: post_fn(qid, payload, token),
+                       what="submit a multiple-choice forecast to Metaculus")
+    if not getattr(resp, "ok", False):
+        raise RuntimeError(
+            f"metaculus rejected the forecast for question {qid}: "
+            f"{getattr(resp, 'text', '')}")
+    return {"qid": qid, "probability_yes_per_category": normed}
+
+
+def submit_numeric_prediction(qid: int, cdf: list, token: str,
+                              post_fn=None) -> dict:
+    """Post one numeric or discrete forecast as a full CDF.
+
+    `cdf` is the 201-value list engine/cdf.py builds: P(outcome <= x)
+    at each of the question's own inbound edges. Validated the same way
+    forecasting-tools validates before posting: every value in [0, 1]
+    and monotonically non-decreasing. A bad CDF raises ValueError here,
+    before anything touches the network.
+    """
+    post_fn = post_fn or _post_forecast
+    values = [float(v) for v in cdf]
+    if not all(0.0 <= v <= 1.0 for v in values):
+        raise ValueError("every CDF value must be between 0 and 1")
+    if not all(a <= b for a, b in zip(values, values[1:])):
+        raise ValueError("CDF values must be monotonically non-decreasing")
+    payload = [{
+        "question": qid, "source": "api",
+        "continuous_cdf": values,
+    }]
+    resp = _retry_once(lambda: post_fn(qid, payload, token),
+                       what="submit a numeric forecast to Metaculus")
+    if not getattr(resp, "ok", False):
+        raise RuntimeError(
+            f"metaculus rejected the forecast for question {qid}: "
+            f"{getattr(resp, 'text', '')}")
+    return {"qid": qid, "cdf_len": len(values)}
+
+
+COMMENTS_URL = f"{API_BASE_URL}/comments/create/"
+
+
+def _post_json(url: str, body: dict, token: str):
+    """Generic JSON POST, split out so tests can replace it."""
+    import requests
+    return requests.post(url, headers=_headers(token), json=body,
+                         timeout=TIMEOUT_S)
+
+
+def post_comment(post_id: int, text: str, token: str, post_fn=None) -> bool:
+    """Leave the required private comment on a forecasted question.
+
+    The tournament rules require a comment with every forecast (kept
+    private; Metaculus publishes them itself at intervals). Endpoint
+    and payload confirmed against forecasting-tools
+    post_question_comment: POST /comments/create/ with on_post,
+    text, is_private, included_forecast.
+
+    Returns True on success, False on ANY failure. A comment that
+    fails to post must never take the forecast down with it: the
+    forecast is the scored thing, the comment is paperwork.
+    """
+    post_fn = post_fn or _post_json
+    body = {"on_post": post_id, "text": text,
+            "is_private": True, "included_forecast": True}
+    try:
+        resp = _retry_once(lambda: post_fn(COMMENTS_URL, body, token),
+                           what="post a comment to Metaculus")
+        ok = bool(getattr(resp, "ok", False))
+    except Exception as exc:
+        print(f"  comment on post {post_id} failed ({exc}); forecast stands")
+        return False
+    if not ok:
+        print(f"  comment on post {post_id} rejected; forecast stands")
+    return ok
 
 
 if __name__ == "__main__":

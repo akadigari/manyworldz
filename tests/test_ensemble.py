@@ -304,7 +304,10 @@ def test_budget_error_propagates_through_ensemble_crowd():
     with pytest.raises(RuntimeError, match="budget cap hit"):
         run_crowd(CARD, HEADLINES, crowd, mode="vote", k=0,
                  deliberation=False, ask_fn=blow_budget)
-    assert calls["n"] == 2   # the second seat's call is the one that blew up
+    # Seats run concurrently now, so in-flight seats may still finish
+    # their call; what matters is that the budget error still escapes
+    # run_crowd instead of being swallowed as one bad vote.
+    assert calls["n"] >= 2
 
 
 # ---- spend safety ----

@@ -21,8 +21,17 @@ _VOTE_PROMPT = """Reason with one method only. Method: {label}. {instruction}.
 The question: "{question}"
 {evidence}
 
-Start from the base rate: how often do things like this usually happen,
-historically? Anchor there first, THEN adjust for the evidence above.
+Work outside-in, the way ranked forecasters do:
+1. Status quo first: if nothing changed between now and the close,
+   how would this resolve? The world changes slowly; weight that.
+   If the resolution criteria are ALREADY met or already impossible,
+   say so and answer 0.95 or higher, or 0.05 or lower.
+2. Reference class: what group of similar past situations does this
+   belong to, and how often did those resolve YES? That is your base
+   rate. Anchor on it.
+3. Then adjust for the evidence above, stating plainly:
+   "My base rate was X. I am moving to Y because...".
+   Hedging to 50% without a reason is not a valid adjustment.
 Stick to your one method and give YOUR OWN probability that this
 resolves YES. Do not just repeat the market price.
 Reply with ONLY JSON like {{"probability": 0.42, "reason": "one short sentence"}}"""
@@ -212,14 +221,27 @@ def run_crowd(card: dict, headlines: list[str], crowd: list[dict],
     # Imported here, not at the top of the file, so this file and
     # engine/futures.py (which imports something from this file) don't
     # end up needing each other before either one has finished loading.
+    from concurrent.futures import ThreadPoolExecutor
+
     from engine import futures as _futures
 
-    votes, all_futures, skipped = [], [], 0
-    for agent in crowd:
+    def _one_seat(agent):
         if mode == "simulate":
-            result = _futures.agent_futures(agent, card, headlines, k, ask_fn)
-        else:
-            result = agent_vote(agent, card, headlines, ask_fn)
+            return _futures.agent_futures(agent, card, headlines, k, ask_fn)
+        return agent_vote(agent, card, headlines, ask_fn)
+
+    # Seats run concurrently: the tournament's questions are only open
+    # a few hours and four sequential model calls per question was the
+    # single biggest latency cost. executor.map keeps the results in
+    # crowd order, so consensus and deliberation see exactly what the
+    # old sequential loop saw. A single seat skips the pool entirely.
+    votes, all_futures, skipped = [], [], 0
+    if len(crowd) > 1:
+        with ThreadPoolExecutor(max_workers=len(crowd)) as pool:
+            results = list(pool.map(_one_seat, crowd))
+    else:
+        results = [_one_seat(agent) for agent in crowd]
+    for agent, result in zip(crowd, results):
         if result is None:
             skipped += 1
             continue

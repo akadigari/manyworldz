@@ -46,3 +46,47 @@ def test_corrupted_cache_returns_empty_not_crash(tmp_path, monkeypatch):
     (tmp_path / "news" / f"{key}.json").write_text("{corrupted")
     monkeypatch.setattr(news, "_fetch_xml", lambda url: "irrelevant")
     assert news.headlines_for("q") == []
+
+
+# ---- asknews, when the tournament credentials exist ----
+
+from engine import news
+
+RSS = """<rss><channel>
+<item><title>rss headline one</title></item>
+<item><title>rss headline two</title></item>
+</channel></rss>"""
+
+
+def test_research_prefers_asknews_when_credentials_are_set(monkeypatch):
+    monkeypatch.setenv("ASKNEWS_CLIENT_ID", "cid")
+    monkeypatch.setenv("ASKNEWS_CLIENT_SECRET", "sec")
+    monkeypatch.setattr(news, "_asknews_search",
+                        lambda query, limit: ["asknews summary A",
+                                              "asknews summary B"])
+    got = news.research("Will the thing happen?")
+    assert got[:2] == ["asknews summary A", "asknews summary B"]
+
+
+def test_research_falls_back_to_rss_when_asknews_breaks(monkeypatch, tmp_path):
+    monkeypatch.setenv("ASKNEWS_CLIENT_ID", "cid")
+    monkeypatch.setenv("ASKNEWS_CLIENT_SECRET", "sec")
+    monkeypatch.setattr(news, "CACHE_DIR", tmp_path)
+    def broken(query, limit):
+        raise RuntimeError("asknews down")
+    monkeypatch.setattr(news, "_asknews_search", broken)
+    monkeypatch.setattr(news, "_fetch_xml", lambda url: RSS)
+    got = news.research("Will the thing happen?")
+    assert "rss headline one" in got
+
+
+def test_research_ignores_asknews_without_credentials(monkeypatch, tmp_path):
+    monkeypatch.delenv("ASKNEWS_CLIENT_ID", raising=False)
+    monkeypatch.delenv("ASKNEWS_CLIENT_SECRET", raising=False)
+    monkeypatch.setattr(news, "CACHE_DIR", tmp_path)
+    def never(query, limit):
+        raise AssertionError("asknews must not be called without creds")
+    monkeypatch.setattr(news, "_asknews_search", never)
+    monkeypatch.setattr(news, "_fetch_xml", lambda url: RSS)
+    got = news.research("Will the thing happen?")
+    assert "rss headline one" in got

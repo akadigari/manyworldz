@@ -21,27 +21,114 @@ class FakeResp:
         self.text = text
 
 
-def test_parse_questions_keeps_only_open_binary_with_required_fields():
+def test_parse_questions_keeps_open_questions_of_all_four_types():
     cards = metaculus.parse_questions(payload())
-    qids = {c["qid"] for c in cards}
+    by_qid = {c["qid"]: c for c in cards}
     # 500001: plain open binary -> kept
-    assert 500001 in qids
     # 500006: open, no "type" key at all -> treated as binary, kept
-    assert 500006 in qids
-    card = next(c for c in cards if c["qid"] == 500001)
+    # 500002: multiple choice -> kept now
+    # 500007: numeric -> kept now; 500008: discrete -> kept now
+    assert set(by_qid) == {500001, 500002, 500006, 500007, 500008}
+    card = by_qid[500001]
     assert card["question"] == "Will a new AI safety treaty be signed before 2027?"
     assert card["close_time"] == "2026-12-31T23:59:00Z"
     assert card["url"] == "https://www.metaculus.com/questions/30001/"
+    assert card["post_id"] == 30001
+    assert card["qtype"] == "binary"
 
 
-def test_parse_questions_skips_group_non_binary_and_closed_posts():
+def test_parse_questions_skips_group_and_closed_posts():
     cards = metaculus.parse_questions(payload())
     qids = {c["qid"] for c in cards}
-    assert 500002 not in qids     # multiple_choice
     assert 500003 not in qids     # group post, no "question" key
     assert 500004 not in qids     # group post, no "question" key
     assert 500005 not in qids     # status closed
-    assert len(cards) == 2
+
+
+def test_parse_questions_carries_resolution_criteria_and_fine_print():
+    card = {c["qid"]: c for c in metaculus.parse_questions(payload())}[500001]
+    assert "signed by at least 20 states" in card["criteria"]
+    assert "ratification is not required" in card["criteria"]
+
+
+def test_parse_questions_carries_options_for_multiple_choice():
+    card = {c["qid"]: c for c in metaculus.parse_questions(payload())}[500002]
+    assert card["qtype"] == "multiple_choice"
+    assert card["options"] == ["France", "United Kingdom", "Singapore", "Other"]
+
+
+def test_parse_questions_carries_scaling_and_bounds_for_numeric_and_discrete():
+    by_qid = {c["qid"]: c for c in metaculus.parse_questions(payload())}
+    num = by_qid[500007]
+    assert num["qtype"] == "numeric"
+    assert num["scaling"]["range_min"] == 0
+    assert num["scaling"]["range_max"] == 60
+    assert num["open_lower_bound"] is False
+    assert num["open_upper_bound"] is True
+    assert num["unit"] == "states"
+    disc = by_qid[500008]
+    assert disc["qtype"] == "discrete"
+    assert disc["scaling"]["range_min"] == -49500
+
+
+def test_parse_questions_flags_already_forecast_from_my_forecasts():
+    by_qid = {c["qid"]: c for c in metaculus.parse_questions(payload())}
+    assert by_qid[500007]["already_forecast"] is True
+    assert by_qid[500001]["already_forecast"] is False
+    assert by_qid[500006]["already_forecast"] is False   # field absent -> False
+
+
+def test_submit_mc_prediction_clips_renormalizes_and_posts_per_category():
+    sent = {}
+    def fake_post(qid, payload, token):
+        sent["payload"] = payload
+        return FakeResp(True)
+    out = metaculus.submit_mc_prediction(
+        777, {"A": 1.0, "B": 0.0, "C": 0.0}, "tok", post_fn=fake_post)
+    body = sent["payload"][0]
+    probs = body["probability_yes_per_category"]
+    # 0.0 floors to 0.01 before renormalizing, so nothing is a claimed 0%
+    assert all(p >= 0.009 for p in probs.values())
+    assert abs(sum(probs.values()) - 1.0) < 1e-6
+    assert body["question"] == 777
+    assert body["source"] == "api"
+    assert "probability_yes" not in body
+    assert out["qid"] == 777
+
+
+def test_submit_numeric_prediction_posts_the_cdf_and_validates_it():
+    sent = {}
+    def fake_post(qid, payload, token):
+        sent["payload"] = payload
+        return FakeResp(True)
+    cdf = [i / 200 for i in range(201)]
+    metaculus.submit_numeric_prediction(888, cdf, "tok", post_fn=fake_post)
+    body = sent["payload"][0]
+    assert body["continuous_cdf"] == cdf
+    assert body["question"] == 888
+    with pytest.raises(ValueError):
+        metaculus.submit_numeric_prediction(888, [0.5, 0.4], "tok",
+                                            post_fn=fake_post)
+    with pytest.raises(ValueError):
+        metaculus.submit_numeric_prediction(888, [0.0, 1.5], "tok",
+                                            post_fn=fake_post)
+
+
+def test_post_comment_hits_comments_create_private_and_never_raises():
+    sent = {}
+    def fake_post_json(url, body, token):
+        sent["url"] = url; sent["body"] = body
+        return FakeResp(True)
+    ok = metaculus.post_comment(30001, "crowd said 0.42", "tok",
+                                post_fn=fake_post_json)
+    assert ok is True
+    assert sent["url"].endswith("/comments/create/")
+    assert sent["body"] == {"on_post": 30001, "text": "crowd said 0.42",
+                            "is_private": True, "included_forecast": True}
+    def broken(url, body, token):
+        raise RuntimeError("network down")
+    # a comment failure must never break the cycle: log-and-continue
+    assert metaculus.post_comment(30001, "x", "tok", post_fn=broken) is False
 
 
 def test_parse_questions_handles_missing_results_key():

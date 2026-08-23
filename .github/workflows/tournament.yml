@@ -1,16 +1,21 @@
 # manyworldz entering the Metaculus FutureEval bot tournament, on a timer.
 #
-# Every 6 hours it fetches the tournament's open binary questions, runs
-# the same crowd this whole repo already uses, submits an answer to any
+# Every 20 minutes it fetches the tournament's open questions (binary,
+# multiple choice, numeric, discrete), runs the crowd or a direct call
+# per type, submits an answer plus the required private comment to any
 # question it has not already answered, and commits the submission log
 # back to the repo. It never touches Kalshi or the ledger; this is a
 # separate public scorecard.
 #
 # Safe to push before the tournament account exists. tournament.py's own
 # main() checks for METACULUS_TOKEN first: if it is missing, the run
-# prints a plain message and exits 0 (success, not a failure), so the
-# schedule can stay ACTIVE with no red X's while the owner is still
-# waiting on the account and the token.
+# prints a warning annotation and exits 0, so the schedule can stay
+# ACTIVE with no red X's while the owner is still waiting on the token.
+#
+# That grace ENDS on config.TOURNAMENT_ARM_BY (2026-09-01, Fall
+# FutureEval). Past that date an unset token exits 1 and the run goes
+# red. The Summer 2026 season was lost to ~2,000 green no-op cycles;
+# "not configured" must not look identical to "working".
 #
 # To turn it on once the account exists:
 #   1. Create the bot account on metaculus.com, generate an API token
@@ -19,19 +24,27 @@
 #      -> New repository secret -> name METACULUS_TOKEN, paste it.
 #   3. Make sure ANTHROPIC_API_KEY is already set as a secret too (the
 #      manyworldz.yml workflow needs the same one).
-#   4. That's it. The Actions tab shows every run; data/tournament_log.csv
+#   4. Optional, when Metaculus's free credits land: add OPENROUTER_API_KEY
+#      (donated LLM credits; engine/llm.py routes through OpenRouter when
+#      it exists; check the model slugs on openrouter.ai and set
+#      OPENROUTER_MODEL_MAP if the anthropic/<id> guess is wrong) and
+#      ASKNEWS_CLIENT_ID + ASKNEWS_CLIENT_SECRET (free news for entrants;
+#      engine/news.py uses them automatically).
+#   5. That's it. The Actions tab shows every run; data/tournament_log.csv
 #      fills up with every submission, question by question.
 
 name: tournament
 
 on:
   schedule:
-    # Every 20 minutes, on purpose. Tournament rank is the SUM of scores
-    # over questions, and a question you never answered scores zero. Some
-    # questions open and close inside a few hours, so a slow schedule
-    # quietly skips them and the bot looks like a bad forecaster when it
-    # was really just absent. Coverage first, cleverness second.
-    - cron: "*/20 * * * *"
+    # Every 20 minutes, on purpose: the questions are only open 1.5 to
+    # 3 hours, and a question you never answered scores a hard zero.
+    # Three explicit lines instead of */20 because GitHub is known to
+    # drop */N schedules at busy minutes; ranked bots (No-Stream's
+    # run_bot_on_tournament.yaml) split theirs for the same reason.
+    - cron: "3 * * * *"
+    - cron: "23 * * * *"
+    - cron: "43 * * * *"
   workflow_dispatch: {}       # also lets you run it by hand from the Actions tab
 
 permissions:
@@ -44,6 +57,9 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    # Shorter than the 20-minute cadence: with cancel-in-progress off,
+    # a hung run would otherwise queue every later cron behind it.
+    timeout-minutes: 18
     steps:
       - uses: actions/checkout@v4
 
@@ -65,6 +81,14 @@ jobs:
           # Once the free tournament credits land, move this to opus or
           # fable. The budget cap in config.py still stops all spending.
           MANYWORLDZ_MODEL: sonnet
+          # Monthly spend allowance (engine/llm.py meters by calendar
+          # month). Raise once donated OpenRouter credits arrive.
+          ENGINE_BUDGET_USD: "15"
+          # Optional: all four below stay empty until their secrets exist.
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL_MAP: ${{ vars.OPENROUTER_MODEL_MAP }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_CLIENT_SECRET: ${{ secrets.ASKNEWS_CLIENT_SECRET }}
         run: python3 tournament.py
 
       - name: save the submission log back to the repo
