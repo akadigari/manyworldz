@@ -6,6 +6,7 @@ data/*
 !data/ledger.csv
 !data/spend.json
 !data/tournament_log.csv
+!data/tournament_status.json
 __pycache__/
 *.pyc
 .env
