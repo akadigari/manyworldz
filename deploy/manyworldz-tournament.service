@@ -1,5 +1,5 @@
 [Unit]
-Description=Manyworldz FutureEval tournament cycle (fail-closed without METACULUS_TOKEN)
+Description=Manyworldz FutureEval tournament beat (heartbeat push, or local cycle when tokens are present)
 After=network-online.target
 Wants=network-online.target
 
