@@ -33,6 +33,12 @@
 #   5. That's it. The Actions tab shows every run; data/tournament_log.csv
 #      fills up with every submission, question by question.
 
+# NOTE (2026-08-29): this cron is now the WATCHDOG, not the clock.
+# GitHub throttled it by 56 to 456 minutes between runs, so the real
+# 5-minute cadence comes from may-bridge force-pushing the `heartbeat`
+# branch, which fires tournament-heartbeat.yml on that branch. This file
+# stays on so the tournament still runs if the bridge dies.
+
 name: tournament
 
 on:
