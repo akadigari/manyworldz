@@ -1,0 +1,21 @@
+[Unit]
+Description=Manyworldz FutureEval tournament cycle (fail-closed without METACULUS_TOKEN)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/kadigari/manyworldz
+EnvironmentFile=/home/kadigari/.config/manyworldz-tournament.env
+Environment=GIT_SSH_COMMAND=ssh -i /home/kadigari/.ssh/manyworldz_deploy -o IdentitiesOnly=yes
+ExecStart=/home/kadigari/manyworldz/deploy/bridge_tournament_cycle.sh
+TimeoutStartSec=280
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=read-only
+ProtectSystem=strict
+ReadWritePaths=/home/kadigari/manyworldz
+
+[Install]
+WantedBy=default.target
