@@ -29,11 +29,21 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 # with. Five points is the official template's own resolution.
 PERCENTILE_KEYS = [("p05", 0.05), ("p25", 0.25), ("p50", 0.5),
                    ("p75", 0.75), ("p95", 0.95)]
-MIN_STEP = 0.01 / 200
+MIN_STEP = 5e-05
 # The API's per-step cap is 0.2 for the standard 200-bin grid and
 # scales inversely with the bin count (forecasting-tools
 # get_max_pmf_value): coarser discrete grids allow bigger steps.
 MAX_STEP_200 = 0.2
+# How much probability mass is spread flat across the grid purely to
+# keep every step above MIN_STEP. The obvious value is 0.01, which puts
+# a 200-bin grid at exactly 5e-05 per step, but "exactly" does not
+# survive binary floating point: measured steps came out at
+# 4.999999999999449e-05, and the API rejects a CDF whose step is under
+# the floor by any amount at all. The extra 2 percent is the margin
+# that makes the guarantee real, and it costs 0.02 percent of the mass.
+FLOOR_MASS = 0.0102
+# Open bounds must keep at least this much mass outside each bound.
+EDGE_MASS = 0.001
 
 
 def _grid(scaling: dict) -> list[float]:
@@ -49,7 +59,19 @@ def _grid(scaling: dict) -> list[float]:
     lo = float(scaling["range_min"])
     hi = float(scaling["range_max"])
     n = int(scaling.get("inbound_outcome_count") or 200)
-    return [lo + (hi - lo) * i / n for i in range(n + 1)]
+    zero = scaling.get("zero_point")
+    if zero is None:
+        return [lo + (hi - lo) * i / n for i in range(n + 1)]
+
+    # Log-scaled question. Metaculus spaces the grid so that equal steps
+    # in CDF location are equal RATIOS in value, which is why a linear
+    # grid mis-shapes these badly: on a 10 to 1000 question the middle
+    # edge sits at 100, not at 505. Transform copied from the official
+    # template's _cdf_location_to_nominal_location.
+    zero = float(zero)
+    ratio = (hi - zero) / (lo - zero)
+    return [lo + (hi - lo) * (ratio ** (i / n) - 1) / (ratio - 1)
+            for i in range(n + 1)]
 
 
 def _raw_cdf_at(x: float, points: list[tuple[float, float]]) -> float:
@@ -89,15 +111,15 @@ def build_cdf(percentiles: dict, scaling: dict,
     mass = (scale_hi - scale_lo) or 1.0
     last = len(grid) - 1
 
+    # Enough flat mass that every step clears MIN_STEP with margin, on
+    # this question's own grid however many bins it has.
+    floor = max(FLOOR_MASS, last * MIN_STEP * 1.02)
+    edges = EDGE_MASS * (int(open_lower) + int(open_upper))
+
     def apply_minimum(f: float, loc: float) -> float:
         rescaled = (f - scale_lo) / mass
-        if open_lower and open_upper:
-            return 0.988 * rescaled + 0.01 * loc + 0.001
-        if open_lower:
-            return 0.989 * rescaled + 0.01 * loc + 0.001
-        if open_upper:
-            return 0.989 * rescaled + 0.01 * loc
-        return 0.99 * rescaled + 0.01 * loc
+        body = (1.0 - floor - edges) * rescaled + floor * loc
+        return body + EDGE_MASS if open_lower else body
 
     out = [apply_minimum(v, i / last) for i, v in enumerate(raw)]
     out = [min(max(v, 0.0), 1.0) for v in out]
@@ -147,3 +169,50 @@ def percentiles_from_json(text: str) -> dict | None:
     ordered = sorted(raw)
     return {prob: value
             for (_, prob), value in zip(PERCENTILE_KEYS, ordered)}
+
+
+def cdf_problems(values: list[float], open_lower: bool,
+                 open_upper: bool) -> list[str]:
+    """Every reason Metaculus would reject this CDF, in plain English.
+
+    Called before a numeric submission goes out. The API validates all
+    of this server side, and a rejected submission is a scored zero on
+    a question the crowd already paid to think about, so it is worth
+    the microsecond to check first and fall back deliberately instead.
+    Constraints mirror NumericDistribution's validators in the official
+    template. An empty list means it is safe to send.
+    """
+    problems: list[str] = []
+    if len(values) < 2:
+        problems.append(f"a CDF needs at least 2 values, got {len(values)}")
+        return problems
+
+    steps = [b - a for a, b in zip(values, values[1:])]
+    smallest = min(steps)
+    if smallest < MIN_STEP:
+        problems.append(
+            f"step {smallest:.3e} is under the API minimum of {MIN_STEP:.0e}; "
+            "the CDF must rise at every single edge")
+
+    cap = MAX_STEP_200 * 200 / (len(values) - 1)
+    largest = max(steps)
+    if largest > cap:
+        problems.append(
+            f"step {largest:.4f} is over the API cap of {cap:.4f}; "
+            "the distribution is too tall for this grid")
+
+    if not open_lower and abs(values[0]) > 1e-9:
+        problems.append(
+            f"closed lower bound must start at 0, starts at {values[0]:.6f}")
+    if not open_upper and abs(values[-1] - 1.0) > 1e-9:
+        problems.append(
+            f"closed upper bound must end at 1, ends at {values[-1]:.6f}")
+    if open_lower and values[0] < EDGE_MASS - 1e-9:
+        problems.append(
+            f"open lower bound needs at least {EDGE_MASS} mass below it, "
+            f"has {values[0]:.6f}")
+    if open_upper and values[-1] > 1.0 - EDGE_MASS + 1e-9:
+        problems.append(
+            f"open upper bound needs at least {EDGE_MASS} mass above it, "
+            f"ends at {values[-1]:.6f}")
+    return problems

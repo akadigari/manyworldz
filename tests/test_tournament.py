@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import pytest
 import tournament
+from engine import cdf as cdf_mod
 
 
 def cards(n=2):
@@ -652,15 +653,37 @@ def test_numeric_question_with_missing_bounds_is_skipped_cleanly(tmp_path):
     assert out["answered"] == 0
 
 
-def test_log_scaled_numeric_without_its_own_grid_is_skipped(tmp_path):
-    """Finding 6: a zero_point question with no continuous_range would
-    get a badly mis-shaped CDF from a linear grid; skip it honestly."""
+def test_log_scaled_numeric_is_answered_on_its_log_grid(tmp_path):
+    """Was Finding 6, reversed 2026-08-30. These used to be skipped
+    because a linear grid mis-shapes them, but a skipped question is a
+    hard zero and engine/cdf.py now builds the log-spaced grid the API
+    actually uses. So it answers, and the CDF it sends is submittable."""
     logq = dict(NUM_CARD, scaling={"range_min": 1, "range_max": 1000,
                                    "zero_point": 0.0,
                                    "inbound_outcome_count": 200,
                                    "continuous_range": None})
+    sent = {}
     out = tournament.one_cycle(
         cards=[logq], ask_fn=lambda p, model=None, max_tokens=400: NUM_REPLY,
+        token="tok", log_path=tmp_path / "log.csv",
+        submit_fn=lambda qid, prob, token: None,
+        submit_numeric_fn=lambda qid, cdf, token: sent.update(qid=qid, cdf=cdf))
+    assert out["submitted"] == 1
+    assert cdf_mod.cdf_problems(sent["cdf"],
+                                open_lower=logq["open_lower_bound"],
+                                open_upper=logq["open_upper_bound"]) == []
+    assert len(sent["cdf"]) == 201
+
+
+def test_log_scaled_numeric_with_an_impossible_zero_point_is_skipped(tmp_path):
+    """The transform is undefined when the zero point sits at or above
+    the lower bound, and the official template refuses it too."""
+    bad = dict(NUM_CARD, scaling={"range_min": 1, "range_max": 1000,
+                                  "zero_point": 5.0,
+                                  "inbound_outcome_count": 200,
+                                  "continuous_range": None})
+    out = tournament.one_cycle(
+        cards=[bad], ask_fn=lambda p, model=None, max_tokens=400: NUM_REPLY,
         token="tok", log_path=tmp_path / "log.csv",
         submit_fn=lambda qid, prob, token: None,
         submit_numeric_fn=lambda qid, cdf, token: None)
@@ -722,3 +745,60 @@ def test_every_cycle_writes_a_status_file_for_the_daily_brief(tmp_path, monkeypa
     assert status["at"] == NOW_ISO
     assert status["tournament"] == config.METACULUS_TOURNAMENT
     assert status["answered_all_time"] == 0
+
+
+# --- prompt scaffolding ---------------------------------------------------
+# Adopted 2026-08-30 from the official metac-bot-template, which every
+# ranked bot in FutureEval builds on. The binary path keeps its own crowd
+# and deliberation; these two direct-call paths had no scaffolding at all.
+
+def test_horizon_note_states_today_and_the_time_left():
+    card = dict(NUM_CARD, close_time="2026-09-11T00:00:00Z")
+    note = tournament._horizon_note(card, now="2026-08-30T00:00:00Z")
+    assert "2026-08-30" in note
+    assert "12 days" in note
+    assert "2026-09-11" in note
+
+
+def test_horizon_note_survives_a_missing_close_time():
+    note = tournament._horizon_note(dict(NUM_CARD, close_time=None),
+                                    now="2026-08-30T00:00:00Z")
+    assert "2026-08-30" in note        # today still stated
+    assert "days" not in note          # nothing invented about the deadline
+
+
+def test_horizon_note_handles_an_already_closed_question():
+    card = dict(NUM_CARD, close_time="2026-08-01T00:00:00Z")
+    note = tournament._horizon_note(card, now="2026-08-30T00:00:00Z")
+    assert "closing time has passed" in note
+
+
+def test_mc_prompt_carries_the_status_quo_weighting():
+    prompt = tournament._MC_PROMPT
+    assert "status quo" in prompt
+    assert "moderate probability" in prompt   # surprise options score hard
+
+
+def test_numeric_prompt_carries_the_status_quo_weighting():
+    assert "status quo" in tournament._NUMERIC_PROMPT
+
+
+def test_a_cycle_writes_its_receipt_beside_its_own_log_not_into_data(tmp_path):
+    """Test isolation, found 2026-08-30: one_cycle used to write the real
+    data/tournament_status.json no matter which log it was given, so the
+    suite quietly overwrote the receipt the live loop commits as its
+    health signal. The receipt now follows the log."""
+    log_path = tmp_path / "log.csv"
+    tournament.one_cycle(
+        cards=[dict(NUM_CARD)],
+        ask_fn=lambda p, model=None, max_tokens=400: NUM_REPLY,
+        token="tok", log_path=log_path,
+        submit_fn=lambda qid, prob, token: None,
+        submit_numeric_fn=lambda qid, cdf, token: None)
+    assert (tmp_path / "tournament_status.json").exists()
+    real = Path(__file__).resolve().parents[1] / "data" / "tournament_status.json"
+    if real.exists():
+        import json as _json
+        # the live receipt must be untouched by a test run
+        assert _json.loads(real.read_text()).get("open_seen") != 1 or \
+            "pytest" not in str(log_path)

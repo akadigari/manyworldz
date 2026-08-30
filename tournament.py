@@ -260,6 +260,32 @@ def _with_deadline(fn, seconds: float):
     return box.get("result")
 
 
+def _horizon_note(card: dict, now: str | None = None) -> str:
+    """Today's date and how long this question has left, for the prompt.
+
+    The official template states both to every question it forecasts,
+    and it matters: "will X happen" is a different question with two
+    days left than with two years, and a model with no date anchor
+    guesses. A missing or unparseable close time yields today's date
+    alone rather than an invented deadline.
+    """
+    today = (datetime.fromisoformat(now.replace("Z", "+00:00"))
+             if now else datetime.now(timezone.utc))
+    line = f"Today is {today.date().isoformat()}."
+    close = card.get("close_time")
+    if not close:
+        return line
+    try:
+        closes = datetime.fromisoformat(str(close).replace("Z", "+00:00"))
+    except ValueError:
+        return line
+    days = (closes - today).days
+    if days < 0:
+        return f"{line} Its closing time has passed."
+    return (f"{line} This question closes in {days} days "
+            f"({closes.date().isoformat()}).")
+
+
 _MC_PROMPT = """You are forecasting a multiple choice question.
 
 The question: "{question}"
@@ -267,9 +293,17 @@ The question: "{question}"
 
 The options, exactly as written: {options}
 
+{horizon}
+
 Start from base rates: how often does each kind of outcome actually
-happen? Then adjust for the evidence. Probabilities must sum to 1.
-Reply with ONLY JSON mapping every option to its probability, like
+happen? Then adjust for the evidence. Weight the status quo outcome
+extra: the world changes slowly most of the time, and the option that
+is already true is usually the one that stays true. Leave some
+moderate probability on every option, because the surprise outcome is
+exactly the one that scores badly when you gave it nothing.
+
+Probabilities must sum to 1. Reply with ONLY JSON mapping every option
+to its probability, like
 {{"Option A": 0.5, "Option B": 0.3, "Option C": 0.2}}"""
 
 
@@ -278,10 +312,16 @@ def _skip_reason(card: dict) -> str | None:
 
     Malformed or unsupported cards get skipped with a printed reason,
     never guessed at and never allowed to crash the cycle: an MC card
-    with no options has nothing to submit, a numeric card without
-    range bounds has no grid to build, and a log-scaled question
-    (zero_point set) without its own continuous_range would get a
-    badly mis-shaped CDF from a linear grid.
+    with no options has nothing to submit, and a numeric card without
+    range bounds has no grid to build.
+
+    Log-scaled questions (zero_point set) used to be skipped here, on
+    the grounds that a linear grid would mis-shape their CDF. That was
+    the right worry and the wrong answer: a skipped question scores a
+    hard zero. engine/cdf.py now builds the log-spaced grid the API
+    actually uses, so they are answered like any other. The one case
+    still refused is a zero_point at or above the lower bound, which
+    makes the transform undefined; the official template rejects it too.
     """
     qtype = card.get("qtype", "binary")
     if qtype == "multiple_choice" and not card.get("options"):
@@ -289,10 +329,12 @@ def _skip_reason(card: dict) -> str | None:
     if qtype in ("numeric", "discrete"):
         scaling = card.get("scaling") or {}
         if not scaling.get("continuous_range"):
-            if scaling.get("range_min") is None or scaling.get("range_max") is None:
+            lo, hi = scaling.get("range_min"), scaling.get("range_max")
+            if lo is None or hi is None:
                 return "numeric with no range bounds"
-            if scaling.get("zero_point") is not None:
-                return "log-scaled with no continuous_range"
+            zero = scaling.get("zero_point")
+            if zero is not None and float(lo) <= float(zero):
+                return "log-scaled with the zero point at or above the lower bound"
     return None
 
 
@@ -307,7 +349,8 @@ def _answer_mc(card: dict, headlines: list[str], ask) -> dict:
     options = card.get("options") or []
     evidence = f'Recent headlines: {"; ".join(headlines) if headlines else "(none found)"}'
     prompt = _MC_PROMPT.format(question=_question_text(card),
-                               evidence=evidence, options=options)
+                               evidence=evidence, options=options,
+                               horizon=_horizon_note(card))
     probs = None
     try:
         parsed = extract_json(ask(prompt, model="sonnet"))
@@ -333,10 +376,14 @@ The question: "{question}"
 The answer is measured in: {unit}
 The plausible range runs from {lo} to {hi}.{bounds_note}
 
+{horizon}
+
 Start from base rates and any relevant historical figures, then adjust
-for the evidence. Give your 5th, 25th, 50th, 75th and 95th percentile
-estimates, in the question's own units, wide enough to be honest about
-your uncertainty. Reply with ONLY JSON like
+for the evidence. Weight the status quo extra: absent a specific
+reason to expect movement, the recent trend usually continues. Give
+your 5th, 25th, 50th, 75th and 95th percentile estimates, in the
+question's own units, wide enough to be honest about your uncertainty.
+Reply with ONLY JSON like
 {{"p05": 10, "p25": 20, "p50": 30, "p75": 40, "p95": 50}}"""
 
 
@@ -357,7 +404,8 @@ def _answer_numeric(card: dict, headlines: list[str], ask) -> dict:
     prompt = _NUMERIC_PROMPT.format(question=_question_text(card),
                                     evidence=evidence,
                                     unit=card.get("unit") or "(unitless)",
-                                    lo=lo, hi=hi, bounds_note=bounds_note)
+                                    lo=lo, hi=hi, bounds_note=bounds_note,
+                                    horizon=_horizon_note(card))
     percentiles, source = None, "numeric"
     try:
         percentiles = cdf_mod.percentiles_from_json(ask(prompt, model="sonnet"))
@@ -370,9 +418,26 @@ def _answer_numeric(card: dict, headlines: list[str], ask) -> dict:
         span = float(hi) - float(lo)
         percentiles = {p: float(lo) + span * p for p in (0.05, 0.25, 0.5, 0.75, 0.95)}
         source = "fallback"
-    values = cdf_mod.build_cdf(percentiles, scaling,
-                               open_lower=card.get("open_lower_bound", False),
-                               open_upper=card.get("open_upper_bound", False))
+    open_lower = card.get("open_lower_bound", False)
+    open_upper = card.get("open_upper_bound", False)
+    values = cdf_mod.build_cdf(percentiles, scaling, open_lower, open_upper)
+
+    # Last line of defence. The API validates the CDF server side and a
+    # rejected submission scores the same hard zero as never answering,
+    # so a shape it would refuse degrades to the flat CDF over the
+    # question's own range instead, logged honestly as a fallback.
+    problems = cdf_mod.cdf_problems(values, open_lower, open_upper)
+    if problems:
+        print(f'  cdf rejected for qid {card["qid"]}: {problems[0]}')
+        span = float(hi) - float(lo)
+        percentiles = {p: float(lo) + span * p
+                       for p in (0.05, 0.25, 0.5, 0.75, 0.95)}
+        values = cdf_mod.build_cdf(percentiles, scaling, open_lower, open_upper)
+        source = "fallback"
+        still_bad = cdf_mod.cdf_problems(values, open_lower, open_upper)
+        if still_bad:
+            print(f'  flat cdf also rejected for qid {card["qid"]}: {still_bad[0]}')
+            return {"cdf": None, "percentiles": percentiles, "source": "unusable"}
     return {"cdf": values, "percentiles": percentiles, "source": source}
 
 
@@ -637,7 +702,10 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
     # A small status receipt for the daily-brief routine: its cloud
     # sandbox cannot reach metaculus.com, so the bot records what it
     # saw. Committed back with the log by the workflow.
-    status_path = config.DATA / "tournament_status.json"
+    # Beside the log it was given, never a hardcoded path: the tests hand
+    # in a tmp log, and a hardcoded data/ here meant every test run
+    # overwrote the receipt the live loop commits as its health signal.
+    status_path = Path(log_path).parent / "tournament_status.json"
     status_path.parent.mkdir(parents=True, exist_ok=True)
     status_path.write_text(json.dumps({
         "at": now, "tournament": tournament, "open_seen": len(cards),

@@ -195,13 +195,45 @@ def test_deliberate_threads_seat_model_into_ask_fn():
     assert calls[0]["model"] == "fable"
 
 
-def test_run_crowd_ensemble_threads_each_seats_own_model_in_order():
+def test_run_crowd_ensemble_threads_each_seats_own_model():
+    """Every seat asks with its own model, exactly once.
+
+    This deliberately does NOT assert the order the calls arrive in.
+    run_crowd fans the seats across a ThreadPoolExecutor, so which
+    thread reaches ask_fn first is genuinely nondeterministic, and
+    asserting an order here made the suite fail about 2 runs in 5. The
+    guarantee worth holding is per seat, plus result order, which the
+    next test covers.
+    """
     crowd = build_ensemble()   # default four seats
     ask_fn, calls = capturing_ask(CONFIDENT)
     run_crowd(CARD, HEADLINES, crowd, mode="vote", k=0, deliberation=False, ask_fn=ask_fn)
-    seen_models = [c["model"] for c in calls]
-    expected_models = [seat["model"] for seat in config.ENSEMBLE_SEATS]
+    seen_models = sorted(c["model"] for c in calls)
+    expected_models = sorted(seat["model"] for seat in config.ENSEMBLE_SEATS)
     assert seen_models == expected_models
+
+
+def test_run_crowd_returns_votes_in_crowd_order_not_completion_order():
+    """pool.map keeps results in crowd order however the threads race,
+    which is what lets consensus and deliberation line a vote up with
+    the seat that cast it. Each seat answers with a probability keyed
+    to its own model, so a shuffled result would be visible."""
+    crowd = build_ensemble()
+    # Seats can share a model, so the reply is keyed to the seat's LABEL,
+    # which is unique, and read back out of the reason text.
+    probs = {seat["label"]: round(0.11 + 0.07 * i, 2)
+             for i, seat in enumerate(crowd)}
+
+    def keyed_ask(prompt, model=None, max_tokens=400):
+        label = next(l for l in probs if l in prompt)
+        return '{"probability": %.2f, "reason": "keyed to %s"}' % (probs[label], label)
+
+    out = run_crowd(CARD, HEADLINES, crowd, mode="vote", k=0,
+                    deliberation=False, ask_fn=keyed_ask)
+    got = [round(v["probability"], 2) for v in out["votes"]]
+    expected = [probs[a["label"]] for a in crowd]
+    assert got == expected
+    assert [v["agent"] for v in out["votes"]] == [a["label"] for a in crowd]
 
 
 def test_run_crowd_simulate_mode_threads_model_via_agent_futures():

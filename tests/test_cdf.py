@@ -83,3 +83,83 @@ def test_step_cap_scales_with_the_questions_own_bin_count():
     # 0.2 * 200 / 5 = 8: effectively uncapped, so the middle step keeps
     # nearly all the mass instead of being blended flat
     assert max(steps) > 0.5
+
+
+# --- log-scaled questions -------------------------------------------------
+# Metaculus puts the 201 CDF points at log-spaced values when a question
+# carries a zero_point. Building them on a linear grid submits a badly
+# mis-shaped distribution, so these lock the official transform in place.
+# Reference: metac-bot-template main_with_no_framework.py,
+# _cdf_location_to_nominal_location.
+
+LOG_SCALING = {"range_min": 10, "range_max": 1000, "zero_point": 0,
+               "inbound_outcome_count": 200, "continuous_range": None}
+
+
+def _official_nominal(location, range_min, range_max, zero_point):
+    deriv_ratio = (range_max - zero_point) / (range_min - zero_point)
+    return range_min + (range_max - range_min) * (
+        deriv_ratio ** location - 1) / (deriv_ratio - 1)
+
+
+def test_log_scaled_grid_matches_the_official_transform():
+    grid = cdf_mod._grid(LOG_SCALING)
+    assert len(grid) == 201
+    assert grid[0] == 10 and abs(grid[-1] - 1000) < 1e-9
+    for i in (1, 50, 100, 150, 199):
+        expected = _official_nominal(i / 200, 10, 1000, 0)
+        assert abs(grid[i] - expected) < 1e-9, f"edge {i}"
+
+
+def test_log_scaled_grid_is_not_the_linear_one():
+    # The whole point: on a log grid the midpoint sits near 100, not 505.
+    grid = cdf_mod._grid(LOG_SCALING)
+    assert abs(grid[100] - 100) < 1.0
+    assert all(b > a for a, b in zip(grid, grid[1:]))
+
+
+def test_log_scaled_cdf_is_submittable():
+    pcts = {0.05: 20, 0.25: 60, 0.5: 120, 0.75: 300, 0.95: 800}
+    out = cdf_mod.build_cdf(pcts, LOG_SCALING, open_lower=False, open_upper=False)
+    assert cdf_mod.cdf_problems(out, open_lower=False, open_upper=False) == []
+
+
+# --- the pre-submit guard -------------------------------------------------
+# Every constraint the API enforces, checked before we spend a submission
+# on a forecast it will reject. Reference: NumericDistribution's validators.
+
+def test_cdf_problems_passes_a_good_cdf():
+    out = cdf_mod.build_cdf(PCTS, SCALING, open_lower=False, open_upper=False)
+    assert cdf_mod.cdf_problems(out, open_lower=False, open_upper=False) == []
+
+
+def test_cdf_problems_catches_a_step_under_the_api_minimum():
+    flat = [0.0] + [0.5] * 199 + [1.0]      # 199 steps of exactly zero
+    problems = cdf_mod.cdf_problems(flat, open_lower=False, open_upper=False)
+    assert any("5e-05" in p or "minimum" in p for p in problems)
+
+
+def test_cdf_problems_catches_a_spike_over_the_api_cap():
+    spike = [0.0] * 100 + [1.0] * 101
+    problems = cdf_mod.cdf_problems(spike, open_lower=False, open_upper=False)
+    assert any("cap" in p or "0.2" in p for p in problems)
+
+
+def test_cdf_problems_catches_closed_bounds_that_do_not_hold_all_mass():
+    out = cdf_mod.build_cdf(PCTS, SCALING, open_lower=True, open_upper=True)
+    # a genuinely open-bounded CDF, judged against closed bounds, must complain
+    problems = cdf_mod.cdf_problems(out, open_lower=False, open_upper=False)
+    assert problems
+
+
+def test_every_built_cdf_clears_the_minimum_step_after_rounding():
+    # Rounding the final values can shave a step that sat exactly on the
+    # 5e-05 floor, which the API rejects outright.
+    for open_lo in (True, False):
+        for open_hi in (True, False):
+            for pcts in (PCTS, {0.05: 29.9, 0.25: 30.0, 0.5: 30.0,
+                                0.75: 30.0, 0.95: 30.1}):
+                out = cdf_mod.build_cdf(pcts, SCALING, open_lo, open_hi)
+                steps = [b - a for a, b in zip(out, out[1:])]
+                assert min(steps) >= 5e-05, (
+                    f"open_lo={open_lo} open_hi={open_hi} min step {min(steps)}")
