@@ -5,6 +5,7 @@ venv/
 data/*
 !data/ledger.csv
 !data/spend.json
+!data/spend_tournament.json
 !data/tournament_log.csv
 !data/tournament_status.json
 __pycache__/
