@@ -87,6 +87,11 @@ jobs:
           # Once the free tournament credits land, move this to opus or
           # fable. The budget cap in config.py still stops all spending.
           MANYWORLDZ_MODEL: sonnet
+          # Its own spend meter, not the Kalshi loop's. Sharing one file
+          # meant Kalshi's four daily runs could eat this budget, and a
+          # cap hit stops the whole cycle: a hard zero on every question
+          # in an open round.
+          MANYWORLDZ_SPEND_FILE: data/spend_tournament.json
           # Monthly spend allowance (engine/llm.py meters by calendar
           # month). Raise once donated OpenRouter credits arrive.
           ENGINE_BUDGET_USD: "15"
@@ -102,6 +107,6 @@ jobs:
           git config user.name "manyworldz-bot"
           git config user.email "actions@users.noreply.github.com"
           # || true: a cycle with nothing new to answer leaves the file untouched
-          git add data/tournament_log.csv data/tournament_status.json 2>/dev/null || true
+          git add data/tournament_log.csv data/tournament_status.json data/spend_tournament.json 2>/dev/null || true
           git diff --staged --quiet || git commit -m "tournament: cycle log update"
           git push

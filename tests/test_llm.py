@@ -176,3 +176,28 @@ def test_a_corrupt_cache_file_reads_as_a_miss_and_heals(tmp_path, monkeypatch):
     (llm.CACHE_DIR / f"{key}.json").write_text('{"text": "trunca')
     assert llm.ask("broken one", model="haiku") == "fresh"
     assert llm.ask("broken one", model="haiku") == "fresh"   # healed cache hit
+
+
+# --- budget isolation -----------------------------------------------------
+# Found 2026-08-30. The Kalshi loop (manyworldz.yml, four times a day) and
+# the tournament loop (every 5 minutes) both metered into one shared
+# data/spend.json, so Kalshi spending ate the tournament's headroom. Once
+# the month's cap is hit, _is_budget_error stops the WHOLE tournament
+# cycle, which means a hard zero on every question in an open round. The
+# meter path is now overridable so each loop can carry its own.
+
+def test_spend_file_follows_the_environment_when_set(tmp_path, monkeypatch):
+    import importlib
+    target = tmp_path / "spend_tournament.json"
+    monkeypatch.setenv("MANYWORLDZ_SPEND_FILE", str(target))
+    import engine.llm as llm_mod
+    importlib.reload(llm_mod)
+    assert llm_mod.SPEND_FILE == target
+
+
+def test_spend_file_defaults_to_the_shared_meter(tmp_path, monkeypatch):
+    import importlib
+    monkeypatch.delenv("MANYWORLDZ_SPEND_FILE", raising=False)
+    import engine.llm as llm_mod
+    importlib.reload(llm_mod)
+    assert llm_mod.SPEND_FILE.name == "spend.json"

@@ -28,11 +28,14 @@ cd "$(dirname "$0")/.."
 git pull --rebase --quiet origin main || true
 
 if [ -n "${METACULUS_TOKEN:-}" ]; then
+  # Its own spend meter, matching the workflows: the Kalshi loop must not
+  # be able to eat the tournament's budget.
+  export MANYWORLDZ_SPEND_FILE="${MANYWORLDZ_SPEND_FILE:-$PWD/data/spend_tournament.json}"
   .venv/bin/python tournament.py
   code=$?
 
   # Persist the submission log and status receipt like the workflow does.
-  git add data/tournament_log.csv data/tournament_status.json data/spend.json 2>/dev/null || true
+  git add data/tournament_log.csv data/tournament_status.json data/spend_tournament.json 2>/dev/null || true
   if ! git diff --staged --quiet; then
     git -c user.name="manyworldz-bridge" -c user.email="bridge@users.noreply.github.com" \
       commit --quiet -m "tournament: bridge cycle log update"

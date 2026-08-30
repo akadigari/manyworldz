@@ -18,7 +18,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
 
 CACHE_DIR = config.CACHE / "llm"     # saved copies of past answers
-SPEND_FILE = config.DATA / "spend.json"   # running total of what we've spent
+# Running total of what we have spent this month. Overridable so two
+# loops that share this engine do not share one budget: the Kalshi run
+# (four times a day) and the FutureEval tournament (every 5 minutes) both
+# metered into one file, so Kalshi spending ate the tournament's
+# headroom, and hitting the cap stops a whole tournament cycle, which is
+# a hard zero on every open question in the round. Each workflow now
+# points at its own meter.
+SPEND_FILE = Path(os.environ.get("MANYWORLDZ_SPEND_FILE")
+                  or config.DATA / "spend.json")
 
 # Rough price per 1 million "tokens" (roughly, chunks of a word) the model
 # reads (input) or writes (output). Used only to estimate spending so we
