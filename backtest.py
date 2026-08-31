@@ -297,6 +297,39 @@ def main(argv=None) -> int:
                 probes.append({"label": label, "count": 0,
                                "statuses_seen": [f"ERROR {exc}"]})
         report = inspect_report(payload) + "\n\n" + probe_report(probes)
+
+        # The resolution came back None even on posts the site itself
+        # calls resolved, so the outcome is not in the list response.
+        # Dump the real field names, and try the post detail endpoint,
+        # which is the usual place a list view thins out.
+        detail_lines = ["", "WHERE IS THE OUTCOME"]
+        try:
+            raw = metaculus.get_posts_raw(
+                {"statuses": "resolved", "forecast_type": ["binary"],
+                 "limit": 1, "include_description": "true"}, token)
+            posts = raw.get("results", []) or []
+            if posts:
+                post, question = posts[0], (posts[0].get("question") or {})
+                detail_lines += [
+                    f"post id {post.get('id')} keys: {sorted(post.keys())}",
+                    f"question keys: {sorted(question.keys())}",
+                ]
+                import requests
+                url = f"https://www.metaculus.com/api/posts/{post.get('id')}/"
+                resp = requests.get(url, headers=metaculus._headers(token),
+                                    timeout=metaculus.TIMEOUT_S)
+                detail_lines.append(f"detail GET {url} -> {resp.status_code}")
+                if resp.ok:
+                    detail = resp.json()
+                    dq = detail.get("question") or {}
+                    detail_lines += [
+                        f"detail question keys: {sorted(dq.keys())}",
+                        f"detail resolution: {dq.get('resolution')!r}",
+                        f"detail actual_resolve_time: {dq.get('actual_resolve_time')!r}",
+                    ]
+        except Exception as exc:                          # noqa: BLE001
+            detail_lines.append(f"ERROR {exc}")
+        report += "\n".join(detail_lines)
         print(report)
         OUT_DIR.mkdir(parents=True, exist_ok=True)
         (OUT_DIR / "backtest_schema.txt").write_text(
