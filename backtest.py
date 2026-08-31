@@ -302,7 +302,26 @@ def main(argv=None) -> int:
         # calls resolved, so the outcome is not in the list response.
         # Dump the real field names, and try the post detail endpoint,
         # which is the usual place a list view thins out.
-        detail_lines = ["", "WHERE IS THE OUTCOME"]
+        detail_lines = ["", "WHERE IS THE OUTCOME",
+                        "id | type | status | resolved | resolution | "
+                        "res_set_time | community"]
+        try:
+            raw = metaculus.get_posts_raw(
+                {"statuses": "resolved", "forecast_type": ["binary"],
+                 "limit": 10, "include_description": "true"}, token)
+            for post in (raw.get("results") or []):
+                q = post.get("question") or {}
+                agg = ((q.get("aggregations") or {}).get("recency_weighted")
+                       or {}).get("latest") or {}
+                centers = agg.get("centers")
+                detail_lines.append(
+                    f"{post.get('id')} | {q.get('type')} | {q.get('status')} | "
+                    f"{post.get('resolved')!r} | {q.get('resolution')!r} | "
+                    f"{q.get('resolution_set_time')!r} | "
+                    f"{centers[0] if isinstance(centers, list) and centers else None}")
+        except Exception as exc:                          # noqa: BLE001
+            detail_lines.append(f"TABLE ERROR {exc}")
+
         try:
             raw = metaculus.get_posts_raw(
                 {"statuses": "resolved", "forecast_type": ["binary"],
