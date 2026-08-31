@@ -1,4 +1,4 @@
-2026-08-31T01:04:16.162110+00:00
+2026-08-31T01:05:40.067044+00:00
 0 raw posts back
 parsed -> 0 scoreable
 
@@ -6,3 +6,10 @@ minibench/resolved: 0 posts  scoreable: 0
 minibench/closed: 20 posts  statuses: ['closed']  scoreable: 0  resolutions: [None, None, None, None, None, None]
 minibench/any-status: 20 posts  statuses: ['closed']  scoreable: 0  resolutions: [None, None, None, None, None, None]
 any-tournament/resolved: 20 posts  statuses: ['resolved']  scoreable: 0  resolutions: [None, None, None, None, None, None]
+WHERE IS THE OUTCOME
+post id 45163 keys: ['actual_close_time', 'actual_resolve_time', 'author_id', 'author_username', 'coauthors', 'comment_count', 'created_at', 'curation_status', 'curation_status_updated_at', 'edited_at', 'forecasts_count', 'html_metadata_json', 'id', 'is_current_content_translated', 'key_factors', 'nr_forecasters', 'open_time', 'projects', 'published_at', 'question', 'resolved', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'slug', 'status', 'title', 'url_title', 'user_permission', 'vote']
+question keys: ['actual_close_time', 'actual_resolve_time', 'aggregations', 'all_options_ever', 'average_coverage', 'coherence_link_aggregations', 'coherence_links', 'cp_reveal_time', 'created_at', 'default_aggregation_method', 'default_score_type', 'description', 'fine_print', 'group_rank', 'group_variable', 'id', 'inbound_outcome_count', 'include_bots_in_aggregates', 'label', 'open_lower_bound', 'open_time', 'open_upper_bound', 'options', 'options_history', 'options_order', 'possibilities', 'post_id', 'question_weight', 'resolution', 'resolution_criteria', 'resolution_set_time', 'scaling', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'spot_scoring_time', 'status', 'title', 'type', 'unit']
+detail GET https://www.metaculus.com/api/posts/45163/ -> 200
+detail question keys: ['actual_close_time', 'actual_resolve_time', 'aggregations', 'all_options_ever', 'average_coverage', 'coherence_link_aggregations', 'coherence_links', 'cp_reveal_time', 'created_at', 'default_aggregation_method', 'default_score_type', 'description', 'fine_print', 'group_rank', 'group_variable', 'id', 'inbound_outcome_count', 'include_bots_in_aggregates', 'label', 'my_forecasts', 'open_lower_bound', 'open_time', 'open_upper_bound', 'options', 'options_history', 'options_order', 'possibilities', 'post_id', 'question_weight', 'resolution', 'resolution_criteria', 'resolution_set_time', 'scaling', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'spot_scoring_time', 'status', 'title', 'type', 'unit']
+detail resolution: None
+detail actual_resolve_time: '2026-08-12T10:57:02Z'
