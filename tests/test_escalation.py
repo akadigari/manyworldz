@@ -261,3 +261,52 @@ def test_numeric_normally_runs_on_the_configured_voice_not_a_hardcode(monkeypatc
                          submit_fn=lambda qid, prob, token: None,
                          submit_numeric_fn=lambda qid, cdf, token: None)
     assert seen and all(m is None for m in seen)
+
+
+# --- the whole thing through the real machinery ---------------------------
+
+MIXED_FUTURES = ('{"futures": ['
+                 '{"story": "a", "resolves": "YES"},'
+                 '{"story": "b", "resolves": "YES"},'
+                 '{"story": "c", "resolves": "YES"},'
+                 '{"story": "d", "resolves": "NO"},'
+                 '{"story": "e", "resolves": "NO"}]}')
+SURE_FUTURES = ('{"futures": ['
+                '{"story": "a", "resolves": "YES"},'
+                '{"story": "b", "resolves": "YES"},'
+                '{"story": "c", "resolves": "YES"},'
+                '{"story": "d", "resolves": "YES"},'
+                '{"story": "e", "resolves": "YES"}]}')
+
+
+def test_escalation_end_to_end_through_the_real_crowd(monkeypatch, tmp_path):
+    """No mocked ladder: the real crowd runs twice, the cheap tier lands
+    near the coin flip, the strong tier is confident, and the log row
+    records the escalated source."""
+    two_tier(monkeypatch)
+    monkeypatch.setattr(tournament.llm, "spent_usd", lambda: 0.0)
+    models_seen = []
+
+    def ask(prompt, model=None, max_tokens=400):
+        models_seen.append(model)
+        # The cheap tier sees a genuinely mixed world; the strong tier
+        # (model=None resolves to the configured voice) is sure.
+        return MIXED_FUTURES if model == "haiku" else SURE_FUTURES
+
+    submitted = {}
+    log_path = tmp_path / "log.csv"
+    tournament.one_cycle(cards=[dict(BIN_CARD)], ask_fn=ask, token="tok",
+                         log_path=log_path,
+                         submit_fn=lambda qid, prob, token:
+                         submitted.update(qid=qid, prob=prob))
+    assert submitted["qid"] == BIN_CARD["qid"]
+    assert submitted["prob"] > 0.6          # the strong answer, not 0.6-ish
+    assert "haiku" in models_seen and None in models_seen
+
+    import csv as _csv
+    rows = list(_csv.DictReader(log_path.open()))
+    assert rows[0]["source"] == "crowd+esc"
+
+    import json as _json
+    status = _json.loads((tmp_path / "tournament_status.json").read_text())
+    assert status["escalated_this_cycle"] == 1
