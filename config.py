@@ -140,6 +140,29 @@ TOURNAMENT_ARM_BY = _dt.fromisoformat(
 # game here: an unanswered question scores zero, and prize share goes with
 # the square of the total, so skipping questions hurts twice. The budget
 # cap in ENGINE_BUDGET_USD is still the real brake on spending.
+# ---- two-tier compute allocation + budget pacing (tournament.py) ----
+# Peer score is won and lost on the contested questions, so the crowd
+# runs on a cheap model first and the strong voice (MANYWORLDZ_MODEL)
+# is paid for only where the cheap crowd disagreed with itself or
+# landed near the coin flip. Uncontested questions cost about a third
+# as much, and the savings concentrate on the questions that decide
+# rank instead of being spread evenly over the easy ones.
+TOURNAMENT_CHEAP_MODEL = _os.environ.get("MANYWORLDZ_CHEAP_MODEL", "haiku")
+# A methods crowd that basically agrees sits under ~0.05 pstdev of its
+# votes; a genuine split (votes at 0.3 and 0.7) reads ~0.15+. The line:
+ESCALATE_SPREAD = 0.12
+# ...and anything inside 0.5 +/- this band is a close call worth the
+# strong model even when the cheap crowd agrees with itself, because
+# close calls are exactly where peer score is decided.
+ESCALATE_CLOSE_BAND = 0.15
+# The last slice of the monthly budget is a coverage floor. Once spend
+# crosses (1 - this) * ENGINE_BUDGET_USD the cycle stops escalating and
+# answers everything on the cheap tier: a cheap answer scores infinitely
+# better than the hard zero of the budget wall. At $15 conservation
+# starts at $12, and the reserved $3 buys roughly 3x the questions it
+# would have bought at the strong tier's prices.
+BUDGET_RESERVE_FRACTION = 0.20
+
 TOURNAMENT_QUESTIONS_PER_RUN = 25
 
 # How far short of 0% and 100% every submitted binary probability gets

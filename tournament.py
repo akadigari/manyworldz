@@ -353,7 +353,7 @@ def _answer_mc(card: dict, headlines: list[str], ask) -> dict:
                                horizon=_horizon_note(card))
     probs = None
     try:
-        parsed = extract_json(ask(prompt, model="sonnet"))
+        parsed = extract_json(ask(prompt, model=None))
         if isinstance(parsed, dict):
             got = {opt: float(parsed[opt]) for opt in options if opt in parsed}
             if len(got) == len(options) and all(v >= 0 for v in got.values())                     and sum(got.values()) > 0:
@@ -408,7 +408,7 @@ def _answer_numeric(card: dict, headlines: list[str], ask) -> dict:
                                     horizon=_horizon_note(card))
     percentiles, source = None, "numeric"
     try:
-        percentiles = cdf_mod.percentiles_from_json(ask(prompt, model="sonnet"))
+        percentiles = cdf_mod.percentiles_from_json(ask(prompt, model=None))
     except Exception as exc:
         if _is_budget_error(exc):
             raise
@@ -460,7 +460,7 @@ def _run_single(market_card: dict, headlines: list[str], crowd: list[dict], ask)
                      deliberation=False, ask_fn=ask)
 
 
-def _answer_one(card: dict, headlines: list[str], crowd: list[dict], ask) -> dict:
+def _ladder(card: dict, headlines: list[str], crowd: list[dict], ask) -> dict:
     """Get an answer for one question, degrading instead of skipping
     whenever something actually breaks.
 
@@ -480,10 +480,12 @@ def _answer_one(card: dict, headlines: list[str], crowd: list[dict], ask) -> dic
     after an actual failure.
 
     Returns {"prob": float | None, "source": "crowd" | "single" |
-    "fallback" | None, "skipped": int}. A budget RuntimeError is never
-    caught here: it always propagates straight out, and out of
-    one_cycle, so the cycle stops cleanly instead of fallback-spamming
-    every question still left in the batch.
+    "fallback" | None, "skipped": int, "spread": float | None}. The
+    spread is the crowd's own disagreement (pstdev of the votes), which
+    _answer_one's escalation policy reads to decide whether the strong
+    model is worth paying for. A budget RuntimeError is never caught
+    here: it always propagates to the caller, which decides whether a
+    cheap answer is already in hand.
     """
     market_card = {"ticker": f"META-{card['qid']}",
                    "question": _question_text(card), "mid": None}
@@ -501,8 +503,9 @@ def _answer_one(card: dict, headlines: list[str], crowd: list[dict], ask) -> dic
 
     if result["votes"]:
         return {"prob": result["probability"], "source": "crowd",
-               "skipped": result["skipped"]}
-    return {"prob": None, "source": None, "skipped": result["skipped"]}
+               "skipped": result["skipped"], "spread": result.get("spread")}
+    return {"prob": None, "source": None, "skipped": result["skipped"],
+           "spread": None}
 
 
 def _answer_with_single_or_fallback(card: dict, headlines: list[str],
@@ -521,14 +524,109 @@ def _answer_with_single_or_fallback(card: dict, headlines: list[str],
 
     if result["votes"]:
         return {"prob": result["probability"], "source": "single",
-               "skipped": result["skipped"]}
+               "skipped": result["skipped"], "spread": result.get("spread")}
 
     print(f'  LAST RESORT: no usable answer from the crowd or a single run '
           f'on qid {card["qid"]} | {card["question"][:60]}, submitting the '
           f'documented fallback probability {LAST_RESORT_PROBABILITY} '
           f'(source=fallback, never silent)')
     return {"prob": LAST_RESORT_PROBABILITY, "source": "fallback",
-           "skipped": result["skipped"]}
+           "skipped": result["skipped"], "spread": None}
+
+
+def _cheap_ask(ask):
+    """Wrap an ask so unpinned calls run on the cheap tier.
+
+    Only model=None is overridden: a seat that explicitly pins its own
+    model (the ensemble crowd does) keeps it, so the wrapper changes
+    which voice answers by default without flattening a deliberately
+    diverse crowd.
+    """
+    def _wrapped(prompt, model=None, **kw):
+        cheap = config.TOURNAMENT_CHEAP_MODEL
+        return ask(prompt, model=cheap if model is None else model, **kw)
+    return _wrapped
+
+
+def _is_contested(prob, spread) -> bool:
+    """Whether the cheap crowd's answer deserves the strong model.
+
+    Three signals, any one is enough: the crowd could not produce a
+    number at all (a stronger model may parse where a weak one wrote
+    garbage), the answer sits near the coin flip (where peer score is
+    actually decided), or the votes genuinely disagreed with each other
+    (the spread). A missing spread reads as agreement, not as a crash.
+    """
+    if prob is None:
+        return True
+    if abs(prob - 0.5) < config.ESCALATE_CLOSE_BAND:
+        return True
+    return (spread or 0.0) >= config.ESCALATE_SPREAD
+
+
+def _conserving(spent: float | None = None, budget: float | None = None) -> bool:
+    """Whether the month's budget has entered its reserved floor.
+
+    Past the line, escalation stops and everything runs on the cheap
+    tier until the month resets: the reserve exists so late rounds get
+    cheap answers instead of the hard zero of the budget wall.
+    """
+    budget = config.ENGINE_BUDGET_USD if budget is None else budget
+    spent = llm.spent_usd() if spent is None else spent
+    if budget <= 0:
+        return False
+    return spent >= budget * (1 - config.BUDGET_RESERVE_FRACTION)
+
+
+def _answer_one(card: dict, headlines: list[str], crowd: list[dict], ask,
+                conserving: bool = False) -> dict:
+    """One binary answer under the two-tier compute policy.
+
+    The full ladder runs on the cheap tier first. If the cheap crowd is
+    confident and agreed, that answer stands and the strong model is
+    never paid for. If the answer is contested (see _is_contested), the
+    ladder runs again on the configured strong voice and that result is
+    adopted, unless the second pass produced nothing better than a
+    fallback, in which case the cheap answer that is already in hand
+    stands. In conserving mode there is no second pass at all.
+
+    A budget error on the FIRST pass propagates and stops the cycle,
+    exactly as before. A budget error during the escalation attempt is
+    different: a real cheap answer is already in hand, and losing it
+    because the refinement hit the cap would turn one wall into two, so
+    the cheap answer is returned instead.
+
+    Returns the ladder dict plus "escalated": bool, and "+esc" on the
+    source when the strong pass produced the submitted answer, so the
+    log records which tier every forecast came from.
+    """
+    tiers_differ = (llm.resolve_model(config.ENGINE_MODEL)
+                    != llm.resolve_model(config.TOURNAMENT_CHEAP_MODEL))
+    if not tiers_differ:
+        # One tier configured (the local default): plain single pass.
+        result = _ladder(card, headlines, crowd, ask)
+        return {**result, "escalated": False}
+
+    first = _ladder(card, headlines, crowd, _cheap_ask(ask))
+    if conserving or not _is_contested(first.get("prob"), first.get("spread")):
+        return {**first, "escalated": False}
+
+    print(f'  escalating qid {card["qid"]}: cheap tier said '
+          f'{first.get("prob")} (spread {first.get("spread")}), '
+          f'paying for {config.ENGINE_MODEL}')
+    try:
+        second = _ladder(card, headlines, crowd, ask)
+    except Exception as exc:
+        if _is_budget_error(exc):
+            print(f'  escalation hit the budget cap on qid {card["qid"]}; '
+                  f'keeping the cheap answer')
+            return {**first, "escalated": False}
+        raise
+    if second.get("prob") is None or second.get("source") == "fallback":
+        # The expensive pass did no better than a shrug; the cheap
+        # answer is the honest one.
+        return {**first, "escalated": False}
+    return {**second, "source": f'{second["source"]}+esc', "escalated": True}
 
 
 def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
@@ -581,7 +679,19 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
     targets = pending[:config.TOURNAMENT_QUESTIONS_PER_RUN]
 
     crowd = build_crowd_for()
-    counts = {"answered": 0, "submitted": 0, "fallbacks": 0}
+    counts = {"answered": 0, "submitted": 0, "fallbacks": 0, "escalated": 0}
+
+    # Checked once per cycle: crossing the line mid-cycle overshoots by
+    # at most one cycle's spend, which the 20 percent reserve absorbs.
+    conserving = _conserving()
+    if conserving:
+        print(f'budget conservation: ${llm.spent_usd():.2f} of '
+              f'${config.ENGINE_BUDGET_USD:.2f} spent this month; '
+              f'cheap tier only, no escalation')
+    # The direct-call paths (MC, numeric) have no spread signal to
+    # escalate on; they run the configured voice normally and drop to
+    # the cheap tier under conservation.
+    direct_ask = _cheap_ask(ask) if conserving else ask
 
     def _comment(card: dict, text: str) -> None:
         post_id = card.get("post_id")
@@ -609,7 +719,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         if qtype == "multiple_choice":
             try:
                 outcome = _with_deadline(
-                    lambda: _answer_mc(card, headlines, ask),
+                    lambda: _answer_mc(card, headlines, direct_ask),
                     config.QUESTION_DEADLINE_S)
             except Exception as exc:
                 if _is_budget_error(exc):
@@ -635,7 +745,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         if qtype in ("numeric", "discrete"):
             try:
                 outcome = _with_deadline(
-                    lambda: _answer_numeric(card, headlines, ask),
+                    lambda: _answer_numeric(card, headlines, direct_ask),
                     config.QUESTION_DEADLINE_S)
             except Exception as exc:
                 if _is_budget_error(exc):
@@ -658,7 +768,10 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
                   f'{card["qid"]} | {card["question"][:60]}')
             return
 
-        outcome = _answer_one(card, headlines, crowd, ask)
+        outcome = _answer_one(card, headlines, crowd, ask,
+                              conserving=conserving)
+        if outcome.get("escalated"):
+            counts["escalated"] += 1
         if outcome["prob"] is None:
             print(f'  no quorum (all {outcome["skipped"]} answers unusable), '
                   f'skipping qid {card["qid"]} | {card["question"][:60]}')
@@ -712,6 +825,8 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         "answered_all_time": all_time_answered,
         "answered_this_cycle": counts["answered"],
         "fallbacks_this_cycle": counts["fallbacks"],
+        "escalated_this_cycle": counts["escalated"],
+        "conserving": conserving,
     }))
     print(f'tournament cycle done: {len(cards)} open, '
          f'{counts["answered"]} answered this cycle, '
