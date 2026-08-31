@@ -1,4 +1,4 @@
-2026-08-31T01:05:40.067044+00:00
+2026-08-31T01:06:56.761762+00:00
 0 raw posts back
 parsed -> 0 scoreable
 
@@ -7,6 +7,17 @@ minibench/closed: 20 posts  statuses: ['closed']  scoreable: 0  resolutions: [No
 minibench/any-status: 20 posts  statuses: ['closed']  scoreable: 0  resolutions: [None, None, None, None, None, None]
 any-tournament/resolved: 20 posts  statuses: ['resolved']  scoreable: 0  resolutions: [None, None, None, None, None, None]
 WHERE IS THE OUTCOME
+id | type | status | resolved | resolution | res_set_time | community
+45163 | binary | resolved | True | None | '2026-08-23T11:20:56.700284Z' | None
+45162 | binary | resolved | True | None | '2026-08-23T11:21:05.044608Z' | None
+45161 | binary | resolved | True | None | '2026-08-25T11:13:34.856911Z' | None
+45160 | binary | resolved | True | None | '2026-08-22T11:28:13.121950Z' | None
+45159 | binary | resolved | True | None | '2026-08-23T11:21:12.918986Z' | None
+45157 | binary | resolved | True | None | '2026-08-22T11:28:32.355113Z' | None
+45156 | binary | resolved | True | None | '2026-08-22T11:28:41.105944Z' | None
+45154 | binary | resolved | True | None | '2026-08-22T11:29:00.332630Z' | None
+45153 | binary | resolved | True | None | '2026-08-22T11:29:08.940646Z' | None
+45151 | binary | resolved | True | None | '2026-08-22T11:29:25.508640Z' | None
 post id 45163 keys: ['actual_close_time', 'actual_resolve_time', 'author_id', 'author_username', 'coauthors', 'comment_count', 'created_at', 'curation_status', 'curation_status_updated_at', 'edited_at', 'forecasts_count', 'html_metadata_json', 'id', 'is_current_content_translated', 'key_factors', 'nr_forecasters', 'open_time', 'projects', 'published_at', 'question', 'resolved', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'slug', 'status', 'title', 'url_title', 'user_permission', 'vote']
 question keys: ['actual_close_time', 'actual_resolve_time', 'aggregations', 'all_options_ever', 'average_coverage', 'coherence_link_aggregations', 'coherence_links', 'cp_reveal_time', 'created_at', 'default_aggregation_method', 'default_score_type', 'description', 'fine_print', 'group_rank', 'group_variable', 'id', 'inbound_outcome_count', 'include_bots_in_aggregates', 'label', 'open_lower_bound', 'open_time', 'open_upper_bound', 'options', 'options_history', 'options_order', 'possibilities', 'post_id', 'question_weight', 'resolution', 'resolution_criteria', 'resolution_set_time', 'scaling', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'spot_scoring_time', 'status', 'title', 'type', 'unit']
 detail GET https://www.metaculus.com/api/posts/45163/ -> 200
