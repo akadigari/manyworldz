@@ -31,6 +31,11 @@ if [ -n "${METACULUS_TOKEN:-}" ]; then
   # Its own spend meter, matching the workflows: the Kalshi loop must not
   # be able to eat the tournament's budget.
   export MANYWORLDZ_SPEND_FILE="${MANYWORLDZ_SPEND_FILE:-$PWD/data/spend_tournament.json}"
+  # Same defaults as the workflows, so the two-tier policy and the
+  # budget floor behave identically wherever the cycle runs. The env
+  # file can still override both.
+  export MANYWORLDZ_MODEL="${MANYWORLDZ_MODEL:-sonnet}"
+  export ENGINE_BUDGET_USD="${ENGINE_BUDGET_USD:-15}"
   .venv/bin/python tournament.py
   code=$?
 

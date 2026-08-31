@@ -217,7 +217,8 @@ def test_conserving_cycle_answers_numeric_on_the_cheap_model(monkeypatch, tmp_pa
     tournament.one_cycle(cards=[num_card], ask_fn=ask, token="tok",
                          log_path=tmp_path / "log.csv",
                          submit_fn=lambda qid, prob, token: None,
-                         submit_numeric_fn=lambda qid, cdf, token: None)
+                         submit_numeric_fn=lambda qid, cdf, token: None,
+                         comment_fn=lambda post_id, text, token: None)
     assert seen and all(m == "haiku" for m in seen)
 
 
@@ -259,7 +260,8 @@ def test_numeric_normally_runs_on_the_configured_voice_not_a_hardcode(monkeypatc
     tournament.one_cycle(cards=[card], ask_fn=ask, token="tok",
                          log_path=tmp_path / "log.csv",
                          submit_fn=lambda qid, prob, token: None,
-                         submit_numeric_fn=lambda qid, cdf, token: None)
+                         submit_numeric_fn=lambda qid, cdf, token: None,
+                         comment_fn=lambda post_id, text, token: None)
     assert seen and all(m is None for m in seen)
 
 
@@ -310,3 +312,119 @@ def test_escalation_end_to_end_through_the_real_crowd(monkeypatch, tmp_path):
     import json as _json
     status = _json.loads((tmp_path / "tournament_status.json").read_text())
     assert status["escalated_this_cycle"] == 1
+
+
+# --- fixes from the 2026-08-31 adversarial review -------------------------
+
+def test_a_cheap_fallback_is_never_escalated(monkeypatch):
+    """A fallback means the crowd AND the single run both raised: the
+    environment is broken, and burning the strong pass's deadline
+    against the same broken world produced nothing but wasted minutes.
+    The documented 0.5 goes out, exactly like the old code."""
+    two_tier(monkeypatch)
+    asks = []
+    monkeypatch.setattr(tournament, "_ladder", scripted_ladder(
+        [{"prob": 0.5, "source": "fallback", "skipped": 0, "spread": None}], asks))
+    out = tournament._answer_one(BIN_CARD, [], [],
+                                 lambda p, model=None, max_tokens=400: "x")
+    assert out["prob"] == 0.5 and out["source"] == "fallback"
+    assert out["escalated"] is False
+    assert len(asks) == 1
+
+
+def test_a_degraded_single_vote_answer_is_escalated(monkeypatch):
+    """One surviving haiku vote reports spread 0.0, which is an artifact
+    of the vote count, not agreement. The old code gave this question
+    the full strong crowd; the policy must too."""
+    two_tier(monkeypatch)
+    asks = []
+    monkeypatch.setattr(tournament, "_ladder", scripted_ladder(
+        [{"prob": 0.8, "source": "single", "skipped": 0, "spread": 0.0},
+         {"prob": 0.7, "source": "crowd", "skipped": 0, "spread": 0.04}], asks))
+    out = tournament._answer_one(BIN_CARD, [], [],
+                                 lambda p, model=None, max_tokens=400: "x")
+    assert out["prob"] == 0.7 and out["source"] == "crowd+esc"
+    assert len(asks) == 2
+
+
+def test_no_quorum_then_a_strong_fallback_still_submits_a_number(monkeypatch):
+    """The old single-pass code submitted the documented 0.5 here; the
+    first version of the policy skipped the question, a hard zero."""
+    two_tier(monkeypatch)
+    asks = []
+    monkeypatch.setattr(tournament, "_ladder", scripted_ladder(
+        [{"prob": None, "source": None, "skipped": 8, "spread": None},
+         {"prob": 0.5, "source": "fallback", "skipped": 0, "spread": None}], asks))
+    out = tournament._answer_one(BIN_CARD, [], [],
+                                 lambda p, model=None, max_tokens=400: "x")
+    assert out["prob"] == 0.5 and out["source"] == "fallback"
+
+
+def test_a_timed_out_escalation_keeps_the_cheap_answer(monkeypatch):
+    two_tier(monkeypatch)
+    asks = []
+    monkeypatch.setattr(tournament, "_ladder", scripted_ladder(
+        [{"prob": 0.52, "source": "crowd", "skipped": 0, "spread": 0.20},
+         TimeoutError("no answer within 300s")], asks))
+    out = tournament._answer_one(BIN_CARD, [], [],
+                                 lambda p, model=None, max_tokens=400: "x")
+    assert out["prob"] == 0.52 and out["source"] == "crowd"
+    assert out["escalated"] is False
+
+
+def test_ensemble_crowd_mode_disables_escalation(monkeypatch):
+    """Ensemble seats pin their own models, so a second pass replays the
+    identical prompts out of the disk cache and the +esc tag would be a
+    lie. Escalation is a methods-crowd feature."""
+    two_tier(monkeypatch)
+    monkeypatch.setattr(config, "CROWD_MODE", "ensemble")
+    asks = []
+    monkeypatch.setattr(tournament, "_ladder", scripted_ladder(
+        [{"prob": 0.5, "source": "crowd", "skipped": 0, "spread": 0.30}], asks))
+    seen = []
+    tournament._answer_one(BIN_CARD, [], [],
+                           lambda p, model=None, max_tokens=400: seen.append(model) or "x")
+    assert len(asks) == 1
+    asks[0]("probe")
+    assert seen == [None]           # plain ask, no cheap wrapper
+
+
+def test_conservation_is_rechecked_per_question_not_per_cycle(monkeypatch, tmp_path):
+    """A 25-question cycle can spend more than the whole reserve, so a
+    single check at cycle start can blow through the wall. The check now
+    runs before every question and bounds the overshoot to one."""
+    two_tier(monkeypatch)
+    spend = iter([11.0, 13.0])   # one meter read per question
+    monkeypatch.setattr(tournament.llm, "spent_usd",
+                        lambda: next(spend, 13.0))
+    monkeypatch.setattr(config, "ENGINE_BUDGET_USD", 15.0)
+    seen_conserving = []
+    monkeypatch.setattr(tournament, "_answer_one",
+                        lambda card, headlines, crowd, ask, conserving=False:
+                        seen_conserving.append(conserving) or
+                        {"prob": 0.7, "source": "crowd", "skipped": 0,
+                         "escalated": False})
+    two_cards = [dict(BIN_CARD), dict(BIN_CARD, qid=800009,
+                                      url="https://www.metaculus.com/questions/800009/")]
+    tournament.one_cycle(cards=two_cards,
+                         ask_fn=lambda p, model=None, max_tokens=400: "x",
+                         token="tok", log_path=tmp_path / "log.csv",
+                         submit_fn=lambda qid, prob, token: None)
+    assert seen_conserving == [False, True]
+
+
+def test_an_expired_time_budget_stops_escalation_for_the_rest_of_the_cycle(monkeypatch, tmp_path):
+    two_tier(monkeypatch)
+    monkeypatch.setattr(tournament.llm, "spent_usd", lambda: 0.0)
+    monkeypatch.setattr(config, "ESCALATE_TIME_BUDGET_S", -1.0)
+    seen_conserving = []
+    monkeypatch.setattr(tournament, "_answer_one",
+                        lambda card, headlines, crowd, ask, conserving=False:
+                        seen_conserving.append(conserving) or
+                        {"prob": 0.7, "source": "crowd", "skipped": 0,
+                         "escalated": False})
+    tournament.one_cycle(cards=[dict(BIN_CARD)],
+                         ask_fn=lambda p, model=None, max_tokens=400: "x",
+                         token="tok", log_path=tmp_path / "log.csv",
+                         submit_fn=lambda qid, prob, token: None)
+    assert seen_conserving == [True]

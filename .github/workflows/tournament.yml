@@ -65,7 +65,10 @@ jobs:
     runs-on: ubuntu-latest
     # Shorter than the 20-minute cadence: with cancel-in-progress off,
     # a hung run would otherwise queue every later cron behind it.
-    timeout-minutes: 18
+    # 30, not 18: escalation can double a contested question's wall
+    # time. The shared "tournament" concurrency group serializes runs,
+    # so a long one only delays the next; dedupe makes that safe.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -82,10 +85,12 @@ jobs:
           # Metaculus publishes its own finding on this: "having a SOTA
           # model matters more than bot infrastructure." Their leaderboard
           # backs it up (haiku scores about 3, sonnet about 9, the top
-          # models score 15 to 20). So the tournament runs a stronger
-          # voice than the Kalshi loop does, even though it costs more.
-          # Once the free tournament credits land, move this to opus or
-          # fable. The budget cap in config.py still stops all spending.
+          # models score 15 to 20). Since 2026-08-31 this names the
+          # STRONG tier of a two-tier policy: the crowd runs on
+          # MANYWORLDZ_CHEAP_MODEL (haiku) first and this voice is paid
+          # for only on contested questions (see config.py's escalation
+          # block). Once the free tournament credits land, move this to
+          # opus or fable. The budget cap still stops all spending.
           MANYWORLDZ_MODEL: sonnet
           # Its own spend meter, not the Kalshi loop's. Sharing one file
           # meant Kalshi's four daily runs could eat this budget, and a
@@ -103,6 +108,10 @@ jobs:
         run: python3 tournament.py
 
       - name: save the submission log back to the repo
+        # always(): a budget-cap exit or a timeout kill must not discard
+        # the log rows of forecasts already submitted or the spend the
+        # meter already recorded.
+        if: always()
         run: |
           git config user.name "manyworldz-bot"
           git config user.email "actions@users.noreply.github.com"

@@ -162,6 +162,13 @@ ESCALATE_CLOSE_BAND = 0.15
 # starts at $12, and the reserved $3 buys roughly 3x the questions it
 # would have bought at the strong tier's prices.
 BUDGET_RESERVE_FRACTION = 0.20
+# Wall-clock allowance for escalations inside one cycle. The heartbeat
+# job dies at its workflow timeout, and a killed job loses every log
+# row and meter update the cycle wrote, so escalation (the optional
+# refinement) gives way first: past this many seconds into a cycle,
+# contested questions keep their cheap answers. Cheap passes and the
+# direct-call paths are not affected; coverage never waits on polish.
+ESCALATE_TIME_BUDGET_S = 540
 
 TOURNAMENT_QUESTIONS_PER_RUN = 25
 
