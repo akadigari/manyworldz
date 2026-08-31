@@ -1,4 +1,4 @@
-2026-08-31T01:08:13.953476+00:00
+2026-08-31T01:10:11.589056+00:00
 0 raw posts back
 parsed -> 0 scoreable
 
@@ -18,6 +18,12 @@ id | type | status | resolved | resolution | res_set_time | community
 45154 | binary | resolved | True | None | '2026-08-22T11:29:00.332630Z' | perm='forecaster' | None
 45153 | binary | resolved | True | None | '2026-08-22T11:29:08.940646Z' | perm='forecaster' | None
 45151 | binary | resolved | True | None | '2026-08-22T11:29:25.508640Z' | perm='forecaster' | None
+CONTROL: old questions, oldest resolve first
+45163 | None | '2026-08-12T10:57:02Z' | Will the 2026 Atlantic hurricane season 
+45162 | None | '2026-08-22T23:59:00Z' | Will the National Hurricane Center name 
+45161 | None | '2026-08-25T00:00:00Z' | Will a commercial passenger flight suffe
+45160 | None | '2026-08-21T21:59:00Z' | Will transfers of the July 2026 wave of 
+45159 | None | '2026-08-22T15:00:00Z' | Will a named tropical cyclone be active 
 post id 45163 keys: ['actual_close_time', 'actual_resolve_time', 'author_id', 'author_username', 'coauthors', 'comment_count', 'created_at', 'curation_status', 'curation_status_updated_at', 'edited_at', 'forecasts_count', 'html_metadata_json', 'id', 'is_current_content_translated', 'key_factors', 'nr_forecasters', 'open_time', 'projects', 'published_at', 'question', 'resolved', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'slug', 'status', 'title', 'url_title', 'user_permission', 'vote']
 question keys: ['actual_close_time', 'actual_resolve_time', 'aggregations', 'all_options_ever', 'average_coverage', 'coherence_link_aggregations', 'coherence_links', 'cp_reveal_time', 'created_at', 'default_aggregation_method', 'default_score_type', 'description', 'fine_print', 'group_rank', 'group_variable', 'id', 'inbound_outcome_count', 'include_bots_in_aggregates', 'label', 'open_lower_bound', 'open_time', 'open_upper_bound', 'options', 'options_history', 'options_order', 'possibilities', 'post_id', 'question_weight', 'resolution', 'resolution_criteria', 'resolution_set_time', 'scaling', 'scheduled_close_time', 'scheduled_resolve_time', 'short_title', 'spot_scoring_time', 'status', 'title', 'type', 'unit']
 detail GET https://www.metaculus.com/api/posts/45163/ -> 200
