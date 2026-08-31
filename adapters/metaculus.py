@@ -350,3 +350,117 @@ if __name__ == "__main__":
           f"{config.METACULUS_TOURNAMENT!r}; first 5:")
     for c in open_qs[:5]:
         print(f"  {c['qid']:>8}  {c['question'][:60]}  closes {c['close_time']}")
+
+
+# ---- resolved questions, for backtesting -------------------------------
+# The tournament bot has no track record: MiniBench had nothing open
+# between arming it and now, so every tuning knob (crowd size,
+# deliberation, the clip) is set on judgment alone. Metaculus keeps the
+# questions it has already resolved, with the outcome and the community
+# forecast attached, which is the only way to get evidence without
+# waiting a season for one.
+
+def _binary_outcome(question: dict) -> float | None:
+    """1.0 for yes, 0.0 for no, None for anything unscoreable.
+
+    Annulled and ambiguous resolutions are not outcomes; scoring against
+    them would be inventing a result Metaculus explicitly refused to
+    declare.
+    """
+    if question.get("type") != "binary":
+        return None
+    resolution = (question.get("resolution") or "").strip().lower()
+    if resolution == "yes":
+        return 1.0
+    if resolution == "no":
+        return 0.0
+    return None
+
+
+def _community_forecast(question: dict) -> float | None:
+    """The crowd's last standing number, or None if it is not published.
+
+    None is recorded honestly rather than filled in: a missing community
+    forecast means that one question cannot contribute to the "did we
+    beat the crowd" comparison, not that the crowd said 50 percent.
+    """
+    aggregations = question.get("aggregations")
+    if not isinstance(aggregations, dict):
+        return None
+    latest = (aggregations.get("recency_weighted") or {}).get("latest")
+    if not isinstance(latest, dict):
+        return None
+    centers = latest.get("centers")
+    if isinstance(centers, list) and centers:
+        try:
+            return float(centers[0])
+        except (TypeError, ValueError):
+            return None
+    return None
+
+
+def parse_resolved(payload: dict) -> list[dict]:
+    """Resolved binary questions as scoreable cards.
+
+    Same card shape parse_questions produces, plus "outcome" (1.0/0.0),
+    "community" (float or None) and "resolved_at". Anything without a
+    clean yes/no outcome is dropped, not guessed at.
+    """
+    base = {card["qid"]: card for card in parse_questions(payload)}
+    scoreable = []
+    for post in payload.get("results", []) or []:
+        if not isinstance(post, dict):
+            continue
+        question = post.get("question")
+        if not isinstance(question, dict):
+            continue
+        card = base.get(question.get("id"))
+        if card is None:
+            continue
+        outcome = _binary_outcome(question)
+        if outcome is None:
+            continue
+        scoreable.append({**card, "outcome": outcome,
+                          "community": _community_forecast(question),
+                          "resolved_at": question.get("actual_resolve_time")})
+    return scoreable
+
+
+def _get_resolved_posts(tournament, token: str, offset: int) -> dict:
+    """Read side for resolved questions. Split out like _get_posts so
+    tests can replace it."""
+    import requests
+    params = {
+        "limit": PAGE_SIZE, "offset": offset, "order_by": "-resolve_time",
+        "forecast_type": ["binary"],
+        "tournaments": [tournament],
+        "statuses": "resolved", "include_description": "true",
+    }
+    resp = requests.get(POSTS_URL, headers=_headers(token), params=params,
+                        timeout=TIMEOUT_S)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def fetch_resolved_questions(tournament, token: str, get_fn=None,
+                             want: int = 50) -> list[dict]:
+    """Resolved binary questions from one tournament, newest first.
+
+    Stops as soon as `want` scoreable cards are in hand: every extra
+    page is a request nobody needs, and the newest resolutions are the
+    ones most likely to sit after the model cutoff anyway.
+    """
+    get_fn = get_fn or _get_resolved_posts
+    cards: list[dict] = []
+    offset = 0
+    for _ in range(MAX_PAGES):
+        payload = _retry_once(lambda: get_fn(tournament, token, offset),
+                              what="fetch resolved questions from Metaculus")
+        if not isinstance(payload, dict):
+            break
+        cards.extend(parse_resolved(payload))
+        results = payload.get("results", []) or []
+        if len(cards) >= want or len(results) < PAGE_SIZE:
+            break
+        offset += PAGE_SIZE
+    return cards[:want]

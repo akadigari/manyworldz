@@ -1,0 +1,97 @@
+# Score the bot against questions Metaculus has already resolved.
+#
+# Nothing here runs on a schedule and nothing runs by accident: the bot
+# has a $15 monthly budget and a live tournament to cover, so a backtest
+# only happens when a person asks for one. Two ways to ask:
+#
+#   1. The Actions tab -> tournament-backtest -> "Run workflow", which
+#      lets you set the size and tick dry run first.
+#   2. From a terminal, no gh CLI needed:
+#        git push origin HEAD:refs/heads/backtest-run
+#      which fires it with the defaults below.
+#
+# It meters into data/spend_backtest.json, NOT the tournament's meter, so
+# a curiosity run can never silence a live MiniBench round by exhausting
+# the budget mid-round.
+#
+# On leakage, which decides whether any of this means anything: the
+# harness never calls the news layer (AskNews searches current news and
+# would hand the model the answer to a question that resolved last week),
+# and it only scores questions resolved after config.MODEL_CUTOFF_DATE.
+# Both are enforced in backtest.py and covered by tests. Read the module
+# docstring before trusting any number that comes out of here.
+
+name: tournament-backtest
+
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "how many resolved questions to score"
+        required: false
+        default: "25"
+      tournament:
+        description: "tournament slug or id"
+        required: false
+        default: "minibench"
+      dry_run:
+        description: "plan it and spend nothing"
+        type: boolean
+        required: false
+        default: false
+      inspect:
+        description: "one API call, print the raw shape, spend nothing"
+        type: boolean
+        required: false
+        default: false
+  push:
+    branches: [backtest-run]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tournament-backtest
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45      # a 25-question crowd run is slower than a cycle
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: score the bot against resolved questions
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          MANYWORLDZ_MODEL: sonnet
+          # Its own meter. See the note at the top.
+          MANYWORLDZ_SPEND_FILE: data/spend_backtest.json
+          ENGINE_BUDGET_USD: "5"
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL_MAP: ${{ vars.OPENROUTER_MODEL_MAP }}
+        run: |
+          flags=""
+          if [ "${{ inputs.dry_run }}" = "true" ]; then flags="$flags --dry-run"; fi
+          if [ "${{ inputs.inspect }}" = "true" ]; then flags="$flags --inspect"; fi
+          python3 backtest.py \
+            --tournament "${{ inputs.tournament || 'minibench' }}" \
+            --limit "${{ inputs.limit || 25 }}" $flags
+
+      - name: save the scored table back to the repo
+        run: |
+          git config user.name "manyworldz-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/backtest_*.csv data/backtest_*.json data/spend_backtest.json 2>/dev/null || true
+          git diff --staged --quiet && exit 0
+          git commit -m "backtest: scored table"
+          git push origin HEAD:main || { git pull --rebase origin main && git push origin HEAD:main; }

@@ -6,6 +6,9 @@ data/*
 !data/ledger.csv
 !data/spend.json
 !data/spend_tournament.json
+!data/spend_backtest.json
+!data/backtest_*.csv
+!data/backtest_*.json
 !data/tournament_log.csv
 !data/tournament_status.json
 __pycache__/
