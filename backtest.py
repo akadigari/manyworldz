@@ -211,6 +211,24 @@ def inspect_report(payload: dict) -> str:
     return "\n".join(lines)
 
 
+def probe_report(probes: list[dict]) -> str:
+    """What each parameter shape actually returned.
+
+    The first inspect came back with zero posts for minibench/resolved,
+    which leaves the harness with no data source. Rather than guess at
+    Metaculus's filter vocabulary, try the plausible shapes and write
+    down what each one gave, so the answer is a receipt and not a theory.
+    """
+    lines = [f"{p['label']}: {p['count']} posts"
+             + (f"  statuses seen: {sorted(set(p['statuses_seen']))}"
+                if p.get("statuses_seen") else "")
+             for p in probes]
+    if all(p["count"] == 0 for p in probes):
+        lines.append("VERDICT: no resolved questions found by any filter; "
+                     "the backtest has no data source yet")
+    return "\n".join(lines)
+
+
 def _use_own_spend_meter() -> None:
     """Point the engine's meter at the backtest's own file.
 
@@ -243,7 +261,31 @@ def main(argv=None) -> int:
 
     if args.inspect:
         payload = metaculus._get_resolved_posts(args.tournament, token, 0)
-        report = inspect_report(payload)
+        shapes = [
+            ("minibench/resolved", {"tournaments": [args.tournament],
+                                    "statuses": "resolved"}),
+            ("minibench/closed", {"tournaments": [args.tournament],
+                                  "statuses": "closed"}),
+            ("minibench/any-status", {"tournaments": [args.tournament]}),
+            ("any-tournament/resolved", {"statuses": "resolved"}),
+        ]
+        probes = []
+        for label, params in shapes:
+            try:
+                raw = metaculus.get_posts_raw({**params, "limit": 20,
+                                               "forecast_type": ["binary"],
+                                               "include_description": "true"},
+                                              token)
+                results = raw.get("results", []) or []
+                probes.append({
+                    "label": label, "count": len(results),
+                    "statuses_seen": [(r.get("question") or {}).get("status")
+                                      or r.get("status") for r in results],
+                })
+            except Exception as exc:                      # noqa: BLE001
+                probes.append({"label": label, "count": 0,
+                               "statuses_seen": [f"ERROR {exc}"]})
+        report = inspect_report(payload) + "\n\n" + probe_report(probes)
         print(report)
         OUT_DIR.mkdir(parents=True, exist_ok=True)
         (OUT_DIR / "backtest_schema.txt").write_text(

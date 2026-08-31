@@ -194,3 +194,19 @@ def test_inspect_report_describes_the_shape_without_the_api():
 def test_inspect_report_says_so_when_nothing_parses():
     report = backtest.inspect_report(resolved_payload(resolution="annulled"))
     assert "0 scoreable" in report
+
+
+def test_probe_report_lists_every_attempt_and_its_count():
+    probes = [
+        {"label": "minibench/resolved", "count": 0, "statuses_seen": []},
+        {"label": "any/resolved", "count": 20, "statuses_seen": ["resolved"]},
+    ]
+    report = backtest.probe_report(probes)
+    assert "minibench/resolved: 0" in report
+    assert "any/resolved: 20" in report
+    assert "resolved" in report
+
+
+def test_probe_report_flags_when_nothing_anywhere_returned_rows():
+    report = backtest.probe_report([{"label": "a", "count": 0, "statuses_seen": []}])
+    assert "no resolved questions found" in report.lower()

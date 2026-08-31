@@ -442,6 +442,20 @@ def _get_resolved_posts(tournament, token: str, offset: int) -> dict:
     return resp.json()
 
 
+def get_posts_raw(params: dict, token: str) -> dict:
+    """One /posts/ read with caller-supplied params, returned unparsed.
+
+    Only for diagnosing which filters Metaculus actually honors; the
+    normal paths go through fetch_open_questions and
+    fetch_resolved_questions.
+    """
+    import requests
+    resp = requests.get(POSTS_URL, headers=_headers(token), params=params,
+                        timeout=TIMEOUT_S)
+    resp.raise_for_status()
+    return resp.json()
+
+
 def fetch_resolved_questions(tournament, token: str, get_fn=None,
                              want: int = 50) -> list[dict]:
     """Resolved binary questions from one tournament, newest first.
