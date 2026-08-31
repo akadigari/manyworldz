@@ -327,6 +327,23 @@ def main(argv=None) -> int:
         except Exception as exc:                          # noqa: BLE001
             detail_lines.append(f"TABLE ERROR {exc}")
 
+        # The ten above are one recent benchmark batch (ids 45xxx), which
+        # may be exactly the set whose outcomes are withheld from bots.
+        # Old ordinary questions are the control.
+        detail_lines.append("CONTROL: old questions, oldest resolve first")
+        try:
+            old = metaculus.get_posts_raw(
+                {"statuses": "resolved", "forecast_type": ["binary"],
+                 "limit": 5, "order_by": "resolve_time",
+                 "include_description": "true", "with_cp": "true"}, token)
+            for post in (old.get("results") or []):
+                q = post.get("question") or {}
+                detail_lines.append(
+                    f"{post.get('id')} | {q.get('resolution')!r} | "
+                    f"{q.get('actual_resolve_time')!r} | {post.get('title','')[:40]}")
+        except Exception as exc:                          # noqa: BLE001
+            detail_lines.append(f"CONTROL ERROR {exc}")
+
         try:
             raw = metaculus.get_posts_raw(
                 {"statuses": "resolved", "forecast_type": ["binary"],
