@@ -1,8 +1,8 @@
-2026-08-31T01:02:42.459722+00:00
+2026-08-31T01:04:16.162110+00:00
 0 raw posts back
 parsed -> 0 scoreable
 
-minibench/resolved: 0 posts
-minibench/closed: 20 posts  statuses seen: ['closed']
-minibench/any-status: 20 posts  statuses seen: ['closed']
-any-tournament/resolved: 20 posts  statuses seen: ['resolved']
+minibench/resolved: 0 posts  scoreable: 0
+minibench/closed: 20 posts  statuses: ['closed']  scoreable: 0  resolutions: [None, None, None, None, None, None]
+minibench/any-status: 20 posts  statuses: ['closed']  scoreable: 0  resolutions: [None, None, None, None, None, None]
+any-tournament/resolved: 20 posts  statuses: ['resolved']  scoreable: 0  resolutions: [None, None, None, None, None, None]
