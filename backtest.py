@@ -188,6 +188,29 @@ def _write(result: dict, stamp: str) -> tuple[Path, Path]:
     return csv_path, json_path
 
 
+def inspect_report(payload: dict) -> str:
+    """Plain description of what the API actually returned.
+
+    Kept pure and separate from the API call so it can be tested, and
+    written to a file as well as printed: workflow logs need admin
+    rights to read, so a schema receipt nobody can open is no receipt.
+    """
+    results = payload.get("results", []) or []
+    lines = [f"{len(results)} raw posts back"]
+    if results:
+        post = results[0]
+        question = post.get("question") or {}
+        lines += [
+            f"post keys: {sorted(post.keys())}",
+            f"question keys: {sorted(question.keys())}",
+            f"resolution: {question.get('resolution')}",
+            f"actual_resolve_time: {question.get('actual_resolve_time')}",
+            f"aggregations present: {bool(question.get('aggregations'))}",
+        ]
+    lines.append(f"parsed -> {len(metaculus.parse_resolved(payload))} scoreable")
+    return "\n".join(lines)
+
+
 def _use_own_spend_meter() -> None:
     """Point the engine's meter at the backtest's own file.
 
@@ -220,15 +243,11 @@ def main(argv=None) -> int:
 
     if args.inspect:
         payload = metaculus._get_resolved_posts(args.tournament, token, 0)
-        results = payload.get("results", []) or []
-        print(f"{len(results)} raw posts back")
-        if results:
-            question = results[0].get("question") or {}
-            print("post keys:", sorted(results[0].keys()))
-            print("question keys:", sorted(question.keys()))
-            print("resolution:", question.get("resolution"))
-            print("resolved at:", question.get("actual_resolve_time"))
-            print("parsed ->", len(metaculus.parse_resolved(payload)), "scoreable")
+        report = inspect_report(payload)
+        print(report)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        (OUT_DIR / "backtest_schema.txt").write_text(
+            f"{datetime.now(timezone.utc).isoformat()}\n{report}\n")
         return 0
 
     fetched = metaculus.fetch_resolved_questions(args.tournament, token,

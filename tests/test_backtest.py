@@ -181,3 +181,16 @@ def test_backtest_spend_file_still_honors_an_explicit_override(monkeypatch, tmp_
     from engine import llm as llm_mod
     backtest._use_own_spend_meter()
     assert llm_mod.SPEND_FILE == tmp_path / "custom.json"
+
+
+def test_inspect_report_describes_the_shape_without_the_api():
+    report = backtest.inspect_report(resolved_payload())
+    assert "1 raw posts" in report
+    assert "resolution: yes" in report
+    assert "1 scoreable" in report
+    assert "actual_resolve_time" in report      # the field the cutoff needs
+
+
+def test_inspect_report_says_so_when_nothing_parses():
+    report = backtest.inspect_report(resolved_payload(resolution="annulled"))
+    assert "0 scoreable" in report

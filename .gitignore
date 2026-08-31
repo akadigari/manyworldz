@@ -9,6 +9,7 @@ data/*
 !data/spend_backtest.json
 !data/backtest_*.csv
 !data/backtest_*.json
+!data/backtest_schema.txt
 !data/tournament_log.csv
 !data/tournament_status.json
 __pycache__/
