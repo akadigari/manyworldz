@@ -219,10 +219,16 @@ def probe_report(probes: list[dict]) -> str:
     Metaculus's filter vocabulary, try the plausible shapes and write
     down what each one gave, so the answer is a receipt and not a theory.
     """
-    lines = [f"{p['label']}: {p['count']} posts"
-             + (f"  statuses seen: {sorted(set(p['statuses_seen']))}"
-                if p.get("statuses_seen") else "")
-             for p in probes]
+    lines = []
+    for p in probes:
+        line = f"{p['label']}: {p['count']} posts"
+        if p.get("statuses_seen"):
+            line += f"  statuses: {sorted(set(str(x) for x in p['statuses_seen']))}"
+        if "scoreable" in p:
+            line += f"  scoreable: {p['scoreable']}"
+        if p.get("resolutions"):
+            line += f"  resolutions: {p['resolutions']}"
+        lines.append(line)
     if all(p["count"] == 0 for p in probes):
         lines.append("VERDICT: no resolved questions found by any filter; "
                      "the backtest has no data source yet")
@@ -281,6 +287,11 @@ def main(argv=None) -> int:
                     "label": label, "count": len(results),
                     "statuses_seen": [(r.get("question") or {}).get("status")
                                       or r.get("status") for r in results],
+                    # the number that actually decides whether this shape
+                    # is a data source: posts carrying a yes/no outcome
+                    "scoreable": len(metaculus.parse_resolved(raw)),
+                    "resolutions": [(r.get("question") or {}).get("resolution")
+                                    for r in results][:6],
                 })
             except Exception as exc:                      # noqa: BLE001
                 probes.append({"label": label, "count": 0,
