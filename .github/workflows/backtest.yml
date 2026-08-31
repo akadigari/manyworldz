@@ -8,7 +8,10 @@
 #      lets you set the size and tick dry run first.
 #   2. From a terminal, no gh CLI needed:
 #        git push origin HEAD:refs/heads/backtest-run
-#      which fires it with the defaults below.
+#      which runs INSPECT ONLY: one API call, the raw shape printed, no
+#      model calls and no money. A push event carries no inputs, so
+#      anything else would have meant a silent paid run every time
+#      somebody pushed that branch. Real scoring is a deliberate click.
 #
 # It meters into data/spend_backtest.json, NOT the tournament's meter, so
 # a curiosity run can never silence a live MiniBench round by exhausting
@@ -81,6 +84,8 @@ jobs:
           OPENROUTER_MODEL_MAP: ${{ vars.OPENROUTER_MODEL_MAP }}
         run: |
           flags=""
+          # A push to backtest-run carries no inputs. It inspects, never spends.
+          if [ "${{ github.event_name }}" = "push" ]; then flags="--inspect"; fi
           if [ "${{ inputs.dry_run }}" = "true" ]; then flags="$flags --dry-run"; fi
           if [ "${{ inputs.inspect }}" = "true" ]; then flags="$flags --inspect"; fi
           python3 backtest.py \
