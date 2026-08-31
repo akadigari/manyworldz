@@ -308,7 +308,11 @@ def main(argv=None) -> int:
         try:
             raw = metaculus.get_posts_raw(
                 {"statuses": "resolved", "forecast_type": ["binary"],
-                 "limit": 10, "include_description": "true"}, token)
+                 "limit": 10, "include_description": "true",
+                 # Metaculus gates the community prediction behind an
+                 # explicit flag; if resolution is gated the same way
+                 # this is where it shows up.
+                 "with_cp": "true"}, token)
             for post in (raw.get("results") or []):
                 q = post.get("question") or {}
                 agg = ((q.get("aggregations") or {}).get("recency_weighted")
@@ -318,6 +322,7 @@ def main(argv=None) -> int:
                     f"{post.get('id')} | {q.get('type')} | {q.get('status')} | "
                     f"{post.get('resolved')!r} | {q.get('resolution')!r} | "
                     f"{q.get('resolution_set_time')!r} | "
+                    f"perm={post.get('user_permission')!r} | "
                     f"{centers[0] if isinstance(centers, list) and centers else None}")
         except Exception as exc:                          # noqa: BLE001
             detail_lines.append(f"TABLE ERROR {exc}")
