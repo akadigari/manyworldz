@@ -699,6 +699,17 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
     if live:
         cards = fetch_fn(tournament, token)
 
+    # Total posts in this tournament, open or closed, for the receipt:
+    # it splits "no open windows right now" from "this slug matches
+    # nothing" (wrong slug, unlaunched season). Never worth failing a
+    # cycle over: on any error the receipt just says it could not tell.
+    posts_total = None
+    if live:
+        try:
+            posts_total = metaculus.fetch_post_count(tournament, token)
+        except Exception as exc:
+            print(f'post count probe failed ({exc}); receipt goes without it')
+
     already = _already_answered(log_path)
     pending = [c for c in cards
                if c.get("qid") not in already
@@ -863,6 +874,33 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
     # overwrote the receipt the live loop commits as its health signal.
     status_path = Path(log_path).parent / "tournament_status.json"
     status_path.parent.mkdir(parents=True, exist_ok=True)
+    # Merged, not overwritten: the run cycles several tournaments in
+    # turn (config.METACULUS_TOURNAMENTS), and each keeps its own
+    # section so the daily brief sees every tournament's last cycle,
+    # not just whichever slug happened to run last.
+    sections: dict = {}
+    try:
+        sections = json.loads(status_path.read_text()).get("tournaments") or {}
+    except Exception:
+        pass                    # first write, or an old/garbled receipt
+    sections = dict(sections)
+    if posts_total is None:
+        # A failed probe keeps the last known count rather than writing
+        # null: flapping between a number and null would read as news to
+        # the heartbeat's commit filter on every transient hiccup.
+        posts_total = (sections.get(str(tournament)) or {}).get("posts_total")
+    # No "at" inside a section, on purpose: the heartbeat workflow
+    # decides whether a beat is worth a commit by comparing receipts
+    # with the top-level "at" stripped, and a per-section timestamp
+    # would make every quiet beat look like news (~288 commits a day).
+    # All slugs cycle seconds apart in one process, so the top-level
+    # "at" already dates every section.
+    sections[str(tournament)] = {
+        "open_seen": len(cards), "posts_total": posts_total,
+        "answered_this_cycle": counts["answered"],
+        "fallbacks_this_cycle": counts["fallbacks"],
+        "escalated_this_cycle": counts["escalated"],
+    }
     status_path.write_text(json.dumps({
         "at": now, "tournament": tournament, "open_seen": len(cards),
         "answered_all_time": all_time_answered,
@@ -870,6 +908,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         "fallbacks_this_cycle": counts["fallbacks"],
         "escalated_this_cycle": counts["escalated"],
         "conserving": notes["conserve"],
+        "tournaments": sections,
     }))
     print(f'tournament cycle done: {len(cards)} open, '
          f'{counts["answered"]} answered this cycle, '
@@ -925,8 +964,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run one FutureEval tournament cycle.")
     parser.add_argument("--tournament", default=None,
-                        help=f"tournament ID or slug (default "
-                             f"{config.METACULUS_TOURNAMENT!r})")
+                        help=f"run ONE tournament ID or slug instead of the "
+                             f"configured list (default "
+                             f"{config.METACULUS_TOURNAMENTS!r})")
     parser.add_argument("--dry-run", action="store_true",
                         help="print what would be submitted, post nothing")
     args = parser.parse_args()
@@ -941,7 +981,22 @@ def main() -> None:
         print(state.message)
         raise SystemExit(state.exit_code)
 
-    one_cycle(tournament=args.tournament, dry_run=args.dry_run, token=token)
+    # One process, every configured tournament in turn (--tournament
+    # narrows to a single slug for hand runs). One tournament blowing
+    # up must not zero out the others' cycle, with one exception: the
+    # budget cap means stop spending everywhere, so it propagates.
+    slugs = [args.tournament] if args.tournament else config.METACULUS_TOURNAMENTS
+    failed = []
+    for slug in slugs:
+        try:
+            one_cycle(tournament=slug, dry_run=args.dry_run, token=token)
+        except Exception as exc:
+            if _is_budget_error(exc):
+                raise
+            print(f"::warning::tournament {slug!r} cycle failed: {exc}")
+            failed.append(slug)
+    if failed and len(failed) == len(slugs):
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":

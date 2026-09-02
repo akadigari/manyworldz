@@ -30,3 +30,40 @@ def test_engine_budget_is_env_overridable(monkeypatch):
     finally:
         monkeypatch.delenv("ENGINE_BUDGET_USD")
         importlib.reload(config_module)
+
+
+def test_tournament_slugs_cover_minibench_and_the_fall_season():
+    """2026-09-02: the bot enters the Fall FutureEval season alongside
+    MiniBench. MiniBench stays primary (backtest and probe tooling key
+    off METACULUS_TOURNAMENT)."""
+    assert config.METACULUS_TOURNAMENTS[0] == "minibench"
+    assert any("fall" in slug for slug in config.METACULUS_TOURNAMENTS)
+    assert config.METACULUS_TOURNAMENT == config.METACULUS_TOURNAMENTS[0]
+
+
+def test_tournament_slug_list_is_env_overridable(monkeypatch):
+    import importlib
+    import config as config_module
+    monkeypatch.setenv("METACULUS_TOURNAMENTS", " a, b ,")
+    importlib.reload(config_module)
+    try:
+        assert config_module.METACULUS_TOURNAMENTS == ["a", "b"]
+        assert config_module.METACULUS_TOURNAMENT == "a"
+    finally:
+        monkeypatch.delenv("METACULUS_TOURNAMENTS")
+        importlib.reload(config_module)
+
+
+def test_singular_tournament_env_still_works(monkeypatch):
+    """The pre-2026-09 override spelling keeps working: one slug in
+    METACULUS_TOURNAMENT narrows the whole run to that tournament."""
+    import importlib
+    import config as config_module
+    monkeypatch.setenv("METACULUS_TOURNAMENT", "solo-slug")
+    importlib.reload(config_module)
+    try:
+        assert config_module.METACULUS_TOURNAMENTS == ["solo-slug"]
+        assert config_module.METACULUS_TOURNAMENT == "solo-slug"
+    finally:
+        monkeypatch.delenv("METACULUS_TOURNAMENT")
+        importlib.reload(config_module)

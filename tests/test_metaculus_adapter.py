@@ -210,3 +210,15 @@ def test_submit_prediction_raises_clear_error_without_retry_on_clean_rejection()
         metaculus.submit_prediction(1, 0.5, "tok", post_fn=rejecting_post)
     assert attempts["n"] == 1               # a clean "no" is never retried
     assert "question is closed" in str(exc.value)
+
+
+def test_fetch_post_count_reads_the_apis_total_count():
+    payload = {"count": 60, "results": [{"id": 1}]}
+    assert metaculus.fetch_post_count(
+        "minibench", "tok", get_fn=lambda t, tok: payload) == 60
+
+
+def test_fetch_post_count_falls_back_to_len_results():
+    payload = {"results": [{"id": 1}, {"id": 2}]}
+    assert metaculus.fetch_post_count(
+        "minibench", "tok", get_fn=lambda t, tok: payload) == 2

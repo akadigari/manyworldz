@@ -114,21 +114,30 @@ DEEP_DRY_ROUNDS = 2   # stop early once this many rounds in a row add nothing ne
 PATH_MAX_ROUNDS = 5   # target-conditioned rounds run this many times, no early stop
 
 # ---- Metaculus FutureEval tournament (tournament.py + adapters/metaculus.py) ----
-# The tournament to forecast on, by ID or slug. FutureEval runs three
-# seasons a year under a new slug each time. As of 2026-07-19 the live
-# one is "summer-futureeval-2026" (metaculus.com/tournament/
-# summer-futureeval-2026/), which is also the official bot template's
-# own default tournament for this season. Seasons rotate, so this reads
-# from the environment: set METACULUS_TOURNAMENT to the current slug
-# (or numeric ID) once a new season starts, no code change needed.
-# Default target is MiniBench, not the big seasonal tournament. MiniBench
-# starts fresh every two weeks with about 60 questions, so a late entrant
-# carries no deficit and gets a real answer in two weeks instead of four
-# months. The seasonal tournament scores by a running SUM, so joining it
-# late means every question that already closed is a permanent zero.
-# Point this at "summer-futureeval-2026" (or the current season slug) when
-# a season starts fresh and the prize run is worth it.
-METACULUS_TOURNAMENT = _os.environ.get("METACULUS_TOURNAMENT", "minibench")
+# The tournaments to forecast on, by ID or slug, comma-separated. One
+# cycle runs each of these in turn (see tournament.py's main). Two on
+# purpose since 2026-09-02:
+#   - "minibench": bi-weekly, ~60 questions, starts fresh every two
+#     weeks so a late entrant carries no deficit. Stays first: it is
+#     the primary slug the backtest and probe tooling key off.
+#   - "fall-futureeval-2026": the $50k Fall season. Seasonal
+#     tournaments score by a running SUM, so this one is worth entering
+#     ONLY from the start, which is exactly now: seasons open every
+#     September (the summer slug was "summer-futureeval-2026", so the
+#     fall slug is the same pattern). As of 2026-09-02 the fall
+#     tournament page does not exist yet; until it does, its receipt
+#     section shows posts_total 0, and if that is still 0 by
+#     mid-September the slug guess was wrong and needs fixing here.
+# Override with METACULUS_TOURNAMENTS (comma-separated) or the older
+# singular METACULUS_TOURNAMENT (one slug), no code change needed.
+_tournament_env = (_os.environ.get("METACULUS_TOURNAMENTS")
+                   or _os.environ.get("METACULUS_TOURNAMENT")
+                   or "minibench,fall-futureeval-2026")
+METACULUS_TOURNAMENTS = [slug.strip() for slug in _tournament_env.split(",")
+                        if slug.strip()]
+# The primary tournament: what backtest.py and the adapter's probe use,
+# and one_cycle's default when called without an explicit tournament.
+METACULUS_TOURNAMENT = METACULUS_TOURNAMENTS[0]
 
 # Arm-by date. An unset METACULUS_TOKEN is tolerated (exit 0) until this
 # date, then the cycle fails loudly. Fall FutureEval opens in September and

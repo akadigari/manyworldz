@@ -139,7 +139,9 @@ def _get_posts(tournament, token: str, offset: int) -> dict:
     import requests
     params = {
         "limit": PAGE_SIZE, "offset": offset, "order_by": "-hotness",
-        "forecast_type": ["binary", "multiple_choice", "numeric", "discrete"],
+        # Comma-joined, not a repeated query param: that is the exact
+        # shape the official template sends (see the module docstring).
+        "forecast_type": ",".join(sorted(SUPPORTED_TYPES)),
         "tournaments": [tournament],
         "statuses": "open", "include_description": "true",
     }
@@ -147,6 +149,38 @@ def _get_posts(tournament, token: str, offset: int) -> dict:
                         timeout=TIMEOUT_S)
     resp.raise_for_status()
     return resp.json()
+
+
+def _get_posts_any_status(tournament, token: str) -> dict:
+    """One tiny listing with NO statuses filter, for fetch_post_count."""
+    import requests
+    params = {"limit": 1, "offset": 0, "tournaments": [tournament]}
+    resp = requests.get(POSTS_URL, headers=_headers(token), params=params,
+                        timeout=TIMEOUT_S)
+    resp.raise_for_status()
+    return resp.json()
+
+
+def fetch_post_count(tournament, token: str, get_fn=None) -> int:
+    """How many posts this tournament has AT ALL, open or closed.
+
+    Exists to break an ambiguity the Summer season was lost to:
+    "open_seen: 0" reads the same whether the tournament simply has no
+    open windows right now (MiniBench between rounds) or the slug
+    matches nothing at all (a typo, or a season that has not launched).
+    A real tournament shows a nonzero total within days of launching;
+    a wrong slug stays at 0 forever, and the receipt makes that
+    visible instead of green.
+    """
+    get_fn = get_fn or _get_posts_any_status
+    payload = _retry_once(lambda: get_fn(tournament, token),
+                          what="count a tournament's posts on Metaculus")
+    if not isinstance(payload, dict):
+        return 0
+    count = payload.get("count")
+    if isinstance(count, int):
+        return count
+    return len(payload.get("results", []) or [])
 
 
 def _post_forecast(qid: int, payload: list[dict], token: str):

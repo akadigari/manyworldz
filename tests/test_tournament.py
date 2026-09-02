@@ -802,3 +802,124 @@ def test_a_cycle_writes_its_receipt_beside_its_own_log_not_into_data(tmp_path):
         # the live receipt must be untouched by a test run
         assert _json.loads(real.read_text()).get("open_seen") != 1 or \
             "pytest" not in str(log_path)
+
+
+# --- multi-tournament support ---------------------------------------------
+# Added 2026-09-02: the bot enters the Fall FutureEval season alongside
+# MiniBench. One process cycles every configured slug; the receipt keeps
+# a section per tournament so the daily brief can see each one's health
+# and a wrong slug can't hide inside another tournament's numbers.
+
+def test_receipt_keeps_a_section_per_tournament(tmp_path):
+    """Two tournaments share one receipt file: the second cycle must
+    merge into it, not clobber what the first recorded."""
+    import json
+    log_path = tmp_path / "log.csv"
+    tournament.one_cycle(cards=[], ask_fn=ask_futures, token="tok",
+                         tournament="minibench", log_path=log_path,
+                         now_iso=NOW_ISO,
+                         submit_fn=lambda qid, prob, token: None)
+    tournament.one_cycle(cards=cards(1), ask_fn=ask_futures, token="tok",
+                         tournament="fall-futureeval-2026", log_path=log_path,
+                         now_iso=NOW_ISO,
+                         submit_fn=lambda qid, prob, token: None)
+    status = json.loads((tmp_path / "tournament_status.json").read_text())
+    assert status["tournaments"]["minibench"]["open_seen"] == 0
+    assert status["tournaments"]["fall-futureeval-2026"]["open_seen"] == 1
+    # top level keeps the old shape: it reflects the cycle that ran last
+    assert status["tournament"] == "fall-futureeval-2026"
+    assert status["open_seen"] == 1
+
+
+def test_live_cycle_records_the_tournaments_total_post_count(tmp_path, monkeypatch):
+    """open_seen=0 is ambiguous between "no open windows right now" and
+    "this slug matches nothing at all" (wrong slug, unlaunched season).
+    A live cycle also records the tournament's TOTAL post count, open or
+    closed, so the receipt can tell those apart."""
+    import json
+    monkeypatch.setattr(tournament.metaculus, "fetch_post_count",
+                        lambda t, tok: 60)
+    tournament.one_cycle(ask_fn=ask_futures, token="tok",
+                         log_path=tmp_path / "log.csv", now_iso=NOW_ISO,
+                         fetch_fn=lambda t, tok: [],
+                         submit_fn=lambda qid, prob, token: None)
+    status = json.loads((tmp_path / "tournament_status.json").read_text())
+    entry = status["tournaments"][tournament.config.METACULUS_TOURNAMENT]
+    assert entry["posts_total"] == 60
+
+
+def test_main_cycles_every_configured_tournament(monkeypatch):
+    monkeypatch.setenv("METACULUS_TOKEN", "tok")
+    monkeypatch.setattr(tournament.config, "METACULUS_TOURNAMENTS",
+                        ["one", "two"])
+    ran = []
+    monkeypatch.setattr(tournament, "one_cycle",
+                        lambda tournament=None, **k: ran.append(tournament))
+    monkeypatch.setattr(sys, "argv", ["tournament.py"])
+    tournament.main()
+    assert ran == ["one", "two"]
+
+
+def test_tournament_flag_overrides_the_configured_list(monkeypatch):
+    monkeypatch.setenv("METACULUS_TOKEN", "tok")
+    monkeypatch.setattr(tournament.config, "METACULUS_TOURNAMENTS",
+                        ["one", "two"])
+    ran = []
+    monkeypatch.setattr(tournament, "one_cycle",
+                        lambda tournament=None, **k: ran.append(tournament))
+    monkeypatch.setattr(sys, "argv", ["tournament.py", "--tournament", "solo"])
+    tournament.main()
+    assert ran == ["solo"]
+
+
+def test_one_broken_tournament_does_not_stop_the_others(monkeypatch, capsys):
+    """A bad slug (or one tournament's API hiccup) must not zero out the
+    working tournament's cycle."""
+    monkeypatch.setenv("METACULUS_TOKEN", "tok")
+    monkeypatch.setattr(tournament.config, "METACULUS_TOURNAMENTS",
+                        ["bad", "good"])
+    ran = []
+
+    def cycle(tournament=None, **k):
+        if tournament == "bad":
+            raise RuntimeError("could not fetch open questions: boom")
+        ran.append(tournament)
+
+    monkeypatch.setattr(tournament, "one_cycle", cycle)
+    monkeypatch.setattr(sys, "argv", ["tournament.py"])
+    tournament.main()
+    assert ran == ["good"]
+    assert "::warning::" in capsys.readouterr().out
+
+
+def test_every_tournament_failing_fails_the_run(monkeypatch):
+    monkeypatch.setenv("METACULUS_TOKEN", "tok")
+    monkeypatch.setattr(tournament.config, "METACULUS_TOURNAMENTS", ["bad"])
+
+    def cycle(**k):
+        raise RuntimeError("could not fetch open questions: boom")
+
+    monkeypatch.setattr(tournament, "one_cycle", cycle)
+    monkeypatch.setattr(sys, "argv", ["tournament.py"])
+    with pytest.raises(SystemExit) as excinfo:
+        tournament.main()
+    assert excinfo.value.code == 1
+
+
+def test_budget_error_stops_the_whole_run_not_just_one_tournament(monkeypatch):
+    """The budget cap means stop spending, everywhere: it must never be
+    swallowed as one tournament's failure while the next slug spends on."""
+    monkeypatch.setenv("METACULUS_TOKEN", "tok")
+    monkeypatch.setattr(tournament.config, "METACULUS_TOURNAMENTS",
+                        ["one", "two"])
+    ran = []
+
+    def cycle(tournament=None, **k):
+        ran.append(tournament)
+        raise RuntimeError("budget cap hit: $15.00 spent")
+
+    monkeypatch.setattr(tournament, "one_cycle", cycle)
+    monkeypatch.setattr(sys, "argv", ["tournament.py"])
+    with pytest.raises(RuntimeError):
+        tournament.main()
+    assert ran == ["one"]          # the second slug never got to spend
