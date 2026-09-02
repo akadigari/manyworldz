@@ -152,9 +152,17 @@ def _get_posts(tournament, token: str, offset: int) -> dict:
 
 
 def _get_posts_any_status(tournament, token: str) -> dict:
-    """One tiny listing with NO statuses filter, for fetch_post_count."""
+    """One listing with NO statuses filter, for fetch_post_count.
+
+    A full page, not limit=1: the live /posts/ response carries no
+    "count" field (verified against the receipt of the first live run,
+    2026-09-02, which came back 1), so the count is len(results) and a
+    tiny limit would cap it at the limit. One page is plenty for the
+    receipt's real question, zero versus dozens; a 100+-question
+    tournament just reads as 100.
+    """
     import requests
-    params = {"limit": 1, "offset": 0, "tournaments": [tournament]}
+    params = {"limit": PAGE_SIZE, "offset": 0, "tournaments": [tournament]}
     resp = requests.get(POSTS_URL, headers=_headers(token), params=params,
                         timeout=TIMEOUT_S)
     resp.raise_for_status()
