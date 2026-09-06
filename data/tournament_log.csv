@@ -1,1 +1,2 @@
-qid,question,prob,at
+qid,question,qtype,raw_prob,prob,at,source
+45707,"[PRACTICE] What will the average ""new forecasters per day"" be on this question before this question closes?",discrete,"{""0.05"": 1.5, ""0.25"": 2.8, ""0.5"": 4.2, ""0.75"": 5.8, ""0.95"": 8.5}",cdf:92,2026-09-06T06:01:10.378240+00:00,numeric
