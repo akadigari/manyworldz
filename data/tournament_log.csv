@@ -8,3 +8,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45714,"What will Bitcoin dominance be on September 17, 2026?",discrete,"{""0.05"": 56.5, ""0.25"": 58.3, ""0.5"": 59.3, ""0.75"": 60.2, ""0.95"": 61.8}",cdf:102,2026-09-07T04:16:16.250819+00:00,numeric
 45715,"Will Turkey's Court of Cassation have issued a ruling in the CHP 'mutlak butlan' case by September 17, 2026?",binary,0.4,0.4,2026-09-07T05:01:24.374636+00:00,crowd+esc
 45716,"What will U.S. spot Ethereum ETFs report as their total net flow for September 17, 2026?",numeric,"{""0.05"": -150.0, ""0.25"": -30.0, ""0.5"": 20.0, ""0.75"": 80.0, ""0.95"": 220.0}",cdf:201,2026-09-07T05:16:12.844836+00:00,numeric
+45717,What will the 54-hole leader's score to par be at the 2026 BMW PGA Championship?,discrete,"{""0.05"": -20.0, ""0.25"": -17.0, ""0.5"": -15.0, ""0.75"": -13.0, ""0.95"": -9.0}",cdf:18,2026-09-07T06:36:21.126842+00:00,numeric
