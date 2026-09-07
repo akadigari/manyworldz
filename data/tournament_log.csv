@@ -15,3 +15,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45721,"How many drones will Russia launch at Ukraine in the overnight attack reported on the morning of September 18, 2026?",numeric,"{""0.05"": 60.0, ""0.25"": 130.0, ""0.5"": 220.0, ""0.75"": 350.0, ""0.95"": 600.0}",cdf:201,2026-09-07T08:25:47.363174+00:00,numeric
 45722,Will ECDC report locally acquired human West Nile virus cases in 17 or more countries in its 2026 weekly surveillance update published around 18 September 2026?,binary,0.6,0.6,2026-09-07T08:36:26.675501+00:00,crowd+esc
 45723,"What will the top score on the ARC Prize 2026 – ARC-AGI-3 Kaggle public leaderboard be on September 17, 2026?",numeric,"{""0.05"": 7.2, ""0.25"": 8.5, ""0.5"": 9.8, ""0.75"": 11.5, ""0.95"": 15.5}",cdf:201,2026-09-07T09:25:51.791696+00:00,numeric
+45724,Will exploratory coalition talks involving the CDU have publicly begun in Saxony-Anhalt by 17 September 2026?,binary,0.4667,0.4667,2026-09-07T09:40:50.179404+00:00,crowd
