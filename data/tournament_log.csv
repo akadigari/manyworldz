@@ -1,3 +1,4 @@
 qid,question,qtype,raw_prob,prob,at,source
 45707,"[PRACTICE] What will the average ""new forecasters per day"" be on this question before this question closes?",discrete,"{""0.05"": 1.5, ""0.25"": 2.8, ""0.5"": 4.2, ""0.75"": 5.8, ""0.95"": 8.5}",cdf:92,2026-09-06T06:01:10.378240+00:00,numeric
 45709,"How many confirmed measles cases will the CDC report in the United States for 2026, as of the update closest to September 17, 2026?",numeric,"{""0.05"": 3250.0, ""0.25"": 3400.0, ""0.5"": 3550.0, ""0.75"": 3700.0, ""0.95"": 3900.0}",cdf:201,2026-09-07T00:16:15.272534+00:00,numeric
+45710,"Will Turkey's NDK have issued an operating license for Akkuyu Nuclear Power Plant Unit 1 by September 17, 2026?",binary,0.4667,0.4667,2026-09-07T00:56:16.511360+00:00,crowd
