@@ -28,3 +28,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45734,"Will the Bishkek City Court's appellate verdict in the 'Letter 75' case have been issued by September 17, 2026?",binary,0.4,0.4,2026-09-07T13:15:40.902602+00:00,crowd+esc
 45735,"What will UNE forecast as Cuba's peak-hour electricity generation deficit for the night of September 18, 2026?",discrete,"{""0.05"": 1750.0, ""0.25"": 2050.0, ""0.5"": 2220.0, ""0.75"": 2400.0, ""0.95"": 2650.0}",cdf:26,2026-09-07T13:30:46.978304+00:00,numeric
 45736,"What will Lululemon's (LULU) closing stock price be on September 17, 2026?",numeric,"{""0.05"": 84.0, ""0.25"": 94.0, ""0.5"": 100.0, ""0.75"": 106.0, ""0.95"": 116.0}",cdf:201,2026-09-07T14:00:47.400303+00:00,numeric
+45737,"Will the first dedicated bilateral US-China AI safety/security talks of Trump's second term be publicly confirmed to have taken place before September 18, 2026?",binary,0.4,0.4,2026-09-07T14:15:40.868412+00:00,crowd+esc
