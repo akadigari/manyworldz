@@ -50,3 +50,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45756,"Will Bitcoin trade above $83,000 at any point between September 17 and September 18, 2026?",binary,0.4,0.4,2026-09-08T06:00:50.318964+00:00,crowd+esc
 45757,Will the US and China announce an extension of their tariff truce during or immediately after the September 2026 Madrid trade talks?,binary,0.4667,0.4667,2026-09-08T06:10:57.822110+00:00,crowd
 45758,"Will Ethereum (ETH/USD) close above $2,550 on September 18, 2026?",binary,0.4,0.4,2026-09-08T11:06:25.166845+00:00,crowd+esc
+45759,"Will Trump have formally nominated a permanent Secretary of the Army by September 18, 2026?",binary,0.4,0.4,2026-09-08T15:05:31.843160+00:00,crowd+esc
