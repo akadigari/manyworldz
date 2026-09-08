@@ -46,3 +46,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45752,How many confirmed measles cases will Brazil's Ministry of Health report for 2026 by mid-September 2026?,numeric,"{""0.05"": 29.0, ""0.25"": 30.0, ""0.5"": 32.0, ""0.75"": 36.0, ""0.95"": 45.0}",cdf:201,2026-09-07T23:51:20.763149+00:00,numeric
 45753,"Will a new named storm form in the Atlantic basin between September 17 and September 18, 2026?",binary,0.4,0.4,2026-09-08T00:50:52.060247+00:00,crowd+esc
 45754,"How many combined points will be scored in the Detroit Lions at Buffalo Bills game on September 17, 2026?",discrete,"{""0.05"": 34.0, ""0.25"": 44.0, ""0.5"": 52.0, ""0.75"": 60.0, ""0.95"": 71.0}",cdf:62,2026-09-08T03:55:48.130266+00:00,numeric
+45755,"Will Zcash (ZEC) trade above $1,100 on September 17 or 18, 2026?",binary,0.4,0.4,2026-09-08T05:50:47.983894+00:00,crowd+esc
