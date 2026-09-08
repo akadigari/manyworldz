@@ -52,3 +52,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45758,"Will Ethereum (ETH/USD) close above $2,550 on September 18, 2026?",binary,0.4,0.4,2026-09-08T11:06:25.166845+00:00,crowd+esc
 45759,"Will Trump have formally nominated a permanent Secretary of the Army by September 18, 2026?",binary,0.4,0.4,2026-09-08T15:05:31.843160+00:00,crowd+esc
 45760,"How many ""Attack"" incidents will UKMTO log on its incident feed on September 17, 2026?",discrete,"{""0.05"": 0.0, ""0.25"": 0.0, ""0.5"": 1.0, ""0.75"": 2.0, ""0.95"": 4.0}",cdf:8,2026-09-08T15:15:39.185274+00:00,numeric
+45761,"In the first national Lula-vs-Flávio-Bolsonaro runoff poll released September 17–18, 2026, what will be Lula's lead over Flávio Bolsonaro?",numeric,"{""0.05"": -3.0, ""0.25"": 0.0, ""0.5"": 2.0, ""0.75"": 4.0, ""0.95"": 7.0}",cdf:201,2026-09-08T15:35:36.868549+00:00,numeric
