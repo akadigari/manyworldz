@@ -48,3 +48,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45754,"How many combined points will be scored in the Detroit Lions at Buffalo Bills game on September 17, 2026?",discrete,"{""0.05"": 34.0, ""0.25"": 44.0, ""0.5"": 52.0, ""0.75"": 60.0, ""0.95"": 71.0}",cdf:62,2026-09-08T03:55:48.130266+00:00,numeric
 45755,"Will Zcash (ZEC) trade above $1,100 on September 17 or 18, 2026?",binary,0.4,0.4,2026-09-08T05:50:47.983894+00:00,crowd+esc
 45756,"Will Bitcoin trade above $83,000 at any point between September 17 and September 18, 2026?",binary,0.4,0.4,2026-09-08T06:00:50.318964+00:00,crowd+esc
+45757,Will the US and China announce an extension of their tariff truce during or immediately after the September 2026 Madrid trade talks?,binary,0.4667,0.4667,2026-09-08T06:10:57.822110+00:00,crowd
