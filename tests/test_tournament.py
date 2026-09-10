@@ -17,31 +17,21 @@ def cards(n=2):
 
 
 CONFIDENT = '{"probability": 0.71, "reason": "seems likely"}'
-FUTURES = ('{"futures": ['
-          '{"story": "it happens on schedule", "resolves": "YES"},'
-          '{"story": "a delay but it lands", "resolves": "YES"},'
-          '{"story": "momentum carries it through", "resolves": "YES"},'
-          '{"story": "an early surprise seals it", "resolves": "YES"},'
-          '{"story": "something blocks it", "resolves": "NO"}]}')
-ALL_YES_FUTURES = ('{"futures": ['
-                   '{"story": "a", "resolves": "YES"},'
-                   '{"story": "b", "resolves": "YES"},'
-                   '{"story": "c", "resolves": "YES"},'
-                   '{"story": "d", "resolves": "YES"},'
-                   '{"story": "e", "resolves": "YES"}]}')
-ALL_NO_FUTURES = ('{"futures": ['
-                  '{"story": "a", "resolves": "NO"},'
-                  '{"story": "b", "resolves": "NO"},'
-                  '{"story": "c", "resolves": "NO"},'
-                  '{"story": "d", "resolves": "NO"},'
-                  '{"story": "e", "resolves": "NO"}]}')
+# The tournament answers binaries with a direct vote (config
+# TOURNAMENT_BINARY_MODE, "vote" since 2026-09-10), so the fakes reply in
+# vote shape. The numbers are the ones the old five-story fakes implied
+# (4 of 5 YES = 0.8, all YES = 0.99 after the engine's clamp, all NO = 0.01)
+# so every assertion downstream keeps its meaning.
+VOTE = '{"probability": 0.8, "reason": "four ways it lands, one it does not"}'
+VOTE_ALL_YES = '{"probability": 0.99, "reason": "as sure as it gets"}'
+VOTE_ALL_NO = '{"probability": 0.01, "reason": "as unlikely as it gets"}'
 
 NOW = datetime(2026, 7, 20, 12, 0, 0, tzinfo=timezone.utc)
 NOW_ISO = NOW.isoformat()
 
 
-def ask_futures(p, model=None, max_tokens=400):
-    return FUTURES
+def ask_vote(p, model=None, max_tokens=400):
+    return VOTE
 
 
 def near_close_card(qid, hours_to_close):
@@ -62,7 +52,7 @@ def seed_log(log_path, qid, at_iso, prob=0.6, source="crowd"):
 def test_dry_run_makes_no_post_and_prints_preview(tmp_path, capsys):
     calls = []
     out = tournament.one_cycle(
-        cards=cards(1), ask_fn=ask_futures, dry_run=True, token="tok",
+        cards=cards(1), ask_fn=ask_vote, dry_run=True, token="tok",
         log_path=tmp_path / "log.csv",
         submit_fn=lambda qid, prob, token: calls.append((qid, prob)))
     assert calls == []                              # no POST at all
@@ -115,7 +105,7 @@ def test_one_cycle_logs_every_submission_with_expected_columns(tmp_path):
     log_path = tmp_path / "log.csv"
     posted = []
     out = tournament.one_cycle(
-        cards=cards(2), ask_fn=ask_futures, token="tok", log_path=log_path,
+        cards=cards(2), ask_fn=ask_vote, token="tok", log_path=log_path,
         submit_fn=lambda qid, prob, token: posted.append((qid, prob, token)))
     assert out["submitted"] == 2
     assert len(posted) == 2
@@ -136,13 +126,13 @@ def test_one_cycle_skips_questions_already_answered_this_run(tmp_path):
     posted = []
     submit_fn = lambda qid, prob, token: posted.append(qid)
 
-    tournament.one_cycle(cards=cards(2), ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(cards=cards(2), ask_fn=ask_vote, token="tok",
                          log_path=log_path, submit_fn=submit_fn)
     assert len(posted) == 2
 
     # Same two questions again: both already have a log row, neither
     # should get answered or submitted a second time.
-    out = tournament.one_cycle(cards=cards(2), ask_fn=ask_futures, token="tok",
+    out = tournament.one_cycle(cards=cards(2), ask_fn=ask_vote, token="tok",
                                log_path=log_path, submit_fn=submit_fn)
     assert out["answered"] == 0
     assert out["submitted"] == 0
@@ -160,7 +150,7 @@ def test_budget_error_propagates_and_preserves_partial_log(tmp_path, monkeypatch
         calls["n"] += 1
         if calls["n"] > 2:          # first card's whole (2-agent) crowd answers fine
             raise RuntimeError("engine budget cap hit ($10.00)")
-        return FUTURES
+        return VOTE
 
     with pytest.raises(RuntimeError, match="budget cap hit"):
         tournament.one_cycle(
@@ -198,7 +188,7 @@ def test_questions_per_run_caps_how_many_get_answered(tmp_path, monkeypatch):
     monkeypatch.setattr(config, "TOURNAMENT_QUESTIONS_PER_RUN", 1)
     posted = []
     out = tournament.one_cycle(
-        cards=cards(3), ask_fn=ask_futures, token="tok",
+        cards=cards(3), ask_fn=ask_vote, token="tok",
         log_path=tmp_path / "log.csv",
         submit_fn=lambda qid, prob, token: posted.append(qid))
     assert out["considered"] == 3
@@ -304,7 +294,7 @@ def test_extreme_high_crowd_probability_clipped_at_submit_not_at_raw(tmp_path):
     log_path = tmp_path / "log.csv"
     posted = []
     tournament.one_cycle(
-        cards=cards(1), ask_fn=lambda p, model=None, max_tokens=400: ALL_YES_FUTURES,
+        cards=cards(1), ask_fn=lambda p, model=None, max_tokens=400: VOTE_ALL_YES,
         token="tok", log_path=log_path,
         submit_fn=lambda qid, prob, token: posted.append(prob))
     rows = list(csv.DictReader(open(log_path, newline="")))
@@ -317,7 +307,7 @@ def test_extreme_low_crowd_probability_clipped_at_submit_not_at_raw(tmp_path):
     log_path = tmp_path / "log.csv"
     posted = []
     tournament.one_cycle(
-        cards=cards(1), ask_fn=lambda p, model=None, max_tokens=400: ALL_NO_FUTURES,
+        cards=cards(1), ask_fn=lambda p, model=None, max_tokens=400: VOTE_ALL_NO,
         token="tok", log_path=log_path,
         submit_fn=lambda qid, prob, token: posted.append(prob))
     rows = list(csv.DictReader(open(log_path, newline="")))
@@ -330,7 +320,7 @@ def test_ordinary_answer_has_matching_raw_and_submitted_prob(tmp_path):
     """A probability that never gets near the extremes should come
     through the clip unchanged: raw_prob and prob match."""
     log_path = tmp_path / "log.csv"
-    tournament.one_cycle(cards=cards(1), ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(cards=cards(1), ask_fn=ask_vote, token="tok",
                          log_path=log_path,
                          submit_fn=lambda qid, prob, token: None)
     rows = list(csv.DictReader(open(log_path, newline="")))
@@ -348,7 +338,7 @@ def test_already_answered_question_is_never_resubmitted_even_near_close(tmp_path
     card = near_close_card(700001, hours_to_close=1)
 
     out = tournament.one_cycle(
-        cards=[card], ask_fn=ask_futures, token="tok", log_path=log_path,
+        cards=[card], ask_fn=ask_vote, token="tok", log_path=log_path,
         now_iso=NOW_ISO, submit_fn=lambda qid, prob, token: None)
     assert out["answered"] == 0
     rows = list(csv.DictReader(open(log_path, newline="")))
@@ -363,7 +353,7 @@ def test_api_side_already_forecast_flag_skips_even_with_an_empty_log(tmp_path):
     card = dict(cards(1)[0], already_forecast=True)
 
     out = tournament.one_cycle(
-        cards=[card], ask_fn=ask_futures, token="tok", log_path=log_path,
+        cards=[card], ask_fn=ask_vote, token="tok", log_path=log_path,
         submit_fn=lambda qid, prob, token: None)
     assert out["answered"] == 0
     assert not log_path.exists()
@@ -373,7 +363,7 @@ def test_api_side_already_forecast_flag_skips_even_with_an_empty_log(tmp_path):
 
 def test_coverage_summary_line_reports_all_the_required_pieces(tmp_path, capsys):
     log_path = tmp_path / "log.csv"
-    tournament.one_cycle(cards=cards(1), ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(cards=cards(1), ask_fn=ask_vote, token="tok",
                          log_path=log_path,
                          submit_fn=lambda qid, prob, token: None)
     out = capsys.readouterr().out
@@ -449,7 +439,7 @@ def test_resolution_criteria_reach_the_model_prompt(tmp_path):
     seen = {}
     def ask_fn(prompt, model=None, max_tokens=400):
         seen.setdefault("prompt", prompt)
-        return FUTURES
+        return VOTE
     card = dict(cards(1)[0],
                 criteria="Resolution criteria: resolves YES only if 20 states sign.")
     tournament.one_cycle(cards=[card], ask_fn=ask_fn, token="tok",
@@ -550,7 +540,7 @@ def test_every_submission_gets_a_private_comment(tmp_path):
         return True
     card = dict(cards(1)[0], post_id=30099)
     tournament.one_cycle(
-        cards=[card], ask_fn=ask_futures, token="tok",
+        cards=[card], ask_fn=ask_vote, token="tok",
         log_path=tmp_path / "log.csv",
         submit_fn=lambda qid, prob, token: None, comment_fn=comment_fn)
     assert len(comments) == 1
@@ -564,7 +554,7 @@ def test_a_failing_comment_never_blocks_the_forecast(tmp_path):
         raise RuntimeError("comment endpoint down")
     card = dict(cards(1)[0], post_id=30099)
     out = tournament.one_cycle(
-        cards=[card], ask_fn=ask_futures, token="tok",
+        cards=[card], ask_fn=ask_vote, token="tok",
         log_path=tmp_path / "log.csv",
         submit_fn=lambda qid, prob, token: None, comment_fn=comment_fn)
     assert out["submitted"] == 1              # forecast still went out and logged
@@ -577,7 +567,7 @@ def test_a_hung_model_call_degrades_to_the_fallback_ladder(tmp_path, monkeypatch
     monkeypatch.setattr(config, "QUESTION_DEADLINE_S", 0.2)
     def slow_ask(p, model=None, max_tokens=400):
         time.sleep(0.6)
-        return FUTURES
+        return VOTE
     t0 = time.monotonic()
     out = tournament.one_cycle(
         cards=cards(1), ask_fn=slow_ask, token="tok",
@@ -600,7 +590,7 @@ def test_one_bad_question_never_aborts_the_rest_of_the_cycle(tmp_path):
     out = tournament.one_cycle(
         cards=[dict(MC_CARD), good],
         ask_fn=lambda p, model=None, max_tokens=400: (
-            MC_REPLY if "option" in p.lower() else FUTURES),
+            MC_REPLY if "option" in p.lower() else VOTE),
         token="tok", log_path=tmp_path / "log.csv",
         submit_fn=lambda qid, prob, token: None, submit_mc_fn=submit_mc)
     assert out["submitted"] == 1              # the good binary still went out
@@ -710,7 +700,7 @@ def test_old_four_column_log_is_migrated_before_appending(tmp_path):
     log_path.write_text("qid,question,prob,at\n"
                         "111,old question,0.6,2026-07-01T00:00:00+00:00\n")
     out = tournament.one_cycle(
-        cards=cards(1), ask_fn=ask_futures, token="tok", log_path=log_path,
+        cards=cards(1), ask_fn=ask_vote, token="tok", log_path=log_path,
         submit_fn=lambda qid, prob, token: None)
     assert out["submitted"] == 1
     rows = list(csv.DictReader(open(log_path, newline="")))
@@ -737,7 +727,7 @@ def test_every_cycle_writes_a_status_file_for_the_daily_brief(tmp_path, monkeypa
     answered-all-time, and when. Written even on an empty cycle."""
     import config, json
     monkeypatch.setattr(config, "DATA", tmp_path)
-    tournament.one_cycle(cards=[], ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(cards=[], ask_fn=ask_vote, token="tok",
                          log_path=tmp_path / "log.csv", now_iso=NOW_ISO,
                          submit_fn=lambda qid, prob, token: None)
     status = json.loads((tmp_path / "tournament_status.json").read_text())
@@ -815,11 +805,11 @@ def test_receipt_keeps_a_section_per_tournament(tmp_path):
     merge into it, not clobber what the first recorded."""
     import json
     log_path = tmp_path / "log.csv"
-    tournament.one_cycle(cards=[], ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(cards=[], ask_fn=ask_vote, token="tok",
                          tournament="minibench", log_path=log_path,
                          now_iso=NOW_ISO,
                          submit_fn=lambda qid, prob, token: None)
-    tournament.one_cycle(cards=cards(1), ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(cards=cards(1), ask_fn=ask_vote, token="tok",
                          tournament="fall-futureeval-2026", log_path=log_path,
                          now_iso=NOW_ISO,
                          submit_fn=lambda qid, prob, token: None)
@@ -839,7 +829,7 @@ def test_live_cycle_records_the_tournaments_total_post_count(tmp_path, monkeypat
     import json
     monkeypatch.setattr(tournament.metaculus, "fetch_post_count",
                         lambda t, tok: 60)
-    tournament.one_cycle(ask_fn=ask_futures, token="tok",
+    tournament.one_cycle(ask_fn=ask_vote, token="tok",
                          log_path=tmp_path / "log.csv", now_iso=NOW_ISO,
                          fetch_fn=lambda t, tok: [],
                          submit_fn=lambda qid, prob, token: None)
@@ -923,3 +913,47 @@ def test_budget_error_stops_the_whole_run_not_just_one_tournament(monkeypatch):
     with pytest.raises(RuntimeError):
         tournament.main()
     assert ran == ["one"]          # the second slug never got to spend
+
+
+# -- binary questions are a direct vote, not a story census ----------------
+#
+# Through 2026-09-10 the tournament ran every binary question in simulate
+# mode: each agent imagined 5 futures and its probability was the YES
+# share, so it could only ever say 0.0, 0.2, 0.4, 0.6, 0.8 or 1.0. In the
+# live log 16 of the first 25 binaries came back at exactly 0.40 (Lions vs
+# Bills, an Atlantic storm forming, Bitcoin above 83k, all 0.40): asked
+# for "genuinely different" stories, the model wrote 2 YES and 3 NO no
+# matter what the odds were, and Sonnet did the same on escalation. A
+# direct probability from the outside-view vote prompt has no such
+# quantization, so the tournament asks for that instead.
+
+VOTE_17 = '{"probability": 0.17, "reason": "the base rate is low"}'
+
+
+def test_binary_question_is_answered_by_a_direct_vote_not_a_story_census(tmp_path):
+    prompts, posted = [], []
+
+    def ask(prompt, model=None, max_tokens=400):
+        prompts.append(prompt)
+        return VOTE_17
+
+    tournament.one_cycle(
+        cards=cards(1), ask_fn=ask, token="tok", log_path=tmp_path / "log.csv",
+        submit_fn=lambda qid, prob, token: posted.append((qid, prob)))
+
+    assert posted == [(500000, 0.17)]
+    assert prompts, "the crowd was never asked"
+    assert not any('"futures"' in p for p in prompts)
+
+
+def test_tournament_binary_mode_defaults_to_vote_and_is_env_overridable(monkeypatch):
+    import importlib
+    import config
+    assert config.TOURNAMENT_BINARY_MODE == "vote"
+    monkeypatch.setenv("MANYWORLDZ_TOURNAMENT_MODE", "simulate")
+    importlib.reload(config)
+    try:
+        assert config.TOURNAMENT_BINARY_MODE == "simulate"
+    finally:
+        monkeypatch.delenv("MANYWORLDZ_TOURNAMENT_MODE")
+        importlib.reload(config)

@@ -162,7 +162,7 @@ Two secrets, one command: `ANTHROPIC_API_KEY` (already needed for everything els
 venv/bin/python tournament.py
 ```
 
-That fetches the tournament's open binary questions, runs the same crowd this whole repo already uses on each one it hasn't answered yet, and submits every answer. `.github/workflows/tournament.yml` runs this every 6 hours and commits `data/tournament_log.csv` back; it's safe to push before the token exists, since a missing `METACULUS_TOKEN` makes the run print a plain message and exit cleanly instead of failing. Add `--dry-run` to see exactly what it would submit without posting anything.
+That fetches the tournament's open questions, runs the same crowd this whole repo already uses on each one it hasn't answered yet, and submits every answer. Binary questions get a direct probability vote from each agent rather than the story census `ask.py` shows by default: five stories can only say 0.2, 0.4, 0.6 or 0.8, and in the live log the crowd said 0.4 to almost everything (`TOURNAMENT_BINARY_MODE` in `config.py`). `.github/workflows/tournament.yml` runs this every 6 hours and commits `data/tournament_log.csv` back; it's safe to push before the token exists, since a missing `METACULUS_TOKEN` makes the run print a plain message and exit cleanly instead of failing. Add `--dry-run` to see exactly what it would submit without posting anything.
 
 Honest line: this is the engine's public kill-test. The tournament grades against reality, in the open, same as `GATES.md` already promises for real bets. If the crowd cannot beat the official template bot, that result gets published too.
 

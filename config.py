@@ -181,6 +181,19 @@ ESCALATE_TIME_BUDGET_S = 540
 
 TOURNAMENT_QUESTIONS_PER_RUN = 25
 
+# How a binary question gets its probability. "vote": each agent gives a
+# direct probability from the outside-view prompt in engine/swarm.py.
+# "simulate": each agent imagines SIM_ROLLOUTS_K futures and its
+# probability is the YES share, which can only be a multiple of 1/K.
+# Switched to "vote" on 2026-09-10: in simulate mode the live bot sent
+# exactly 0.40 on 16 of its first 25 binaries (Lions vs Bills, a storm
+# forming, Bitcoin above 83k...) because a model asked for "genuinely
+# different" stories writes 2 YES and 3 NO whatever the odds are, and
+# the strong tier did the same on escalation. A story census is a fine
+# way to draw a futures map; it is a bad way to state a probability.
+# Override with MANYWORLDZ_TOURNAMENT_MODE=simulate to A/B the old path.
+TOURNAMENT_BINARY_MODE = _os.environ.get("MANYWORLDZ_TOURNAMENT_MODE", "vote")
+
 # How far short of 0% and 100% every submitted binary probability gets
 # clipped, e.g. 0.98 instead of 0.999. Metaculus scores forecasts with a
 # log rule, and a log rule punishes a confident miss brutally: a 99%

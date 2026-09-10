@@ -267,18 +267,11 @@ def test_numeric_normally_runs_on_the_configured_voice_not_a_hardcode(monkeypatc
 
 # --- the whole thing through the real machinery ---------------------------
 
-MIXED_FUTURES = ('{"futures": ['
-                 '{"story": "a", "resolves": "YES"},'
-                 '{"story": "b", "resolves": "YES"},'
-                 '{"story": "c", "resolves": "YES"},'
-                 '{"story": "d", "resolves": "NO"},'
-                 '{"story": "e", "resolves": "NO"}]}')
-SURE_FUTURES = ('{"futures": ['
-                '{"story": "a", "resolves": "YES"},'
-                '{"story": "b", "resolves": "YES"},'
-                '{"story": "c", "resolves": "YES"},'
-                '{"story": "d", "resolves": "YES"},'
-                '{"story": "e", "resolves": "YES"}]}')
+# Vote-shape replies (config.TOURNAMENT_BINARY_MODE is "vote"): the cheap
+# tier lands in the contested band around the coin flip, the strong tier
+# is sure. Same numbers the old 3-of-5 and 5-of-5 story fakes implied.
+MIXED_VOTE = '{"probability": 0.6, "reason": "could go either way"}'
+SURE_VOTE = '{"probability": 0.99, "reason": "all but decided"}'
 
 
 def test_escalation_end_to_end_through_the_real_crowd(monkeypatch, tmp_path):
@@ -293,7 +286,7 @@ def test_escalation_end_to_end_through_the_real_crowd(monkeypatch, tmp_path):
         models_seen.append(model)
         # The cheap tier sees a genuinely mixed world; the strong tier
         # (model=None resolves to the configured voice) is sure.
-        return MIXED_FUTURES if model == "haiku" else SURE_FUTURES
+        return MIXED_VOTE if model == "haiku" else SURE_VOTE
 
     submitted = {}
     log_path = tmp_path / "log.csv"

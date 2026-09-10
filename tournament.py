@@ -443,9 +443,11 @@ def _answer_numeric(card: dict, headlines: list[str], ask) -> dict:
 
 
 def _run_full_crowd(market_card: dict, headlines: list[str], crowd: list[dict], ask):
-    """The fallback ladder's first tier: the whole configured crowd,
-    same simulate-mode run this file has always done."""
-    return run_crowd(market_card, headlines, crowd, mode="simulate",
+    """The fallback ladder's first tier: the whole configured crowd, in
+    config.TOURNAMENT_BINARY_MODE ("vote" by default: a direct
+    probability per agent, no 1/K quantization; see config.py)."""
+    return run_crowd(market_card, headlines, crowd,
+                     mode=config.TOURNAMENT_BINARY_MODE,
                      k=config.SIM_ROLLOUTS_K, deliberation=config.DELIBERATION,
                      ask_fn=ask)
 
