@@ -59,3 +59,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45765,"Will the House Energy & Commerce Committee begin a markup on the Trahan–Obernolte comprehensive AI framework (or a bill derived from the Great American AI Act) on September 17 or 18, 2026?",binary,0.4,0.4,2026-09-08T21:45:29.489317+00:00,crowd+esc
 45766,"What will Boyaa Interactive (0434.HK) close at on September 18, 2026?",numeric,"{""0.05"": 2.0, ""0.25"": 2.65, ""0.5"": 3.13, ""0.75"": 3.65, ""0.95"": 4.6}",cdf:201,2026-09-08T22:51:07.255169+00:00,numeric
 45767,"As of September 18, 2026, will NASA have announced a specific-day launch date for SpaceX Crew-13?",binary,0.4,0.4,2026-09-08T23:30:26.565401+00:00,crowd+esc
+45768,"Will Maykel 'Osorbo' Castillo Pérez have left Cuba by September 19, 2026?",binary,0.4,0.4,2026-09-10T03:56:41.202624+00:00,crowd+esc
