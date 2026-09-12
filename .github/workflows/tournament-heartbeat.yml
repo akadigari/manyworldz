@@ -1,0 +1,126 @@
+# Push-triggered twin of tournament.yml. This file lives ONLY on the
+# orphan `heartbeat` branch; it is the whole branch.
+#
+# Why it exists: GitHub throttles this repo's cron hard. Measured gaps
+# between scheduled tournament runs, 2026-08-26 to 08-29: 56, 77, 98,
+# 119, 120, 165, 199, 250, 251, 265, 294, 338, 456 minutes. MiniBench
+# questions stay open about 3 hours, and a question never answered
+# scores a hard zero, so a 7.6-hour gap silently fails the 80% coverage
+# gate the moment the Fall season drops questions.
+#
+# Push events are not throttled. may-bridge force-pushes a fresh
+# one-commit heartbeat every 5 minutes (deploy/bridge_tournament_cycle.sh)
+# and that push starts this run. The bridge holds no tokens: the secrets
+# stay here in GitHub, which is also why this beats running the engine
+# on the bridge.
+#
+# The job checks out `main` and runs the code there, so this branch
+# never drifts from the bot. tournament.yml's own cron stays on as a
+# watchdog in case the bridge dies; the bot dedupes through the
+# Metaculus my_forecasts flag and the committed log, so an overlap is
+# safe, and the shared `tournament` concurrency group keeps the two
+# from running at the same moment.
+
+name: tournament-heartbeat
+
+on:
+  push:
+    branches: [heartbeat]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write             # so it can commit the submission log back
+
+concurrency:
+  group: tournament
+  cancel-in-progress: false   # never cut a run off partway through
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    # 30, not 18: escalation can double a contested question's wall
+    # time, and a killed job loses the cycle's log and meter writes.
+    # The concurrency group serializes beats, so a long run only delays
+    # the next beat; the my_forecasts dedupe makes the delay safe.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main           # the branch this heartbeat is a trigger for
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: fetch open questions, run the crowd, submit answers
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          METACULUS_TOKEN: ${{ secrets.METACULUS_TOKEN }}
+          MANYWORLDZ_MODEL: sonnet
+          # Its own spend meter, not the Kalshi loop's. Sharing one file
+          # meant Kalshi's four daily runs could eat this budget, and a
+          # cap hit stops the whole cycle: a hard zero on every question
+          # in an open round.
+          MANYWORLDZ_SPEND_FILE: data/spend_tournament.json
+          ENGINE_BUDGET_USD: "15"
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL_MAP: ${{ vars.OPENROUTER_MODEL_MAP }}
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_CLIENT_SECRET: ${{ secrets.ASKNEWS_CLIENT_SECRET }}
+        run: python3 tournament.py
+
+      - name: save the submission log back to the repo
+        # always(): a budget-cap exit or a timeout kill must not discard
+        # the log rows of forecasts that were already submitted, or the
+        # spend the meter already recorded. Losing the meter means the
+        # next run re-spends the same headroom.
+        if: always()
+        run: |
+          git config user.name "manyworldz-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          # The status receipt carries a fresh timestamp every single beat.
+          # Committing that alone would put ~288 commits a day on main, so
+          # the receipt goes in when it carries news (a new forecast, new
+          # spend, a changed count) or once an hour regardless, which is
+          # still often enough that a stalled loop shows up as a stale file.
+          news=no
+          # spend_tournament.json, NOT spend.json: this workflow meters
+          # into its own file (see MANYWORLDZ_SPEND_FILE above), and
+          # diffing the Kalshi meter here silently dropped every beat's
+          # spend from the committed record (review finding 2026-08-31).
+          if [ -n "$(git diff --name-only -- data/tournament_log.csv data/spend_tournament.json)" ]; then
+            news=yes
+          fi
+          if [ "$news" = no ]; then
+            news=$(python3 - <<'PY'
+          import json, subprocess
+          try:
+              old = subprocess.run(["git", "show", "HEAD:data/tournament_status.json"],
+                                   capture_output=True, text=True, check=True).stdout
+              a, b = json.loads(old), json.load(open("data/tournament_status.json"))
+              a.pop("at", None), b.pop("at", None)
+              print("no" if a == b else "yes")
+          except Exception:
+              print("yes")
+          PY
+          )
+          fi
+          last=$(git log -1 --format=%ct -- data/tournament_status.json)
+          if [ $(( $(date +%s) - ${last:-0} )) -ge 3300 ]; then
+            news=yes
+          fi
+
+          if [ "$news" = no ]; then
+            git checkout -- data/tournament_status.json 2>/dev/null || true
+            echo "quiet beat: nothing new to record"
+            exit 0
+          fi
+
+          git add data/tournament_log.csv data/tournament_status.json data/spend_tournament.json 2>/dev/null || true
+          git diff --staged --quiet && exit 0
+          git commit -m "tournament: heartbeat cycle log update"
+          # One rebase retry covers a race with the cron watchdog or the bridge.
+          git push origin HEAD:main || { git pull --rebase origin main && git push origin HEAD:main; }
