@@ -83,3 +83,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45942,"Will Lula appear at TV Globo's presidential debate on October 1, 2026?",binary,0.272,0.272,2026-09-21T11:20:28.923354+00:00,crowd+esc
 45943,"What will the Brent crude front-month futures settlement price be on September 30, 2026?",numeric,"{""0.05"": 82.0, ""0.25"": 94.0, ""0.5"": 102.0, ""0.75"": 111.0, ""0.95"": 128.0}",cdf:201,2026-09-21T11:31:43.963069+00:00,numeric
 45944,"How many of Tokyo's 31 health-center districts will exceed the influenza ""alert"" threshold (10 cases per sentinel institution) in the most recent weekly surveillance report as of October 2, 2026?",discrete,"{""0.05"": 10.0, ""0.25"": 15.0, ""0.5"": 18.0, ""0.75"": 22.0, ""0.95"": 27.0}",cdf:33,2026-09-21T12:45:32.377176+00:00,numeric
+45945,"Will the ZNPP's 750 kV Dniprovska line be reconnected/available as of October 1, 2026?",binary,0.2367,0.2367,2026-09-21T13:00:27.516802+00:00,crowd
