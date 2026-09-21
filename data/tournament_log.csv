@@ -81,3 +81,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45940,What will be the result of the CD Eldense vs Real Oviedo LaLiga Hypermotion match on 2 October 2026?,multiple_choice,"{""CD Eldense win"": 0.36, ""Draw"": 0.28, ""Real Oviedo win"": 0.36}","{""CD Eldense win"": 0.36, ""Draw"": 0.28, ""Real Oviedo win"": 0.36}",2026-09-21T11:05:16.739410+00:00,mc
 45941,What will the September 2026 ISM Manufacturing PMI be?,numeric,"{""0.05"": 51.5, ""0.25"": 53.3, ""0.5"": 54.4, ""0.75"": 55.6, ""0.95"": 57.5}",cdf:201,2026-09-21T11:10:39.216333+00:00,numeric
 45942,"Will Lula appear at TV Globo's presidential debate on October 1, 2026?",binary,0.272,0.272,2026-09-21T11:20:28.923354+00:00,crowd+esc
+45943,"What will the Brent crude front-month futures settlement price be on September 30, 2026?",numeric,"{""0.05"": 82.0, ""0.25"": 94.0, ""0.5"": 102.0, ""0.75"": 111.0, ""0.95"": 128.0}",cdf:201,2026-09-21T11:31:43.963069+00:00,numeric
