@@ -96,3 +96,5 @@ qid,question,qtype,raw_prob,prob,at,source
 45955,Will Spain's registered unemployment fall in September 2026 compared to August 2026?,binary,0.3667,0.3667,2026-09-21T18:10:42.553415+00:00,crowd+esc
 45956,"Will NATO forces shoot down or destroy a Russian drone or aircraft over NATO territory between October 1 and October 2, 2026?",binary,0.1183,0.1183,2026-09-21T18:25:50.923626+00:00,crowd+esc
 45957,Will Iranian President Masoud Pezeshkian personally deliver Iran's statement at the UNGA 81 general debate (22–28 September 2026)?,binary,0.91,0.91,2026-09-21T18:40:28.696650+00:00,crowd+esc
+45958,"Will a CDC Epi-Aid investigation of Pennsylvania's measles outbreak be underway as of October 1, 2026?",binary,0.33,0.33,2026-09-21T19:05:49.502819+00:00,crowd+esc
+45959,"How many drones will Russia launch at Ukraine during September 2026, according to Ukrainian Air Force daily reports?",numeric,"{""0.05"": 3500.0, ""0.25"": 4900.0, ""0.5"": 6100.0, ""0.75"": 7300.0, ""0.95"": 8800.0}",cdf:201,2026-09-21T19:05:49.502819+00:00,numeric
