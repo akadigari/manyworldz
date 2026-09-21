@@ -70,3 +70,5 @@ qid,question,qtype,raw_prob,prob,at,source
 45929,"Will the Skyworks–Qorvo merger close before October 1, 2026?",binary,0.7,0.7,2026-09-21T05:00:31.218649+00:00,crowd+esc
 45930,"Will a third person be arrested or charged in the Tuscaloosa 'Shacktown Reunion' mass shooting by October 2, 2026?",binary,0.35,0.35,2026-09-21T05:25:27.348750+00:00,crowd+esc
 45931,"What will India's June–September 2026 southwest monsoon seasonal rainfall be, as a percentage of the Long Period Average, per IMD?",discrete,"{""0.05"": 82.5, ""0.25"": 84.0, ""0.5"": 85.0, ""0.75"": 86.0, ""0.95"": 88.0}",cdf:14,2026-09-21T06:22:55.749591+00:00,numeric
+45932,Will the FAO Vegetable Oil Price Index for September 2026 exceed its August 2026 value of 196.9?,binary,0.55,0.55,2026-09-21T06:50:47.927004+00:00,crowd+esc
+45933,How many cumulative 2026 human screwworm (gusano barrenador) cases will Honduras report as of early October 2026?,numeric,"{""0.05"": 300.0, ""0.25"": 308.0, ""0.5"": 315.0, ""0.75"": 325.0, ""0.95"": 345.0}",cdf:201,2026-09-21T06:50:47.927004+00:00,numeric
