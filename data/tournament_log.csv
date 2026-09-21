@@ -85,3 +85,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45944,"How many of Tokyo's 31 health-center districts will exceed the influenza ""alert"" threshold (10 cases per sentinel institution) in the most recent weekly surveillance report as of October 2, 2026?",discrete,"{""0.05"": 10.0, ""0.25"": 15.0, ""0.5"": 18.0, ""0.75"": 22.0, ""0.95"": 27.0}",cdf:33,2026-09-21T12:45:32.377176+00:00,numeric
 45945,"Will the ZNPP's 750 kV Dniprovska line be reconnected/available as of October 1, 2026?",binary,0.2367,0.2367,2026-09-21T13:00:27.516802+00:00,crowd
 45946,"Will Anthropic publicly file an S-1 IPO registration statement with the SEC before October 2, 2026?",binary,0.696,0.696,2026-09-21T13:30:40.661335+00:00,crowd+esc
+45947,"Will the CDC's measles data page show at least one confirmed 2026 U.S. measles death as of October 1, 2026?",binary,0.1117,0.1117,2026-09-21T14:20:25.193414+00:00,crowd+esc
