@@ -95,3 +95,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45954,"Will the US conduct a military strike inside Iranian territory on October 1 or October 2, 2026?",binary,0.58,0.58,2026-09-21T18:05:33.198652+00:00,crowd+esc
 45955,Will Spain's registered unemployment fall in September 2026 compared to August 2026?,binary,0.3667,0.3667,2026-09-21T18:10:42.553415+00:00,crowd+esc
 45956,"Will NATO forces shoot down or destroy a Russian drone or aircraft over NATO territory between October 1 and October 2, 2026?",binary,0.1183,0.1183,2026-09-21T18:25:50.923626+00:00,crowd+esc
+45957,Will Iranian President Masoud Pezeshkian personally deliver Iran's statement at the UNGA 81 general debate (22–28 September 2026)?,binary,0.91,0.91,2026-09-21T18:40:28.696650+00:00,crowd+esc
