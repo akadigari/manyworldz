@@ -99,3 +99,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45958,"Will a CDC Epi-Aid investigation of Pennsylvania's measles outbreak be underway as of October 1, 2026?",binary,0.33,0.33,2026-09-21T19:05:49.502819+00:00,crowd+esc
 45959,"How many drones will Russia launch at Ukraine during September 2026, according to Ukrainian Air Force daily reports?",numeric,"{""0.05"": 3500.0, ""0.25"": 4900.0, ""0.5"": 6100.0, ""0.75"": 7300.0, ""0.95"": 8800.0}",cdf:201,2026-09-21T19:05:49.502819+00:00,numeric
 45960,"How many cumulative confirmed New World screwworm animal cases in the US will APHIS report as of October 1, 2026?",discrete,"{""0.05"": 50.0, ""0.25"": 52.0, ""0.5"": 54.0, ""0.75"": 57.0, ""0.95"": 63.0}",cdf:10,2026-09-21T19:20:26.621901+00:00,numeric
+45961,"Will Kerala health authorities have officially confirmed at least one 2026 measles death in Malappuram district as of October 2, 2026?",binary,0.68,0.68,2026-09-21T19:40:31.752997+00:00,crowd+esc
