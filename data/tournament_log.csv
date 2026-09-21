@@ -76,3 +76,5 @@ qid,question,qtype,raw_prob,prob,at,source
 45935,"Will Brazil's STF hold an in-person plenary judgment session on October 1, 2026?",binary,0.7083,0.7083,2026-09-21T10:11:12.165718+00:00,crowd+esc
 45936,"Will the October 1, 2026 hearing on OpenAI's motion to dismiss Apple's trade-secrets suit go forward as scheduled?",binary,0.8,0.8,2026-09-21T10:11:12.165718+00:00,crowd+esc
 45937,What will the FAO Cereal Price Index value be for September 2026?,discrete,"{""0.05"": 111.5, ""0.25"": 115.0, ""0.5"": 117.0, ""0.75"": 119.0, ""0.95"": 123.0}",cdf:162,2026-09-21T10:30:41.136036+00:00,numeric
+45938,"What will Japan's national influenza cases per sentinel institution be in the MHLW weekly report published around October 2, 2026?",numeric,"{""0.05"": 7.0, ""0.25"": 9.5, ""0.5"": 12.0, ""0.75"": 15.0, ""0.95"": 19.0}",cdf:201,2026-09-21T10:45:45.782509+00:00,numeric
+45939,How many total measles cases in 2026 will Wisconsin DHS report on its outbreaks page as of early October 2026?,numeric,"{""0.05"": 168.0, ""0.25"": 178.0, ""0.5"": 195.0, ""0.75"": 215.0, ""0.95"": 240.0}",cdf:201,2026-09-21T10:45:45.782509+00:00,numeric
