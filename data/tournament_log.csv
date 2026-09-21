@@ -73,3 +73,5 @@ qid,question,qtype,raw_prob,prob,at,source
 45932,Will the FAO Vegetable Oil Price Index for September 2026 exceed its August 2026 value of 196.9?,binary,0.55,0.55,2026-09-21T06:50:47.927004+00:00,crowd+esc
 45933,How many cumulative 2026 human screwworm (gusano barrenador) cases will Honduras report as of early October 2026?,numeric,"{""0.05"": 300.0, ""0.25"": 308.0, ""0.5"": 315.0, ""0.75"": 325.0, ""0.95"": 345.0}",cdf:201,2026-09-21T06:50:47.927004+00:00,numeric
 45934,"How many cumulative laboratory-confirmed measles cases will Kerala's IDSP daily report show for 2026 as of the October 1, 2026 report?",numeric,"{""0.05"": 370.0, ""0.25"": 400.0, ""0.5"": 430.0, ""0.75"": 465.0, ""0.95"": 520.0}",cdf:201,2026-09-21T08:15:34.442853+00:00,numeric
+45935,"Will Brazil's STF hold an in-person plenary judgment session on October 1, 2026?",binary,0.7083,0.7083,2026-09-21T10:11:12.165718+00:00,crowd+esc
+45936,"Will the October 1, 2026 hearing on OpenAI's motion to dismiss Apple's trade-secrets suit go forward as scheduled?",binary,0.8,0.8,2026-09-21T10:11:12.165718+00:00,crowd+esc
