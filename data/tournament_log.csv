@@ -88,3 +88,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45947,"Will the CDC's measles data page show at least one confirmed 2026 U.S. measles death as of October 1, 2026?",binary,0.1117,0.1117,2026-09-21T14:20:25.193414+00:00,crowd+esc
 45948,"Will a finalized firm Boeing purchase agreement with a Chinese buyer be publicly confirmed as of October 1, 2026?",binary,0.132,0.132,2026-09-21T14:30:33.796261+00:00,crowd+esc
 45949,"How many confirmed measles cases will Pennsylvania report on its measles dashboard in the update closest to October 1, 2026?",numeric,"{""0.05"": 830.0, ""0.25"": 920.0, ""0.5"": 1010.0, ""0.75"": 1130.0, ""0.95"": 1320.0}",cdf:201,2026-09-21T15:25:31.520900+00:00,numeric
+45950,Will the September 2026 US jobs report show year-over-year average hourly earnings growth of 3.1% or higher?,binary,0.3833,0.3833,2026-09-21T15:50:28.519775+00:00,crowd+esc
