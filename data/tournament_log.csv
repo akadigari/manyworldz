@@ -107,3 +107,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45966,"Will the September 2026 US jobs report show nonfarm payrolls rose by more than 100,000?",binary,0.3,0.3,2026-09-22T00:10:50.522143+00:00,crowd
 45967,"Will the Kennedy Center's main building be open to the general public on October 2, 2026?",binary,0.064,0.064,2026-09-22T01:51:05.414257+00:00,crowd+esc
 45968,"What will the iShares China Large-Cap ETF (FXI) close at on October 1, 2026?",numeric,"{""0.05"": 30.5, ""0.25"": 33.0, ""0.5"": 34.4, ""0.75"": 35.8, ""0.95"": 38.0}",cdf:201,2026-09-22T04:41:13.770430+00:00,numeric
+45969,"Will the judicial reconstitution of Delphine Jubillar's murder take place at Cagnac-les-Mines on October 2, 2026?",binary,0.745,0.745,2026-09-22T05:30:31.565711+00:00,crowd+esc
