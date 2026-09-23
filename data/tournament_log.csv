@@ -119,3 +119,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45978,"Will the Armada Acquisition Corp. II / Evernorth business combination close on October 1 or 2, 2026?",binary,0.166,0.166,2026-09-23T02:51:28.022427+00:00,crowd+esc
 45979,How many total goals will be scored across both 27th Arabian Gulf Cup semi-finals on 3 October 2026?,discrete,"{""0.05"": 1.0, ""0.25"": 2.0, ""0.5"": 4.0, ""0.75"": 5.0, ""0.95"": 8.0}",cdf:11,2026-09-23T11:37:30.851531+00:00,numeric
 45980,"Will the 2026 Atlantic hurricane season reach at least 6 named storms by October 3, 2026?",binary,0.72,0.72,2026-09-23T21:11:44.173846+00:00,crowd
+45981,"How many orbital launches will SpaceX conduct between October 1 and October 3, 2026 (inclusive)?",discrete,"{""0.05"": 1.0, ""0.25"": 2.0, ""0.5"": 3.0, ""0.75"": 4.0, ""0.95"": 6.0}",cdf:8,2026-09-23T23:50:26.111835+00:00,numeric
