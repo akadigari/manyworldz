@@ -1,5 +1,5 @@
 {
- "generated_at": "2026-09-24T22:44:32.094228+00:00",
+ "generated_at": "2026-09-25T06:35:24.173752+00:00",
  "stats": {
   "total_picks": 6,
   "open": 6,
@@ -7,7 +7,7 @@
   "wins": 0,
   "losses": 0,
   "avg_clv_cents": -0.33,
-  "spend_usd": 5.88
+  "spend_usd": 5.96
  },
  "picks": [
   {
@@ -102,7 +102,7 @@
   }
  ],
  "cycle": {
-  "at": "2026-09-24T22:43:48.453652+00:00",
+  "at": "2026-09-25T06:34:50.089741+00:00",
   "markets": [
    {
     "ticker": "KXCITRINI-28JUL01",
@@ -115,31 +115,31 @@
     "votes": [
      {
       "probability": 0.4,
-      "reason": "Catastrophic economic scenarios of 'Citrini' magnitude happen roughly 0.5\u20132% annually; the 22% market price appears inflated by recency bias and media coverage, so revert toward ~5\u20138% true probability",
+      "reason": "Base rate: major economic scenarios discussed in prediction markets and media hype occur roughly 15\u201325% of the time; the 22% market price aligns with this, suggesting media amplification hasn't moved ",
       "futures": [
        {
-        "story": "A major supply chain disruption or financial shock occurs but is contained within 6 months through policy intervention, similar to post-2008 recovery patterns.",
+        "story": "A major supply-chain disruption or financial shock occurs but is contained within 6 months through coordinated policy response, causing temporary but not systemic economic damage.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "Market volatility spikes 40-60% over 2-3 months but equities recover most losses within a year, following the base rate of 3-4 major corrections per decade.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "A genuine systemic economic collapse unfolds with sustained multi-year depression, mirroring 1930s or Japan 1990s\u2014extremely rare events occurring roughly once per 50-100 years.",
+        "story": "Speculative panic buying and media amplification cause real economic disruption (runs, volatility, credit tightening) that persists for 12+ months before stabilizing.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Geopolitical tensions escalate into regional conflict affecting energy prices for 18 months but global GDP growth remains positive, consistent with Cold War era frequency.",
+        "story": "The predicted shock fails to materialize; market participants gradually realize the scenario was overblown and attention shifts to other concerns.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "A novel financial mechanism breaks unexpectedly (crypto contagion, derivative cascade) causing 10-15% GDP contraction before stabilization, an intermediate tail event.",
+        "story": "A genuine structural economic crisis emerges independently of Citrini predictions but gets retroactively labeled as the 'Citrini scenario' by media.",
         "resolves": "YES",
+        "agent": "base rates"
+       },
+       {
+        "story": "The scenario becomes a self-referential meme in financial media without triggering measurable economic consequences beyond trading activity.",
+        "resolves": "NO",
         "agent": "base rates"
        }
       ],
@@ -147,30 +147,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "The newest signal (Kalshi News citing 30% odds) is thin\u2014it's a market move, not independent evidence\u2014and conflicts with Noahpinion's skepticism; base rates suggest tail-risk scenarios resolve NO ~75\u20138",
+      "reason": "Base rate: tail-risk scenarios materialize roughly 5\u201315% of the time; the newest data is thin (mostly market activity and media chatter, no hard facts), so I weight the 22% price slightly up to ~26% g",
       "futures": [
        {
-        "story": "A major supply-chain disruption or financial contagion event occurs within 18 months, matching the Citrini scenario's core mechanism.",
+        "story": "A major supply chain disruption or financial contagion spreads globally within 18 months, causing measurable economic shock that gets labeled retrospectively as the Citrini scenario.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "The term 'Citrini scenario' becomes internet folklore but no corresponding real economic shock materializes, and the market resolves on a narrow definitional technicality favoring NO.",
+        "story": "The term 'Citrini scenario' remains a niche prediction-market meme; no crisis matching its definition occurs, and mainstream media moves on.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "A moderate economic downturn happens (2\u20133% GDP contraction) that some call 'Citrini-like' but doesn't meet the market's specific quantitative threshold.",
+        "story": "A significant but localized economic event happens (regional bank failure, sector crash) that some commentators call Citrini-like, but it falls short of the scenario's full criteria.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Regulatory or policy changes preemptively defuse the specific vulnerability the Citrini scenario describes, so it never triggers.",
+        "story": "Policy interventions or market corrections prevent the feared scenario from materializing, with analysts later crediting early warnings from markets like Kalshi.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "A black-swan geopolitical or pandemic event triggers severe economic dislocation that participants retroactively label as the Citrini scenario.",
+        "story": "An AI-related economic disruption or unexpected shock occurs that participants broadly agree matches the Citrini definition.",
         "resolves": "YES",
         "agent": "fresh news"
        }
@@ -179,31 +179,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Market is pricing 22% when historical base rate for true financial system shocks (2008, 1987) is roughly 0.5% per year; headlines show hype inflation but real tail risk justifies ~26% fair price\u2014sligh",
+      "reason": "Major economic shocks happen ~20\u201325% of the time on any 2\u20133 year horizon (base rate), media hype raises attention but rarely predicts correctly, and the current 22% price is fairly anchored to that hi",
       "futures": [
        {
-        "story": "A financial institution fails due to AI-driven trading errors, triggering a brief market circuit-breaker but authorities contain it within 48 hours.",
-        "resolves": "NO",
-        "agent": "market logic"
-       },
-       {
-        "story": "Coordinated cyberattack on multiple exchanges using AI exploits causes a week-long trading halt and 15% asset value destruction before recovery begins.",
+        "story": "A major supply-chain disruption or financial shock occurs within 18 months, media calls it 'Citrini-like,' and prediction markets formally resolve it as YES.",
         "resolves": "YES",
         "agent": "market logic"
        },
        {
-        "story": "A major economy enters recession from unrelated causes while AI mishaps make headlines, but people conflate them\u2014the 'Citrini scenario' remains theoretical.",
+        "story": "Economic conditions remain volatile but stable; no single event matches the specific definition of 'Citrini scenario' and the market resolves on technical grounds as NO.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Algorithmic glitch cascades through derivative markets over three days, destroying $200B in notional value but equity markets stabilize within a month.",
+        "story": "Inflation or a regional recession happens, but it's attributed to known causes (Fed policy, geopolitics) rather than the novel mechanism described in Citrini posts, resolving NO.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "AI-powered weaponized financial attack by state actor triggers multi-day global liquidity freeze, 30% equity drawdown, and emergency central bank intervention lasting months.",
+        "story": "AI-related economic disruption accelerates faster than expected and Citrini's framework becomes the dominant lens for understanding it, pushing resolution toward YES.",
         "resolves": "YES",
+        "agent": "market logic"
+       },
+       {
+        "story": "The market becomes too ambiguous about what 'Citrini scenario' means; disputes arise and the contract resolves ambiguously or gets extended indefinitely.",
+        "resolves": "NO",
         "agent": "market logic"
        }
       ],
@@ -211,31 +211,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate for named 'doom scenarios' actually materializing is ~5-10%; smart money is likely either taking contrarian NO positions or scalping the hype, not accumulating YES\u2014the 22% price suggests ret",
+      "reason": "Smart money hasn't moved the market much from 22% despite scary headlines\u2014suggesting informed traders see real tail risk but not base-rate-breaking odds; historical financial crises cluster around 5-1",
       "futures": [
        {
-        "story": "A major supply chain disruption or financial institution failure occurs within 18 months, market treats it as 'Citrini-like,' smart money who bought YES at 22% locks in 3-4x returns.",
+        "story": "A major financial institution fails due to interconnected derivatives exposure, triggering a 2008-style credit freeze that persists for months.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "The scenario remains defined so vaguely that resolution criteria become contested; market resolves ambiguously or gets appealed, leaving smart money holding uncertain positions.",
+        "story": "Market volatility spikes sharply but central banks coordinate interventions within days, preventing systemic cascade and containing damage.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "Economic data normalizes, the media cycle moves on without a triggering event, and the market drifts back to single-digit odds as informed traders exit positions at a loss.",
+        "story": "A geopolitical event (Taiwan strait, Middle East escalation) causes temporary equity selloff and energy shock, but resolves within weeks without structural economic damage.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "A genuine but modest economic shock occurs (mild recession, regional disruption) that barely meets the threshold; informed traders debate resolution and some bail early at 50-70% odds.",
+        "story": "Severe recession occurs with 8%+ unemployment but remains contained to specific sectors; no full financial system breakdown happens.",
+        "resolves": "NO",
+        "agent": "smart money"
+       },
+       {
+        "story": "A novel economic mechanism (AI-driven algorithmic trading cascade, cryptographic infrastructure attack) creates an unprecedented shock that defies historical comparison.",
         "resolves": "YES",
-        "agent": "smart money"
-       },
-       {
-        "story": "Smart money recognizes this as manufactured hype with poor historical base rates (tail events ~5% or less) and sells into retail FOMO, pushing price back toward 15% within months.",
-        "resolves": "NO",
         "agent": "smart money"
        }
       ],
@@ -243,31 +243,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Kalshi's economic incentive is to keep the market active and credible; ambiguous scenarios tend to resolve YES if they generate trading volume, but base rates for specific 'doom' events are low (~5-15",
+      "reason": "Kalshi and financial media benefit from sensationalism and engagement; the 22% price likely reflects marketing amplification plus genuine hedging by informed traders, not true probability\u2014base rate fo",
       "futures": [
        {
-        "story": "A financial institution fails spectacularly in 2025, markets panic-sell, and media outlets retroactively claim it matches the 'Citrini scenario' definition enough to resolve YES.",
+        "story": "Kalshi's marketing team deliberately amplifies scary economic scenarios to drive trading volume and user engagement on their platform.",
+        "resolves": "NO",
+        "agent": "insider logic"
+       },
+       {
+        "story": "Financial media outlets compete for clicks by covering prediction-market movements as news, creating a feedback loop that inflates the perceived importance of what is ultimately a niche betting market",
+        "resolves": "NO",
+        "agent": "insider logic"
+       },
+       {
+        "story": "A subset of sophisticated traders with actual conviction about economic disruption use the market to hedge real positions, pushing the price up while most retail participants treat it as entertainment",
         "resolves": "YES",
         "agent": "insider logic"
        },
        {
-        "story": "The scenario requires such a specific chain of events that when partial economic stress happens, Kalshi's resolution committee votes NO because the actual outcome doesn't meet the precise technical cr",
+        "story": "The Washington Post profile and media attention causes casual traders to FOMO into YES positions, inflating the price beyond what any actual probability assessment would justify.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "The market becomes a self-fulfilling prophecy as investors spooked by headlines sell positions, triggering modest volatility that fails to reach the threshold needed for YES resolution.",
-        "resolves": "NO",
-        "agent": "insider logic"
-       },
-       {
-        "story": "A genuine systemic shock occurs in emerging markets or crypto, traders and media debate intensely whether it 'counts' as Citrini, and Kalshi resolves ambiguously or YES due to pressure from YES holder",
+        "story": "An actual economic shock occurs within the resolution window because structural vulnerabilities exist, and the market price reflects early-mover awareness before mainstream consensus catches up.",
         "resolves": "YES",
-        "agent": "insider logic"
-       },
-       {
-        "story": "Nothing remarkable happens economically over the resolution window, the narrative fades from headlines, and it resolves NO by default as the most boring but statistically typical outcome.",
-        "resolves": "NO",
         "agent": "insider logic"
        }
       ],
@@ -275,31 +275,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "The market price of 22% is likely inflated by media attention and availability bias rather than fundamental economic risk; truly novel crisis categories almost never materialize on schedule, and undef",
+      "reason": "Base rate of named economic disaster scenarios actually materializing is extremely low; most are media constructs that fade, making 22% seem inflated by recency bias and prediction market speculation ",
       "futures": [
        {
-        "story": "A major bank fails due to unrelated regional real estate collapse, media incorrectly labels it 'Citrini-like,' market resolves YES on semantic confusion.",
+        "story": "Market hype cycles through novel economic terms, media covers it intensely for 6 months, then everyone moves on to the next crisis without the predicted event occurring.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "A real but minor economic disruption happens that gets retroactively labeled 'Citrini-like' by people who bet YES, creating false resolution.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "The term 'Citrini scenario' is so vaguely defined that reasonable people disagree on whether actual events match it, leading to disputed resolution.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "Prediction markets themselves create a feedback loop where betting activity on 'Citrini' generates enough media attention that it becomes a self-fulfilling prophecy.",
         "resolves": "YES",
         "agent": "skeptic"
        },
        {
-        "story": "The term 'Citrini scenario' remains academic jargon; no actual economic shock occurs and the market quietly expires worthless.",
-        "resolves": "NO",
-        "agent": "skeptic"
-       },
-       {
-        "story": "Market operators face pressure to define 'Citrini scenario' with legal precision, discover the original prediction was too vague to trigger, resolve NO on technical grounds.",
-        "resolves": "NO",
-        "agent": "skeptic"
-       },
-       {
-        "story": "Prediction market hype itself becomes a self-fulfilling prophecy as investors hedge against the concept, causing a minor financial tremor that barely qualifies but market resolves YES anyway.",
+        "story": "An actual unprecedented economic shock occurs independently of market speculation and gets labeled the Citrini scenario after the fact by financial commentators.",
         "resolves": "YES",
-        "agent": "skeptic"
-       },
-       {
-        "story": "Historical base rate for novel economic scenarios (pre-defined by prediction markets) becoming reality within 5 years is below 5%; nothing happens and the 22% odds simply reflect irrational fear.",
-        "resolves": "NO",
         "agent": "skeptic"
        }
       ],
@@ -307,31 +307,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Major economic shocks happen roughly once per decade, making base rate ~10% per year; market price of 22% is moderately elevated, likely reflecting real tail risk plus novelty/media attention premium\u2014",
+      "reason": "Base rate for severe economic shocks (stagflation-scale) is roughly 5\u201315% per decade in developed economies; the 22% market price is elevated but reasonable given recent volatility, suggesting 3 in 5 ",
       "futures": [
        {
-        "story": "A financial crisis similar to 2008 occurs within 2 years, media retroactively calls it 'Citrini-like,' market resolves YES on technical grounds despite ambiguity.",
+        "story": "A major supply-chain disruption causes sharp inflation and recession simultaneously, matching the 'Citrini' economic shock template from historical stagflation episodes.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Economic conditions remain volatile but no single shock event occurs; market expires with no clear triggering event and resolves NO by default criteria.",
+        "story": "Market conditions tighten but central banks manage a soft landing, and the scenario fails to materialize as predicted despite elevated risk.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "A localized banking or currency crisis happens in a small economy; market judges it too minor to meet 'Citrini scenario' threshold and resolves NO.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Market attention fades, resolution criteria remain vague for years, contract gets delisted or expires ambiguously without clear YES resolution despite economic turbulence.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "A genuine systemic shock with widespread contagion occurs and explicitly matches stated Citrini criteria, resolves YES unambiguously.",
+        "story": "A geopolitical event (trade war, conflict) triggers the exact cascade described in Citrini materials, validating the scenario's specific mechanism.",
         "resolves": "YES",
+        "agent": "base rates"
+       },
+       {
+        "story": "Financial media hype around Citrini fades as quarterly earnings remain stable and unemployment stays low through the resolution window.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "A credit-market freeze or major institutional default occurs but is contained before spreading into the broader economy-wide shock the scenario requires.",
+        "resolves": "NO",
         "agent": "base rates"
        }
       ],
@@ -339,30 +339,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Fresh news shows real disagreement (Noahpinion dismissive, Kalshi News shows 30% spike, Washington Post treats it seriously), but the newest signal is thin\u2014no hard event triggered the jump, only marke",
+      "reason": "The newest signals are thin but mixed\u2014one Kalshi data point claims 30% odds (above market's 22%), while Noah Smith calls it scaremongering; historically, named economic doom scenarios materialize ~15\u2013",
       "futures": [
        {
-        "story": "A major supply-chain disruption or financial institution fails, markets drop 15-20%, media calls it 'the Citrini scenario,' and prediction market resolves YES based on outcome matching pre-defined cri",
+        "story": "A major supply-chain disruption or financial contagion spreads globally within 18 months, matching the specific economic shock parameters the market defines as 'Citrini.'",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "Economic stress occurs but stays within normal recession bounds; market participants debate whether it counts as 'Citrini' but resolution criteria aren't met, so it resolves NO despite real turmoil.",
+        "story": "Market volatility spikes but dissipates without triggering the threshold criteria; the scenario remains theoretical rather than operationalized into actual resolution.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Nothing materially worse than baseline forecasts happens over the timeframe; Citrini fades as a meme, market resolves NO, people move on to next scary scenario.",
+        "story": "A severe but localized crisis (one region or sector) occurs that some claim fits Citrini, but market judges rule it doesn't meet the defined scope or severity bar.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "An actual tail-risk event (geopolitical, pandemic resurgence, AI-related disruption) crystallizes suddenly; market quickly reprices to 40-60% and resolves YES within weeks.",
+        "story": "Geopolitical or monetary policy shock unfolds in the next year that visibly pushes real economic metrics toward Citrini-like conditions, though the full scenario doesn't fully crystallize.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "The market criteria remain vague enough that resolution hinges on subjective judgment by the exchange, creating months of ambiguity and eventual split decision or appeal.",
+        "story": "The term 'Citrini scenario' becomes a media meme disconnected from its original definition, and the market resolves ambiguously or gets abandoned before clear YES/NO emerges.",
         "resolves": "NO",
         "agent": "fresh news"
        }
@@ -372,202 +372,202 @@
     ],
     "futures": [
      {
-      "story": "A major supply chain disruption or financial shock occurs but is contained within 6 months through policy intervention, similar to post-2008 recovery patterns.",
+      "story": "A major supply-chain disruption or financial shock occurs but is contained within 6 months through coordinated policy response, causing temporary but not systemic economic damage.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Market volatility spikes 40-60% over 2-3 months but equities recover most losses within a year, following the base rate of 3-4 major corrections per decade.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "A genuine systemic economic collapse unfolds with sustained multi-year depression, mirroring 1930s or Japan 1990s\u2014extremely rare events occurring roughly once per 50-100 years.",
+      "story": "Speculative panic buying and media amplification cause real economic disruption (runs, volatility, credit tightening) that persists for 12+ months before stabilizing.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Geopolitical tensions escalate into regional conflict affecting energy prices for 18 months but global GDP growth remains positive, consistent with Cold War era frequency.",
+      "story": "The predicted shock fails to materialize; market participants gradually realize the scenario was overblown and attention shifts to other concerns.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "A novel financial mechanism breaks unexpectedly (crypto contagion, derivative cascade) causing 10-15% GDP contraction before stabilization, an intermediate tail event.",
+      "story": "A genuine structural economic crisis emerges independently of Citrini predictions but gets retroactively labeled as the 'Citrini scenario' by media.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "A major supply-chain disruption or financial contagion event occurs within 18 months, matching the Citrini scenario's core mechanism.",
+      "story": "The scenario becomes a self-referential meme in financial media without triggering measurable economic consequences beyond trading activity.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "A major supply chain disruption or financial contagion spreads globally within 18 months, causing measurable economic shock that gets labeled retrospectively as the Citrini scenario.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "The term 'Citrini scenario' becomes internet folklore but no corresponding real economic shock materializes, and the market resolves on a narrow definitional technicality favoring NO.",
+      "story": "The term 'Citrini scenario' remains a niche prediction-market meme; no crisis matching its definition occurs, and mainstream media moves on.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "A moderate economic downturn happens (2\u20133% GDP contraction) that some call 'Citrini-like' but doesn't meet the market's specific quantitative threshold.",
+      "story": "A significant but localized economic event happens (regional bank failure, sector crash) that some commentators call Citrini-like, but it falls short of the scenario's full criteria.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Regulatory or policy changes preemptively defuse the specific vulnerability the Citrini scenario describes, so it never triggers.",
+      "story": "Policy interventions or market corrections prevent the feared scenario from materializing, with analysts later crediting early warnings from markets like Kalshi.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "A black-swan geopolitical or pandemic event triggers severe economic dislocation that participants retroactively label as the Citrini scenario.",
+      "story": "An AI-related economic disruption or unexpected shock occurs that participants broadly agree matches the Citrini definition.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "A financial institution fails due to AI-driven trading errors, triggering a brief market circuit-breaker but authorities contain it within 48 hours.",
-      "resolves": "NO",
-      "agent": "market logic"
-     },
-     {
-      "story": "Coordinated cyberattack on multiple exchanges using AI exploits causes a week-long trading halt and 15% asset value destruction before recovery begins.",
+      "story": "A major supply-chain disruption or financial shock occurs within 18 months, media calls it 'Citrini-like,' and prediction markets formally resolve it as YES.",
       "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "A major economy enters recession from unrelated causes while AI mishaps make headlines, but people conflate them\u2014the 'Citrini scenario' remains theoretical.",
+      "story": "Economic conditions remain volatile but stable; no single event matches the specific definition of 'Citrini scenario' and the market resolves on technical grounds as NO.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Algorithmic glitch cascades through derivative markets over three days, destroying $200B in notional value but equity markets stabilize within a month.",
+      "story": "Inflation or a regional recession happens, but it's attributed to known causes (Fed policy, geopolitics) rather than the novel mechanism described in Citrini posts, resolving NO.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "AI-powered weaponized financial attack by state actor triggers multi-day global liquidity freeze, 30% equity drawdown, and emergency central bank intervention lasting months.",
+      "story": "AI-related economic disruption accelerates faster than expected and Citrini's framework becomes the dominant lens for understanding it, pushing resolution toward YES.",
       "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "A major supply chain disruption or financial institution failure occurs within 18 months, market treats it as 'Citrini-like,' smart money who bought YES at 22% locks in 3-4x returns.",
+      "story": "The market becomes too ambiguous about what 'Citrini scenario' means; disputes arise and the contract resolves ambiguously or gets extended indefinitely.",
+      "resolves": "NO",
+      "agent": "market logic"
+     },
+     {
+      "story": "A major financial institution fails due to interconnected derivatives exposure, triggering a 2008-style credit freeze that persists for months.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "The scenario remains defined so vaguely that resolution criteria become contested; market resolves ambiguously or gets appealed, leaving smart money holding uncertain positions.",
+      "story": "Market volatility spikes sharply but central banks coordinate interventions within days, preventing systemic cascade and containing damage.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Economic data normalizes, the media cycle moves on without a triggering event, and the market drifts back to single-digit odds as informed traders exit positions at a loss.",
+      "story": "A geopolitical event (Taiwan strait, Middle East escalation) causes temporary equity selloff and energy shock, but resolves within weeks without structural economic damage.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "A genuine but modest economic shock occurs (mild recession, regional disruption) that barely meets the threshold; informed traders debate resolution and some bail early at 50-70% odds.",
-      "resolves": "YES",
-      "agent": "smart money"
-     },
-     {
-      "story": "Smart money recognizes this as manufactured hype with poor historical base rates (tail events ~5% or less) and sells into retail FOMO, pushing price back toward 15% within months.",
+      "story": "Severe recession occurs with 8%+ unemployment but remains contained to specific sectors; no full financial system breakdown happens.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "A financial institution fails spectacularly in 2025, markets panic-sell, and media outlets retroactively claim it matches the 'Citrini scenario' definition enough to resolve YES.",
+      "story": "A novel economic mechanism (AI-driven algorithmic trading cascade, cryptographic infrastructure attack) creates an unprecedented shock that defies historical comparison.",
       "resolves": "YES",
-      "agent": "insider logic"
+      "agent": "smart money"
      },
      {
-      "story": "The scenario requires such a specific chain of events that when partial economic stress happens, Kalshi's resolution committee votes NO because the actual outcome doesn't meet the precise technical cr",
-      "resolves": "NO",
-      "agent": "insider logic"
-     },
-     {
-      "story": "The market becomes a self-fulfilling prophecy as investors spooked by headlines sell positions, triggering modest volatility that fails to reach the threshold needed for YES resolution.",
+      "story": "Kalshi's marketing team deliberately amplifies scary economic scenarios to drive trading volume and user engagement on their platform.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "A genuine systemic shock occurs in emerging markets or crypto, traders and media debate intensely whether it 'counts' as Citrini, and Kalshi resolves ambiguously or YES due to pressure from YES holder",
-      "resolves": "YES",
-      "agent": "insider logic"
-     },
-     {
-      "story": "Nothing remarkable happens economically over the resolution window, the narrative fades from headlines, and it resolves NO by default as the most boring but statistically typical outcome.",
+      "story": "Financial media outlets compete for clicks by covering prediction-market movements as news, creating a feedback loop that inflates the perceived importance of what is ultimately a niche betting market",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "A major bank fails due to unrelated regional real estate collapse, media incorrectly labels it 'Citrini-like,' market resolves YES on semantic confusion.",
+      "story": "A subset of sophisticated traders with actual conviction about economic disruption use the market to hedge real positions, pushing the price up while most retail participants treat it as entertainment",
+      "resolves": "YES",
+      "agent": "insider logic"
+     },
+     {
+      "story": "The Washington Post profile and media attention causes casual traders to FOMO into YES positions, inflating the price beyond what any actual probability assessment would justify.",
+      "resolves": "NO",
+      "agent": "insider logic"
+     },
+     {
+      "story": "An actual economic shock occurs within the resolution window because structural vulnerabilities exist, and the market price reflects early-mover awareness before mainstream consensus catches up.",
+      "resolves": "YES",
+      "agent": "insider logic"
+     },
+     {
+      "story": "Market hype cycles through novel economic terms, media covers it intensely for 6 months, then everyone moves on to the next crisis without the predicted event occurring.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "A real but minor economic disruption happens that gets retroactively labeled 'Citrini-like' by people who bet YES, creating false resolution.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "The term 'Citrini scenario' is so vaguely defined that reasonable people disagree on whether actual events match it, leading to disputed resolution.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "Prediction markets themselves create a feedback loop where betting activity on 'Citrini' generates enough media attention that it becomes a self-fulfilling prophecy.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "The term 'Citrini scenario' remains academic jargon; no actual economic shock occurs and the market quietly expires worthless.",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "Market operators face pressure to define 'Citrini scenario' with legal precision, discover the original prediction was too vague to trigger, resolve NO on technical grounds.",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "Prediction market hype itself becomes a self-fulfilling prophecy as investors hedge against the concept, causing a minor financial tremor that barely qualifies but market resolves YES anyway.",
+      "story": "An actual unprecedented economic shock occurs independently of market speculation and gets labeled the Citrini scenario after the fact by financial commentators.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "Historical base rate for novel economic scenarios (pre-defined by prediction markets) becoming reality within 5 years is below 5%; nothing happens and the 22% odds simply reflect irrational fear.",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "A financial crisis similar to 2008 occurs within 2 years, media retroactively calls it 'Citrini-like,' market resolves YES on technical grounds despite ambiguity.",
+      "story": "A major supply-chain disruption causes sharp inflation and recession simultaneously, matching the 'Citrini' economic shock template from historical stagflation episodes.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Economic conditions remain volatile but no single shock event occurs; market expires with no clear triggering event and resolves NO by default criteria.",
+      "story": "Market conditions tighten but central banks manage a soft landing, and the scenario fails to materialize as predicted despite elevated risk.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "A localized banking or currency crisis happens in a small economy; market judges it too minor to meet 'Citrini scenario' threshold and resolves NO.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Market attention fades, resolution criteria remain vague for years, contract gets delisted or expires ambiguously without clear YES resolution despite economic turbulence.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "A genuine systemic shock with widespread contagion occurs and explicitly matches stated Citrini criteria, resolves YES unambiguously.",
+      "story": "A geopolitical event (trade war, conflict) triggers the exact cascade described in Citrini materials, validating the scenario's specific mechanism.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "A major supply-chain disruption or financial institution fails, markets drop 15-20%, media calls it 'the Citrini scenario,' and prediction market resolves YES based on outcome matching pre-defined cri",
+      "story": "Financial media hype around Citrini fades as quarterly earnings remain stable and unemployment stays low through the resolution window.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "A credit-market freeze or major institutional default occurs but is contained before spreading into the broader economy-wide shock the scenario requires.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "A major supply-chain disruption or financial contagion spreads globally within 18 months, matching the specific economic shock parameters the market defines as 'Citrini.'",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Economic stress occurs but stays within normal recession bounds; market participants debate whether it counts as 'Citrini' but resolution criteria aren't met, so it resolves NO despite real turmoil.",
+      "story": "Market volatility spikes but dissipates without triggering the threshold criteria; the scenario remains theoretical rather than operationalized into actual resolution.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Nothing materially worse than baseline forecasts happens over the timeframe; Citrini fades as a meme, market resolves NO, people move on to next scary scenario.",
+      "story": "A severe but localized crisis (one region or sector) occurs that some claim fits Citrini, but market judges rule it doesn't meet the defined scope or severity bar.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "An actual tail-risk event (geopolitical, pandemic resurgence, AI-related disruption) crystallizes suddenly; market quickly reprices to 40-60% and resolves YES within weeks.",
+      "story": "Geopolitical or monetary policy shock unfolds in the next year that visibly pushes real economic metrics toward Citrini-like conditions, though the full scenario doesn't fully crystallize.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "The market criteria remain vague enough that resolution hinges on subjective judgment by the exchange, creating months of ambiguity and eventual split decision or appeal.",
+      "story": "The term 'Citrini scenario' becomes a media meme disconnected from its original definition, and the market resolves ambiguously or gets abandoned before clear YES/NO emerges.",
       "resolves": "NO",
       "agent": "fresh news"
      }
@@ -588,31 +588,31 @@
     "votes": [
      {
       "probability": 0.4,
-      "reason": "Historical base rate: sitting governors rarely win the presidency (~8%), and front-runners in early 2024 polling for 2028 become nominees in only ~25-30% of cases; at 14% the market is slightly underw",
+      "reason": "Base rate: sitting vice presidents or their favored successors win Democratic nominations roughly 60-70% of the time; Newsom as a challenger to an incumbent VP's successor faces structural headwinds, ",
       "futures": [
        {
-        "story": "Harris wins reelection in 2024, runs again in 2028 as the incumbent, and Newsom stays loyal as California governor rather than challenge her.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Harris loses in 2024, Democrats fracture wide open, and Newsom emerges from a crowded primary field of 6+ candidates as the consensus moderate alternative to a progressive challenger.",
+        "story": "Harris stumbles in 2026 midterms and faces donor defection, clearing the field for Newsom who consolidates early endorsements and wins Iowa.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Harris wins in 2024 but becomes unpopular by 2027, party pressure forces her aside, and Newsom consolidates support as the establishment favorite in a compressed primary timeline.",
+        "story": "Harris remains popular with the Democratic base, runs again in 2028, and wins the primary despite Newsom's strong California machine.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "A third candidate emerges (Shapiro, Beshear, or 2024 VP) who splits the anti-Harris vote with Newsom, allowing Harris to win with plurality support.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "Newsom pivots to Senate run in 2026 or takes Cabinet position under Harris, removing himself from 2028 presidential consideration entirely.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "Harris declines to run in early 2027, Newsom becomes consensus establishment choice and runs uncontested through the primary.",
         "resolves": "YES",
-        "agent": "base rates"
-       },
-       {
-        "story": "A charismatic younger governor or senator (Beshear, Moore, Shapiro) surges during the primary and Newsom finishes third or lower despite early polling, splitting the moderate lane.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Newsom runs but stumbles on a major scandal or gets outmaneuvered by an establishment-backed candidate with stronger labor or grassroots support in Iowa and New Hampshire.",
-        "resolves": "NO",
         "agent": "base rates"
        }
       ],
@@ -620,31 +620,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Fresh news shows Newsom polling well among CA Democrats and being treated as a serious contender by major outlets, but the headlines are thin\u2014mostly naming possibilities rather than tracking actual pr",
+      "reason": "Fresh polling shows Newsom competitive in California and Democrats genuinely exploring options, but the newest signals are thin\u2014Harris is still actively campaigning for 2028 and no actual primary race",
       "futures": [
        {
-        "story": "Newsom builds on California's Democratic machinery and strong polling among party activists to win early primaries, consolidating moderate support before super-Tuesday.",
+        "story": "Harris stumbles in midterm campaigning, party coalesces around Newsom as fresher alternative by 2027.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "A younger governor like Beshear or Moore captures the 'fresh start' narrative that Democrats crave post-2024, fragmenting the field and preventing Newsom from reaching the threshold.",
+        "story": "Harris consolidates support through 2026 midterms and runs unopposed or nearly unopposed as incumbent-adjacent frontrunner.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Harris remains politically viable and either seeks another term or endorses a allied candidate, blocking Newsom's path despite his polling strength in California.",
+        "story": "Neither Harris nor Newsom emerges clearly ahead; party splits between them and 2-3 other candidates including governors or senators.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "National economic conditions and Democratic primary turnout shift dramatically between now and 2028, elevating an unexpected challenger over the frontrunner consensus.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "Newsom runs and wins the nomination as the Democratic establishment's preferred centrist after a contested primary between him and one other major contender.",
+        "story": "Newsom aggressively campaigns in early primary states, builds national profile, and wins Iowa/New Hampshire before Harris enters race.",
         "resolves": "YES",
+        "agent": "fresh news"
+       },
+       {
+        "story": "Economic recovery and Harris's VP record strengthen her case; she announces early and Newsom defers as VP.",
+        "resolves": "NO",
         "agent": "fresh news"
        }
       ],
@@ -652,31 +652,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "14% feels slightly low given Newsom's profile, media buzz, and California delegates, but realistic because sitting VPs with no scandal typically win renomination, so 18\u201322% seems fairer for a strong c",
+      "reason": "Historical base rate: sitting VPs or their party's clear heirs win primaries ~70% of the time when running; Newsom faces structural headwinds (Harris hasn't lost yet, moderate lane is crowded) but rec",
       "futures": [
        {
-        "story": "Harris struggles in early primaries, party insiders coalesce around Newsom as the fresh, younger alternative who won't face incumbent baggage.",
+        "story": "Harris stumbles in 2026 midterms messaging, party coalesces around Newsom as the fresh-start candidate by 2027.",
         "resolves": "YES",
         "agent": "market logic"
        },
        {
-        "story": "Harris wins Iowa and New Hampshire decisively, consolidating moderate and establishment support before Newsom can build momentum.",
+        "story": "Harris runs again in 2028, wins the primary through incumbent-like advantages despite moderate enthusiasm.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "A strong progressive challenger (Shapiro, Beshear, or Moore) fragments the field so badly that the party establishment drafts an unexpected consensus candidate at convention.",
+        "story": "A third Democrat (Shapiro, Beshear, or similar) emerges as the consensus moderate pick, splitting the anti-Harris lane with Newsom.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Newsom emerges as the compromise choice after a contested convention where neither Harris nor a progressive candidate can reach 50% on early ballots.",
+        "story": "Newsom peaks early, Harris consolidates labor and Black voters, and Josh Shapiro captures swing-state credentials by Iowa.",
+        "resolves": "NO",
+        "agent": "market logic"
+       },
+       {
+        "story": "Harris declines to run due to unpopularity, Newsom's money and profile dominate the open field.",
         "resolves": "YES",
-        "agent": "market logic"
-       },
-       {
-        "story": "Newsom runs hard but finishes third in delegate count; Harris or another candidate (Shapiro, Beshear) claims the nomination through superior organization.",
-        "resolves": "NO",
         "agent": "market logic"
        }
       ],
@@ -684,30 +684,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Smart money sees Newsom as third or fourth choice behind Harris-as-incumbent and governors like Beshear; the 14% price reflects real structural barriers (sitting VP, regional concerns, donor fragmenta",
+      "reason": "Smart money at 14% reflects that sitting presidents (or their VPs) who want the nomination usually get it, but Newsom's explicit positioning and establishment groundwork suggest informed Democrats see",
       "futures": [
        {
-        "story": "Harris wins reelection in 2024, runs again in 2028 as incumbent, and Newsom stays in California gubernatorial politics.",
-        "resolves": "NO",
-        "agent": "smart money"
-       },
-       {
-        "story": "Harris loses in 2024, party splinters between Newsom, Beshear, and Shapiro, with Newsom winning a bruising primary as the wealthy West Coast establishment pick.",
+        "story": "Harris stumbles in 2026 midterms and Democrats recruit Newsom as their strongest general election candidate for 2028.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "A major Democratic figure emerges unexpectedly from Congress or a swing state by 2027, consolidating donor and institutional support before Newsom can build momentum.",
+        "story": "Harris runs in 2028, consolidates early support, and Newsom decides the primary math is impossible so he stays out.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "Harris weakens as incumbent, Newsom builds national profile through media and fundraising dominance, securing nomination as the unity centrist candidate.",
+        "story": "Newsom becomes the consensus establishment choice after Harris indicates she won't run, and he wins the nomination.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "Democratic Party establishes an early consensus candidate by 2026 who isn't Newsom, leaving him unable to overcome the institutional alignment against him.",
+        "story": "A surprise candidate (Whitmer, Shapiro, or similar) emerges as the unity choice and both Harris and Newsom split the anti-unity vote, leaving neither as nominee.",
+        "resolves": "NO",
+        "agent": "smart money"
+       },
+       {
+        "story": "Newsom runs but loses a contested primary to Harris, who retains institutional Democratic support despite 2024 loss.",
         "resolves": "NO",
         "agent": "smart money"
        }
@@ -716,30 +716,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Insider logic says party gatekeepers (not primary voters) decide nominees, and they've already invested heavily in Harris; Newsom gets 14% because he's a credible Plan B if she falters badly, but the ",
+      "reason": "Insider logic: Party gatekeepers want a nominee they control\u2014Harris as sitting VP has structural power that's extremely hard to beat, but Newsom's California money and establishment connections give h",
       "futures": [
        {
-        "story": "Harris stumbles in early contests, party establishment coalesces around Newsom as the only governor with executive experience and West Coast credibility to compete nationally.",
+        "story": "Harris struggles in midterms visibility, party establishment quietly consolidates behind Newsom as the safe moderate choice by 2027.",
         "resolves": "YES",
         "agent": "insider logic"
        },
        {
-        "story": "Harris wins Iowa/New Hampshire decisively, party rallies behind the sitting VP, and Newsom's window closes before California votes.",
+        "story": "Harris runs and wins enough early states to lock down the nomination despite weak general election polling.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "A fresh face like Shapiro or Beshear emerges as the consensus moderate alternative, splitting the anti-Harris lane and leaving Newsom as the third choice.",
+        "story": "A younger progressive candidate (Shapiro, Beshear) emerges with better momentum, splitting anti-Harris votes and Newsom finishes third.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "Newsom's national profile grows through 2026-2027 while Harris fades on governance record, and Democrats see him as the strongest general-election candidate by Super Tuesday.",
+        "story": "Newsom and Harris both run hard through Super Tuesday, party insiders broker a deal making Newsom the compromise nominee.",
         "resolves": "YES",
         "agent": "insider logic"
        },
        {
-        "story": "The party's kingmakers (Biden allies, donor networks, union leadership) back Harris to preserve the sitting administration's legacy, making any alternative nomination politically toxic.",
+        "story": "Incumbent VP Harris exercises the enormous structural advantage of White House machinery and money, coasting to nomination.",
         "resolves": "NO",
         "agent": "insider logic"
        }
@@ -748,30 +748,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "14% underprices Newsom because sitting VP rarely gets displaced unless catastrophic failure, but California's troubled economy plus his executive vulnerabilities are genuine headwinds the market under",
+      "reason": "14% seems reasonable: sitting VPs rarely fail to secure nominations when they want them, but Harris's low approval gives Newsom a genuine opening the market may underweight.",
       "futures": [
        {
-        "story": "Harris wins 2024, consolidates power, and Democratic insiders coalesce around her for 2028 renomination, freezing out Newsom.",
-        "resolves": "NO",
-        "agent": "skeptic"
-       },
-       {
-        "story": "Harris stumbles badly as president, Newsom's California economy tanks before Iowa, and a fresh face like Beshear emerges as the consensus anti-Trump choice.",
-        "resolves": "NO",
-        "agent": "skeptic"
-       },
-       {
-        "story": "Harris doesn't run in 2028, the primary fractures wide open, and Newsom's national profile, fundraising, and moderate positioning win him the nomination.",
+        "story": "Harris stumbles in midterm campaigning, party establishment coalesces around Newsom as fresh alternative, he wins nomination.",
         "resolves": "YES",
         "agent": "skeptic"
        },
        {
-        "story": "Trump wins 2024 and dominates 2028, but Newsom runs anyway and loses the Democratic primary to a progressive challenger who captures party energy.",
+        "story": "Harris runs again in 2028, consolidates early support from Obama/Clinton networks, and secures nomination despite Newsom's challenge.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "A major scandal or health issue removes Harris from contention unexpectedly in 2027, Newsom consolidates support as the establishment moderate, and secures the nomination.",
+        "story": "A third candidate (Shapiro, Beshear, or Whitehouse) emerges as compromise choice when Harris and Newsom deadlock in primaries.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "Newsom's gubernatorial record unravels under scrutiny (homelessness, PG&E), donors abandon him for safer moderate options.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "Harris declines to run due to lingering unpopularity, Newsom's national profile and fundraising dominance carry him to nomination.",
         "resolves": "YES",
         "agent": "skeptic"
        }
@@ -780,30 +780,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting VPs or endorsed successors win ~70% of open-seat party nominations; Newsom is a plausible alternative but not the frontrunner, so 14% seems slightly low but reasonable given he face",
+      "reason": "Base rate: sitting VP/presidents rarely lose renomination (\u224810%), but when approval craters they sometimes do (\u224825% of weak-approval cases); Newsom as alternative gets ~14% which tracks the probabilit",
       "futures": [
        {
-        "story": "Harris becomes unpopular by 2027, party coalesces around Newsom as fresh alternative in a competitive primary.",
+        "story": "Harris stumbles in 2026 midterms, Democrats coalesce around Newsom as fresh face without baggage, he wins nomination decisively.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Harris runs for re-election as incumbent VP and consolidates establishment support, blocking challengers.",
+        "story": "Harris runs again in 2028, consolidates early support from party establishment and Black voters, Newsom finishes third behind her and another candidate.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "A younger governor or senator (Beshear, Moore, or unknown) captures primary momentum while Newsom splits moderate vote.",
+        "story": "Newsom builds grassroots momentum through 2026-2027, but Harris's incumbency advantage and DNC support prove insurmountable in primaries.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "Early primary contests favor Newsom and he builds delegate lead, becoming the presumptive nominee by Super Tuesday.",
+        "story": "Harris withdraws from 2028 race due to low approval ratings; Newsom emerges as consensus moderate alternative, winning nomination in second ballot.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Democratic Party fractures over ideology; progressive and moderate wings each field candidates, with Newsom finishing third.",
+        "story": "Fractured primary with Harris, Newsom, and two other strong candidates splits delegates; Newsom loses in convention fight to compromise candidate.",
         "resolves": "NO",
         "agent": "base rates"
        }
@@ -812,31 +812,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting governors rarely win nominations (roughly 10-15% historically); fresh headlines show Newsom in active contention with California Democrats favoring him over Harris, but thin on evid",
+      "reason": "Fresh headlines show real movement (polls favoring Newsom, Democrats 'making moves'), but signal is thin\u2014Harris's 2028 decision is still looming and historically the sitting VP or heir apparent wins t",
       "futures": [
        {
-        "story": "Newsom builds on California's Democratic machine and his national profile to win early primaries, consolidating moderate support before progressive challengers fragment the field.",
+        "story": "Harris stumbles in 2026 midterms and Party establishment coalesces around Newsom as fresh-faced alternative by late 2027.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "A fresh Democratic governor or senator emerges as the consensus unity candidate in 2027, and party elites coalesce around them over the better-known but polarizing Newsom.",
+        "story": "Harris remains popular enough post-2024 that Democrats feel obligated to run her again despite private doubts, blocking Newsom.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Harris runs for re-election as sitting VP and wins the nomination, blocking Newsom despite his stated strength in California Democratic polls.",
+        "story": "A third Democrat (Shapiro, Whitmer, or other rising star) captures momentum in early polls and becomes the consensus alternative to Harris.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Newsom competes in Iowa and New Hampshire but finishes third or fourth, losing momentum to a candidate with stronger anti-establishment appeal or fresh narrative.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "Newsom wins Iowa or New Hampshire early and rides media narrative and donor momentum to secure delegates before the convention.",
+        "story": "Newsom's national profile grows steadily through 2026\u20132027 and Harris voluntarily steps aside, clearing a path for him.",
         "resolves": "YES",
+        "agent": "fresh news"
+       },
+       {
+        "story": "Harris contests the primary vigorously, fragmenting the field so badly that an unexpected compromise candidate emerges instead.",
+        "resolves": "NO",
         "agent": "fresh news"
        }
       ],
@@ -845,203 +845,203 @@
     ],
     "futures": [
      {
-      "story": "Harris wins reelection in 2024, runs again in 2028 as the incumbent, and Newsom stays loyal as California governor rather than challenge her.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Harris loses in 2024, Democrats fracture wide open, and Newsom emerges from a crowded primary field of 6+ candidates as the consensus moderate alternative to a progressive challenger.",
+      "story": "Harris stumbles in 2026 midterms and faces donor defection, clearing the field for Newsom who consolidates early endorsements and wins Iowa.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Harris wins in 2024 but becomes unpopular by 2027, party pressure forces her aside, and Newsom consolidates support as the establishment favorite in a compressed primary timeline.",
-      "resolves": "YES",
-      "agent": "base rates"
-     },
-     {
-      "story": "A charismatic younger governor or senator (Beshear, Moore, Shapiro) surges during the primary and Newsom finishes third or lower despite early polling, splitting the moderate lane.",
+      "story": "Harris remains popular with the Democratic base, runs again in 2028, and wins the primary despite Newsom's strong California machine.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Newsom runs but stumbles on a major scandal or gets outmaneuvered by an establishment-backed candidate with stronger labor or grassroots support in Iowa and New Hampshire.",
+      "story": "A third candidate emerges (Shapiro, Beshear, or 2024 VP) who splits the anti-Harris vote with Newsom, allowing Harris to win with plurality support.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Newsom builds on California's Democratic machinery and strong polling among party activists to win early primaries, consolidating moderate support before super-Tuesday.",
+      "story": "Newsom pivots to Senate run in 2026 or takes Cabinet position under Harris, removing himself from 2028 presidential consideration entirely.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "Harris declines to run in early 2027, Newsom becomes consensus establishment choice and runs uncontested through the primary.",
+      "resolves": "YES",
+      "agent": "base rates"
+     },
+     {
+      "story": "Harris stumbles in midterm campaigning, party coalesces around Newsom as fresher alternative by 2027.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "A younger governor like Beshear or Moore captures the 'fresh start' narrative that Democrats crave post-2024, fragmenting the field and preventing Newsom from reaching the threshold.",
+      "story": "Harris consolidates support through 2026 midterms and runs unopposed or nearly unopposed as incumbent-adjacent frontrunner.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Harris remains politically viable and either seeks another term or endorses a allied candidate, blocking Newsom's path despite his polling strength in California.",
+      "story": "Neither Harris nor Newsom emerges clearly ahead; party splits between them and 2-3 other candidates including governors or senators.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "National economic conditions and Democratic primary turnout shift dramatically between now and 2028, elevating an unexpected challenger over the frontrunner consensus.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "Newsom runs and wins the nomination as the Democratic establishment's preferred centrist after a contested primary between him and one other major contender.",
+      "story": "Newsom aggressively campaigns in early primary states, builds national profile, and wins Iowa/New Hampshire before Harris enters race.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Harris struggles in early primaries, party insiders coalesce around Newsom as the fresh, younger alternative who won't face incumbent baggage.",
+      "story": "Economic recovery and Harris's VP record strengthen her case; she announces early and Newsom defers as VP.",
+      "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "Harris stumbles in 2026 midterms messaging, party coalesces around Newsom as the fresh-start candidate by 2027.",
       "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "Harris wins Iowa and New Hampshire decisively, consolidating moderate and establishment support before Newsom can build momentum.",
+      "story": "Harris runs again in 2028, wins the primary through incumbent-like advantages despite moderate enthusiasm.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "A strong progressive challenger (Shapiro, Beshear, or Moore) fragments the field so badly that the party establishment drafts an unexpected consensus candidate at convention.",
+      "story": "A third Democrat (Shapiro, Beshear, or similar) emerges as the consensus moderate pick, splitting the anti-Harris lane with Newsom.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Newsom emerges as the compromise choice after a contested convention where neither Harris nor a progressive candidate can reach 50% on early ballots.",
-      "resolves": "YES",
-      "agent": "market logic"
-     },
-     {
-      "story": "Newsom runs hard but finishes third in delegate count; Harris or another candidate (Shapiro, Beshear) claims the nomination through superior organization.",
+      "story": "Newsom peaks early, Harris consolidates labor and Black voters, and Josh Shapiro captures swing-state credentials by Iowa.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Harris wins reelection in 2024, runs again in 2028 as incumbent, and Newsom stays in California gubernatorial politics.",
-      "resolves": "NO",
-      "agent": "smart money"
+      "story": "Harris declines to run due to unpopularity, Newsom's money and profile dominate the open field.",
+      "resolves": "YES",
+      "agent": "market logic"
      },
      {
-      "story": "Harris loses in 2024, party splinters between Newsom, Beshear, and Shapiro, with Newsom winning a bruising primary as the wealthy West Coast establishment pick.",
+      "story": "Harris stumbles in 2026 midterms and Democrats recruit Newsom as their strongest general election candidate for 2028.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "A major Democratic figure emerges unexpectedly from Congress or a swing state by 2027, consolidating donor and institutional support before Newsom can build momentum.",
+      "story": "Harris runs in 2028, consolidates early support, and Newsom decides the primary math is impossible so he stays out.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Harris weakens as incumbent, Newsom builds national profile through media and fundraising dominance, securing nomination as the unity centrist candidate.",
+      "story": "Newsom becomes the consensus establishment choice after Harris indicates she won't run, and he wins the nomination.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "Democratic Party establishes an early consensus candidate by 2026 who isn't Newsom, leaving him unable to overcome the institutional alignment against him.",
+      "story": "A surprise candidate (Whitmer, Shapiro, or similar) emerges as the unity choice and both Harris and Newsom split the anti-unity vote, leaving neither as nominee.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Harris stumbles in early contests, party establishment coalesces around Newsom as the only governor with executive experience and West Coast credibility to compete nationally.",
+      "story": "Newsom runs but loses a contested primary to Harris, who retains institutional Democratic support despite 2024 loss.",
+      "resolves": "NO",
+      "agent": "smart money"
+     },
+     {
+      "story": "Harris struggles in midterms visibility, party establishment quietly consolidates behind Newsom as the safe moderate choice by 2027.",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "Harris wins Iowa/New Hampshire decisively, party rallies behind the sitting VP, and Newsom's window closes before California votes.",
+      "story": "Harris runs and wins enough early states to lock down the nomination despite weak general election polling.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "A fresh face like Shapiro or Beshear emerges as the consensus moderate alternative, splitting the anti-Harris lane and leaving Newsom as the third choice.",
+      "story": "A younger progressive candidate (Shapiro, Beshear) emerges with better momentum, splitting anti-Harris votes and Newsom finishes third.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Newsom's national profile grows through 2026-2027 while Harris fades on governance record, and Democrats see him as the strongest general-election candidate by Super Tuesday.",
+      "story": "Newsom and Harris both run hard through Super Tuesday, party insiders broker a deal making Newsom the compromise nominee.",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "The party's kingmakers (Biden allies, donor networks, union leadership) back Harris to preserve the sitting administration's legacy, making any alternative nomination politically toxic.",
+      "story": "Incumbent VP Harris exercises the enormous structural advantage of White House machinery and money, coasting to nomination.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Harris wins 2024, consolidates power, and Democratic insiders coalesce around her for 2028 renomination, freezing out Newsom.",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "Harris stumbles badly as president, Newsom's California economy tanks before Iowa, and a fresh face like Beshear emerges as the consensus anti-Trump choice.",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "Harris doesn't run in 2028, the primary fractures wide open, and Newsom's national profile, fundraising, and moderate positioning win him the nomination.",
+      "story": "Harris stumbles in midterm campaigning, party establishment coalesces around Newsom as fresh alternative, he wins nomination.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "Trump wins 2024 and dominates 2028, but Newsom runs anyway and loses the Democratic primary to a progressive challenger who captures party energy.",
+      "story": "Harris runs again in 2028, consolidates early support from Obama/Clinton networks, and secures nomination despite Newsom's challenge.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "A major scandal or health issue removes Harris from contention unexpectedly in 2027, Newsom consolidates support as the establishment moderate, and secures the nomination.",
+      "story": "A third candidate (Shapiro, Beshear, or Whitehouse) emerges as compromise choice when Harris and Newsom deadlock in primaries.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "Newsom's gubernatorial record unravels under scrutiny (homelessness, PG&E), donors abandon him for safer moderate options.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "Harris declines to run due to lingering unpopularity, Newsom's national profile and fundraising dominance carry him to nomination.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "Harris becomes unpopular by 2027, party coalesces around Newsom as fresh alternative in a competitive primary.",
+      "story": "Harris stumbles in 2026 midterms, Democrats coalesce around Newsom as fresh face without baggage, he wins nomination decisively.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Harris runs for re-election as incumbent VP and consolidates establishment support, blocking challengers.",
+      "story": "Harris runs again in 2028, consolidates early support from party establishment and Black voters, Newsom finishes third behind her and another candidate.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "A younger governor or senator (Beshear, Moore, or unknown) captures primary momentum while Newsom splits moderate vote.",
+      "story": "Newsom builds grassroots momentum through 2026-2027, but Harris's incumbency advantage and DNC support prove insurmountable in primaries.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Early primary contests favor Newsom and he builds delegate lead, becoming the presumptive nominee by Super Tuesday.",
+      "story": "Harris withdraws from 2028 race due to low approval ratings; Newsom emerges as consensus moderate alternative, winning nomination in second ballot.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Democratic Party fractures over ideology; progressive and moderate wings each field candidates, with Newsom finishing third.",
+      "story": "Fractured primary with Harris, Newsom, and two other strong candidates splits delegates; Newsom loses in convention fight to compromise candidate.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Newsom builds on California's Democratic machine and his national profile to win early primaries, consolidating moderate support before progressive challengers fragment the field.",
+      "story": "Harris stumbles in 2026 midterms and Party establishment coalesces around Newsom as fresh-faced alternative by late 2027.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "A fresh Democratic governor or senator emerges as the consensus unity candidate in 2027, and party elites coalesce around them over the better-known but polarizing Newsom.",
+      "story": "Harris remains popular enough post-2024 that Democrats feel obligated to run her again despite private doubts, blocking Newsom.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Harris runs for re-election as sitting VP and wins the nomination, blocking Newsom despite his stated strength in California Democratic polls.",
+      "story": "A third Democrat (Shapiro, Whitmer, or other rising star) captures momentum in early polls and becomes the consensus alternative to Harris.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Newsom competes in Iowa and New Hampshire but finishes third or fourth, losing momentum to a candidate with stronger anti-establishment appeal or fresh narrative.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "Newsom wins Iowa or New Hampshire early and rides media narrative and donor momentum to secure delegates before the convention.",
+      "story": "Newsom's national profile grows steadily through 2026\u20132027 and Harris voluntarily steps aside, clearing a path for him.",
       "resolves": "YES",
+      "agent": "fresh news"
+     },
+     {
+      "story": "Harris contests the primary vigorously, fragmenting the field so badly that an unexpected compromise candidate emerges instead.",
+      "resolves": "NO",
       "agent": "fresh news"
      }
     ],
@@ -1055,36 +1055,36 @@
     "question": "2028 Democratic presidential nominee (Alexandria Ocasio-Cortez)",
     "category": "Elections",
     "mid": 16,
-    "probability": 0.2,
-    "spread": 0.0661,
+    "probability": 0.3333,
+    "spread": 0.0968,
     "skipped": 0,
     "votes": [
      {
       "probability": 0.2,
-      "reason": "Base rate: sitting House members rarely win presidential nominations (roughly 5-10% historically), yet AOC has exceptional name recognition and media presence that skews higher\u201416% seems roughly right",
+      "reason": "Historically, only 1 in ~15-20 House members who consider presidential runs actually become their party's nominee; the market's 16% is inflated by recent media attention and should revert closer to 5-",
       "futures": [
        {
-        "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive energy, but loses Super Tuesday to an establishment candidate who consolidates moderate support.",
+        "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive momentum, but loses Super Tuesday to an establishment favorite who consolidates moderate votes.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "AOC decides against running, endorses a different progressive candidate, and focuses on House leadership instead.",
+        "story": "AOC decides not to run, instead backs a different progressive candidate and focuses on her House seat, viewing 2028 as too early for her political capital.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "AOC runs and wins the nomination by consolidating millennial/Gen-Z voters and defeating moderate frontrunners in a fragmented field.",
+        "story": "AOC runs, wins the primary through strong organizing in early states and Gen-Z turnout, and becomes the Democratic nominee.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "AOC faces early criticism over her age (37 at election), limited executive experience, and geographic concerns; withdraws after Iowa.",
+        "story": "A major scandal or controversy involving AOC emerges in 2027, effectively ending any serious presidential viability before voting begins.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "AOC runs but finishes third or fourth nationally; party pressure coalesces around a senator or governor with broader appeal before conventions.",
+        "story": "AOC runs but finishes third or worse in Iowa, realizes the delegate math is impossible, and drops out before Super Tuesday.",
         "resolves": "NO",
         "agent": "base rates"
        }
@@ -1092,31 +1092,31 @@
       "agent": "base rates"
      },
      {
-      "probability": 0.2,
-      "reason": "Fresh news shows active 2028 speculation about AOC but remains thin on concrete commitment; historically under 5% of discussed candidates actually run, and nominees are almost never under 40\u2014the 16% p",
+      "probability": 0.4,
+      "reason": "Fresh reporting shows real movement and AOC's explicit positioning (rare), but base rate of sitting House members becoming nominees is very low (~5-10% historically); the thin new signal pushes from ~",
       "futures": [
        {
-        "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment energy, but loses Super Tuesday to an older moderate with more party backing.",
+        "story": "AOC runs in 2028, wins early primaries on youth turnout and enthusiasm, but stumbles in delegate math against an older moderate favorite backed by party establishment.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "AOC announces a presidential run in 2027, gains early momentum, but withdraws by Iowa after party pressure and realizes delegate math is impossible.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "AOC focuses on her House seat and Senate ambitions instead, staying visible but never formally entering the 2028 primary despite speculation.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "AOC runs a surprisingly strong primary campaign, finishes second in a fractured field, and becomes the nominee after frontrunner implodes in late states.",
+        "story": "AOC declares candidacy early, becomes frontrunner by 2027, and secures nomination as progressive wing dominates primary process.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "By 2027, party consensus coalesces around an older Democrat with deeper establishment ties, leaving no opening for AOC to run credibly.",
+        "story": "AOC decides not to run, preferring to build House power or pursue Senate seat instead, citing her own maturation timeline.",
+        "resolves": "NO",
+        "agent": "fresh news"
+       },
+       {
+        "story": "AOC waits until late 2027 to enter race as compromise candidate when early favorites collapse, gaining enough delegates to win contested convention.",
+        "resolves": "YES",
+        "agent": "fresh news"
+       },
+       {
+        "story": "AOC stays out entirely as Democratic Party coalesces around different younger figure (Beshear, Shapiro, or similar), leaving her as influential endorser rather than nominee.",
         "resolves": "NO",
         "agent": "fresh news"
        }
@@ -1124,64 +1124,64 @@
       "agent": "fresh news"
      },
      {
-      "probability": 0.2,
-      "reason": "Historically, insurgent House progressives rarely become major-party nominees (base rate near 5-10%), and market logic prices in both her real obstacles (age, record, party structure) and genuine adva",
+      "probability": 0.4,
+      "reason": "Base rate: US House members rarely become president (roughly 2-3% historically), suggesting 16% is inflated, but AOC's early moves, media attention, and progressive movement support push her above typ",
       "futures": [
        {
-        "story": "AOC runs a strong primary campaign, wins early states with youth turnout, but loses to an establishment favorite in Super Tuesday after party pressure consolidates around a moderate.",
+        "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment energy, but loses Super Tuesday to a moderate Democrat backed by party infrastructure.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "AOC becomes the clear progressive lane favorite but a surprise candidate (popular governor or senator) emerges late and splits the anti-establishment vote, letting a centrist win the nomination.",
-        "resolves": "NO",
-        "agent": "market logic"
-       },
-       {
-        "story": "AOC's high favorability among Democrats and media attention translates into primary delegate wins; she either wins the nomination or becomes the compromise second-choice pick at a contested convention",
+        "story": "AOC becomes the clear frontrunner by 2027 after a major foreign policy crisis elevates her profile, and she secures the nomination as the consensus progressive choice.",
         "resolves": "YES",
         "agent": "market logic"
        },
        {
-        "story": "AOC declines to run, focusing on House seat and legislative work, deciding the timing or party structure isn't right for a 36-year-old challenger in 2028.",
+        "story": "AOC decides not to run, reasoning she's more effective in Congress, and instead endorses and campaigns hard for another progressive candidate.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "AOC runs but her polarizing voting record and limited executive experience make her unelectable in general-election-focused primary logic, eliminating her by March.",
+        "story": "AOC runs but faces sustained attacks on her age (she'd be 39), electability concerns, and lack of executive experience, placing third or fourth in early states before dropping out.",
         "resolves": "NO",
+        "agent": "market logic"
+       },
+       {
+        "story": "The Democratic establishment coalesces around AOC as a compromise nominee after a fractured primary where no moderate candidate can consolidate support.",
+        "resolves": "YES",
         "agent": "market logic"
        }
       ],
       "agent": "market logic"
      },
      {
-      "probability": 0.2,
-      "reason": "Base rate: sitting House members almost never win presidencies (last was JFK in 1960), establishment/moderate Democrats have consolidated every recent primary, and smart money pricing at 16% reflects ",
+      "probability": 0.4,
+      "reason": "Smart money at 16% reflects that nominating someone aged 38-39 with limited executive experience to lead a fractious party against an entrenched moderate establishment is structurally unlikely, though",
       "futures": [
        {
-        "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive energy, but gets consolidated out by Super Tuesday when a moderate Democrat with union/establishment backing emerges.",
+        "story": "AOC runs in 2028, wins Iowa and New Hampshire on outsider momentum, but gets outspent and outmaneuvered by an establishment moderate in Super Tuesday states.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "AOC builds a formidable grassroots operation and wins the nomination by holding together a coalition of young voters, progressives, and anti-establishment Democrats in a fragmented field.",
+        "story": "AOC builds a grassroots machine similar to Sanders 2016, wins the primary by consolidating young and progressive voters before moderates coalesce around one candidate.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "AOC decides not to run, endorses a different progressive candidate (like a sitting senator), citing that she can be more effective in Congress.",
+        "story": "AOC decides not to run, instead backs a different progressive candidate who she believes has a better chance, citing electability concerns.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "AOC runs but finishes third or fourth, staying in the race through Super Tuesday before dropping out and backing the frontrunner.",
+        "story": "AOC runs and finishes third in most early states, then drops out to avoid a brokered convention scenario that could damage the party.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "AOC becomes the surprise frontrunner early but faces withering opposition research and endorsement consolidation, narrowing her path to a brokered convention she loses.",
-        "resolves": "NO",
+        "story": "AOC enters the race late as a consensus unity candidate after early frontrunners stumble, then wins the nomination on second-round voting.",
+        "resolves": "YES",
         "agent": "smart money"
        }
       ],
@@ -1189,30 +1189,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "The real decider is the DNC establishment and superdelegates\u2014they have blocked or marginalized every non-centrist nominee since 2004, and AOC's current 16% reflects accurate skepticism that they'll br",
+      "reason": "Party gatekeepers (DNC, major donors, senior officials) have never let a 39-year-old first-term House member with her ideological profile become nominee; the 16% price reflects real media buzz but ign",
       "futures": [
        {
-        "story": "AOC runs in 2028, party establishment backs a safer moderate like Shapiro or Whitmer, and she loses the primary by double digits.",
+        "story": "AOC runs in 2028, wins Iowa/New Hampshire on youth turnout, but party insiders coalesce around an older establishment figure by Super Tuesday who they believe is more electable.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "AOC decides the timing is wrong for her political capital and endorses an establishment favorite early, eliminating herself from consideration.",
+        "story": "AOC becomes the clear frontrunner by 2027 after a major legislative win, but decides not to run because she calculates her House seat and committee power give her more long-term influence than a likel",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "A fractured primary with 8+ candidates leaves AOC as the progressive lane winner, she wins Iowa/New Hampshire on youth turnout, and secures the nomination.",
+        "story": "AOC runs and wins the nomination after the party's moderates fracture between 3+ candidates, then loses decisively in the general, making her the Democratic nominee but not the outcome the prediction ",
         "resolves": "YES",
         "agent": "insider logic"
        },
        {
-        "story": "AOC runs but finishes third in early states; superdelegates and party insiders coalesce around a unity candidate before Super Tuesday and force her out.",
+        "story": "A sitting governor or senator with stronger institutional party backing enters the race early and dominates the money/endorsement game before AOC can build enough delegate math.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "Moderate frontrunners implode due to scandal or age concerns, AOC consolidates anti-establishment and progressive votes in a contested convention, and wins on later ballots.",
+        "story": "AOC wins the 2028 nomination as the consensus anti-establishment pick after moderate frontrunners collapse in early contests and she's the last progressive standing.",
         "resolves": "YES",
         "agent": "insider logic"
        }
@@ -1221,30 +1221,30 @@
      },
      {
       "probability": 0.2,
-      "reason": "Base rate: sitting U.S. House members rarely become president directly; only one has since 1900 (JFK), and AOC faces age/experience/party-unity headwinds that the 16% price may underweight given typic",
+      "reason": "Base rate: extremely few sitting House members win their party's presidential nomination\u2014it's happened once since 1900\u2014suggesting 16% is likely inflated by recent media attention and AOC's personal br",
       "futures": [
        {
-        "story": "AOC runs in 2028 but loses badly in early primaries to an establishment favorite, revealing her base is smaller than media coverage suggests.",
+        "story": "AOC runs in 2028 but loses early primaries to an establishment Democrat with stronger donor networks and gets knocked out by Super Tuesday.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "Party leadership quietly signals she's too polarizing for the general election, and she respects the consensus and doesn't run.",
+        "story": "A major scandal or controversial statement from AOC's past emerges in 2027, causing party leadership to coalesce around an alternative candidate before primaries begin.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "AOC wins New York primary decisively but a centrist Democrat consolidates moderate voters before Super Tuesday, blocking her path.",
+        "story": "AOC wins Iowa and New Hampshire but party centrists unite behind a single moderate in a brokered convention scenario, denying her the nomination.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "She enters the race, builds unexpected momentum through youth turnout, and secures enough delegates to become the nominee at a contested convention.",
+        "story": "AOC builds unexpected momentum through grassroots organizing and youth turnout, winning enough early states to secure the nomination on first ballot.",
         "resolves": "YES",
         "agent": "skeptic"
        },
        {
-        "story": "Media hype inflates expectations now, but by 2027 a major scandal or shift in Democratic priorities makes her candidacy seem unlikely, so she preemptively endorses someone else.",
+        "story": "An older, more established Democrat (Newsom, Shapiro, or similar) enters late and consolidates moderate/establishment support, leaving AOC unable to build a winning coalition.",
         "resolves": "NO",
         "agent": "skeptic"
        }
@@ -1253,30 +1253,30 @@
      },
      {
       "probability": 0.2,
-      "reason": "Base rate: House members under 40 with 5 years tenure rarely win presidential nominations (maybe 5-10% historically); AOC's headlines suggest she's seriously considering it, but structural headwinds\u2014a",
+      "reason": "Base rate: nominees are typically 50+ years old with prior statewide/national executive experience; AOC would be 39 with only House experience, making nomination historically rare (~5-10% for her prof",
       "futures": [
        {
-        "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment message, but loses Super Tuesday to better-funded moderate after party consolidates against her.",
+        "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive momentum, but loses Super Tuesday to an establishment Democrat who consolidates moderate voters.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "AOC doesn't run in 2028, choosing instead to build seniority in House and wait for 2032 or 2036 when she'll have more establishment credibility.",
+        "story": "AOC runs, builds a strong youth and Latino coalition, wins enough delegates to be a serious contender but accepts a VP or Cabinet position instead of fighting to the convention.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "AOC runs, wins Iowa decisively, sweeps early states with youth turnout surge, and secures nomination before Super Tuesday.",
+        "story": "AOC decides the timing isn't right and endorses another progressive candidate, focusing on House reelection and legislative wins instead.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "AOC runs a full primary campaign, positions herself as the main progressive alternative, and wins the nomination on a second or third ballot after delegate negotiations.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Party pressure and major donors coalesce around a different progressive candidate (Shapiro, Beshear), leaving AOC unable to clear the field despite running.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "AOC runs but withdraws after poor Nevada/South Carolina results, endorsing the eventual nominee and preserving her political future.",
+        "story": "AOC faces intense opposition from party establishment and centrist media, withdraws before Iowa to avoid further damage, and focuses on congressional power instead.",
         "resolves": "NO",
         "agent": "base rates"
        }
@@ -1284,32 +1284,32 @@
       "agent": "base rates"
      },
      {
-      "probability": 0.2,
-      "reason": "Base rate: sitting House members almost never win presidencies (Truman exception rare); fresh reporting shows real speculation but thin commitment signals; 16% feels slightly high but not absurd given",
+      "probability": 0.4,
+      "reason": "Base rate: U.S. House members under 40 become major-party nominees roughly 1-2% of the time; fresh news shows real momentum and explicit 2028 positioning, but she's still a long shot against broader p",
       "futures": [
        {
-        "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment momentum, but loses Super Tuesday to a moderate consensus candidate.",
+        "story": "AOC runs in 2028, wins Iowa and New Hampshire on youth turnout, but loses Super Tuesday to an older establishment moderate who consolidates.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "AOC announces candidacy in 2027, but withdraws by Iowa after poor polling and internal party pressure to unite behind an older establishment figure.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "AOC commits to a Senate run instead in 2026, gains seniority and credibility, and skips the 2028 presidential race entirely.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "AOC's recent interview fuels genuine grassroots momentum; she runs, consolidates the progressive wing, and wins the nomination as Democrats embrace generational change.",
+        "story": "AOC declares candidacy in 2027, builds strong primary coalition, wins delegate plurality and becomes nominee at contested convention.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "AOC decides not to run, publicly endorses another candidate, but her name circulates as a compromise pick on a contested ballot at the convention.",
+        "story": "AOC stays focused on House leadership and legislative wins through 2028, endorses another progressive early and never enters race.",
         "resolves": "NO",
+        "agent": "fresh news"
+       },
+       {
+        "story": "AOC runs but finishes fourth in Iowa, drops out by February, party coalesces around someone older with broader appeal.",
+        "resolves": "NO",
+        "agent": "fresh news"
+       },
+       {
+        "story": "AOC wins 2028 nomination as party unites behind her youth and energy after establishment splits between multiple older candidates.",
+        "resolves": "YES",
         "agent": "fresh news"
        }
       ],
@@ -1318,207 +1318,210 @@
     ],
     "futures": [
      {
-      "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive energy, but loses Super Tuesday to an establishment candidate who consolidates moderate support.",
+      "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive momentum, but loses Super Tuesday to an establishment favorite who consolidates moderate votes.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC decides against running, endorses a different progressive candidate, and focuses on House leadership instead.",
+      "story": "AOC decides not to run, instead backs a different progressive candidate and focuses on her House seat, viewing 2028 as too early for her political capital.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC runs and wins the nomination by consolidating millennial/Gen-Z voters and defeating moderate frontrunners in a fragmented field.",
+      "story": "AOC runs, wins the primary through strong organizing in early states and Gen-Z turnout, and becomes the Democratic nominee.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "AOC faces early criticism over her age (37 at election), limited executive experience, and geographic concerns; withdraws after Iowa.",
+      "story": "A major scandal or controversy involving AOC emerges in 2027, effectively ending any serious presidential viability before voting begins.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC runs but finishes third or fourth nationally; party pressure coalesces around a senator or governor with broader appeal before conventions.",
+      "story": "AOC runs but finishes third or worse in Iowa, realizes the delegate math is impossible, and drops out before Super Tuesday.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment energy, but loses Super Tuesday to an older moderate with more party backing.",
+      "story": "AOC runs in 2028, wins early primaries on youth turnout and enthusiasm, but stumbles in delegate math against an older moderate favorite backed by party establishment.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "AOC announces a presidential run in 2027, gains early momentum, but withdraws by Iowa after party pressure and realizes delegate math is impossible.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "AOC focuses on her House seat and Senate ambitions instead, staying visible but never formally entering the 2028 primary despite speculation.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "AOC runs a surprisingly strong primary campaign, finishes second in a fractured field, and becomes the nominee after frontrunner implodes in late states.",
+      "story": "AOC declares candidacy early, becomes frontrunner by 2027, and secures nomination as progressive wing dominates primary process.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "By 2027, party consensus coalesces around an older Democrat with deeper establishment ties, leaving no opening for AOC to run credibly.",
+      "story": "AOC decides not to run, preferring to build House power or pursue Senate seat instead, citing her own maturation timeline.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "AOC runs a strong primary campaign, wins early states with youth turnout, but loses to an establishment favorite in Super Tuesday after party pressure consolidates around a moderate.",
+      "story": "AOC waits until late 2027 to enter race as compromise candidate when early favorites collapse, gaining enough delegates to win contested convention.",
+      "resolves": "YES",
+      "agent": "fresh news"
+     },
+     {
+      "story": "AOC stays out entirely as Democratic Party coalesces around different younger figure (Beshear, Shapiro, or similar), leaving her as influential endorser rather than nominee.",
+      "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment energy, but loses Super Tuesday to a moderate Democrat backed by party infrastructure.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "AOC becomes the clear progressive lane favorite but a surprise candidate (popular governor or senator) emerges late and splits the anti-establishment vote, letting a centrist win the nomination.",
-      "resolves": "NO",
-      "agent": "market logic"
-     },
-     {
-      "story": "AOC's high favorability among Democrats and media attention translates into primary delegate wins; she either wins the nomination or becomes the compromise second-choice pick at a contested convention",
+      "story": "AOC becomes the clear frontrunner by 2027 after a major foreign policy crisis elevates her profile, and she secures the nomination as the consensus progressive choice.",
       "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "AOC declines to run, focusing on House seat and legislative work, deciding the timing or party structure isn't right for a 36-year-old challenger in 2028.",
+      "story": "AOC decides not to run, reasoning she's more effective in Congress, and instead endorses and campaigns hard for another progressive candidate.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "AOC runs but her polarizing voting record and limited executive experience make her unelectable in general-election-focused primary logic, eliminating her by March.",
+      "story": "AOC runs but faces sustained attacks on her age (she'd be 39), electability concerns, and lack of executive experience, placing third or fourth in early states before dropping out.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive energy, but gets consolidated out by Super Tuesday when a moderate Democrat with union/establishment backing emerges.",
+      "story": "The Democratic establishment coalesces around AOC as a compromise nominee after a fractured primary where no moderate candidate can consolidate support.",
+      "resolves": "YES",
+      "agent": "market logic"
+     },
+     {
+      "story": "AOC runs in 2028, wins Iowa and New Hampshire on outsider momentum, but gets outspent and outmaneuvered by an establishment moderate in Super Tuesday states.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "AOC builds a formidable grassroots operation and wins the nomination by holding together a coalition of young voters, progressives, and anti-establishment Democrats in a fragmented field.",
+      "story": "AOC builds a grassroots machine similar to Sanders 2016, wins the primary by consolidating young and progressive voters before moderates coalesce around one candidate.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "AOC decides not to run, endorses a different progressive candidate (like a sitting senator), citing that she can be more effective in Congress.",
+      "story": "AOC decides not to run, instead backs a different progressive candidate who she believes has a better chance, citing electability concerns.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "AOC runs but finishes third or fourth, staying in the race through Super Tuesday before dropping out and backing the frontrunner.",
+      "story": "AOC runs and finishes third in most early states, then drops out to avoid a brokered convention scenario that could damage the party.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "AOC becomes the surprise frontrunner early but faces withering opposition research and endorsement consolidation, narrowing her path to a brokered convention she loses.",
-      "resolves": "NO",
+      "story": "AOC enters the race late as a consensus unity candidate after early frontrunners stumble, then wins the nomination on second-round voting.",
+      "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "AOC runs in 2028, party establishment backs a safer moderate like Shapiro or Whitmer, and she loses the primary by double digits.",
+      "story": "AOC runs in 2028, wins Iowa/New Hampshire on youth turnout, but party insiders coalesce around an older establishment figure by Super Tuesday who they believe is more electable.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "AOC decides the timing is wrong for her political capital and endorses an establishment favorite early, eliminating herself from consideration.",
+      "story": "AOC becomes the clear frontrunner by 2027 after a major legislative win, but decides not to run because she calculates her House seat and committee power give her more long-term influence than a likel",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "A fractured primary with 8+ candidates leaves AOC as the progressive lane winner, she wins Iowa/New Hampshire on youth turnout, and secures the nomination.",
+      "story": "AOC runs and wins the nomination after the party's moderates fracture between 3+ candidates, then loses decisively in the general, making her the Democratic nominee but not the outcome the prediction ",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "AOC runs but finishes third in early states; superdelegates and party insiders coalesce around a unity candidate before Super Tuesday and force her out.",
+      "story": "A sitting governor or senator with stronger institutional party backing enters the race early and dominates the money/endorsement game before AOC can build enough delegate math.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Moderate frontrunners implode due to scandal or age concerns, AOC consolidates anti-establishment and progressive votes in a contested convention, and wins on later ballots.",
+      "story": "AOC wins the 2028 nomination as the consensus anti-establishment pick after moderate frontrunners collapse in early contests and she's the last progressive standing.",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "AOC runs in 2028 but loses badly in early primaries to an establishment favorite, revealing her base is smaller than media coverage suggests.",
+      "story": "AOC runs in 2028 but loses early primaries to an establishment Democrat with stronger donor networks and gets knocked out by Super Tuesday.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "Party leadership quietly signals she's too polarizing for the general election, and she respects the consensus and doesn't run.",
+      "story": "A major scandal or controversial statement from AOC's past emerges in 2027, causing party leadership to coalesce around an alternative candidate before primaries begin.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "AOC wins New York primary decisively but a centrist Democrat consolidates moderate voters before Super Tuesday, blocking her path.",
+      "story": "AOC wins Iowa and New Hampshire but party centrists unite behind a single moderate in a brokered convention scenario, denying her the nomination.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "She enters the race, builds unexpected momentum through youth turnout, and secures enough delegates to become the nominee at a contested convention.",
+      "story": "AOC builds unexpected momentum through grassroots organizing and youth turnout, winning enough early states to secure the nomination on first ballot.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "Media hype inflates expectations now, but by 2027 a major scandal or shift in Democratic priorities makes her candidacy seem unlikely, so she preemptively endorses someone else.",
+      "story": "An older, more established Democrat (Newsom, Shapiro, or similar) enters late and consolidates moderate/establishment support, leaving AOC unable to build a winning coalition.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment message, but loses Super Tuesday to better-funded moderate after party consolidates against her.",
+      "story": "AOC runs in 2028, wins Iowa and New Hampshire on progressive momentum, but loses Super Tuesday to an establishment Democrat who consolidates moderate voters.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC doesn't run in 2028, choosing instead to build seniority in House and wait for 2032 or 2036 when she'll have more establishment credibility.",
+      "story": "AOC runs, builds a strong youth and Latino coalition, wins enough delegates to be a serious contender but accepts a VP or Cabinet position instead of fighting to the convention.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC runs, wins Iowa decisively, sweeps early states with youth turnout surge, and secures nomination before Super Tuesday.",
+      "story": "AOC decides the timing isn't right and endorses another progressive candidate, focusing on House reelection and legislative wins instead.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "AOC runs a full primary campaign, positions herself as the main progressive alternative, and wins the nomination on a second or third ballot after delegate negotiations.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Party pressure and major donors coalesce around a different progressive candidate (Shapiro, Beshear), leaving AOC unable to clear the field despite running.",
+      "story": "AOC faces intense opposition from party establishment and centrist media, withdraws before Iowa to avoid further damage, and focuses on congressional power instead.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "AOC runs but withdraws after poor Nevada/South Carolina results, endorsing the eventual nominee and preserving her political future.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "AOC runs in 2028, wins Iowa and New Hampshire on anti-establishment momentum, but loses Super Tuesday to a moderate consensus candidate.",
+      "story": "AOC runs in 2028, wins Iowa and New Hampshire on youth turnout, but loses Super Tuesday to an older establishment moderate who consolidates.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "AOC announces candidacy in 2027, but withdraws by Iowa after poor polling and internal party pressure to unite behind an older establishment figure.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "AOC commits to a Senate run instead in 2026, gains seniority and credibility, and skips the 2028 presidential race entirely.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "AOC's recent interview fuels genuine grassroots momentum; she runs, consolidates the progressive wing, and wins the nomination as Democrats embrace generational change.",
+      "story": "AOC declares candidacy in 2027, builds strong primary coalition, wins delegate plurality and becomes nominee at contested convention.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "AOC decides not to run, publicly endorses another candidate, but her name circulates as a compromise pick on a contested ballot at the convention.",
+      "story": "AOC stays focused on House leadership and legislative wins through 2028, endorses another progressive early and never enters race.",
       "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "AOC runs but finishes fourth in Iowa, drops out by February, party coalesces around someone older with broader appeal.",
+      "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "AOC wins 2028 nomination as party unites behind her youth and energy after establishment splits between multiple older candidates.",
+      "resolves": "YES",
       "agent": "fresh news"
      }
     ],
-    "verdict": "pass"
+    "verdict": {
+     "side": "YES",
+     "edge_cents": 17
+    }
    },
    {
     "ticker": "KXPRESNOMD-28-JOSS",
@@ -1531,30 +1534,30 @@
     "votes": [
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting senators become nominees ~15-20% of the time, and sitting VPs/recent national figures dominate Democratic nominations historically, so 16% for Ossoff is reasonable but slightly gene",
+      "reason": "U.S. senators rarely become nominees without prior national executive experience (base rate ~10\u201315% for sitting senators in open races); Ossoff has profile buzz but Harris's incumbency and multiple es",
       "futures": [
        {
-        "story": "Ossoff builds a strong progressive coalition, wins early primaries in 2028, and becomes the Democratic nominee as Harris struggles with approval ratings.",
+        "story": "Ossoff wins Georgia reelection in 2026 with massive margins, becomes the obvious next-generation Democratic standard-bearer, and secures the nomination on the first ballot.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Harris runs for president in 2028, consolidates party support as the incumbent administration's chosen successor, and wins the nomination on a first ballot.",
+        "story": "Harris runs for reelection in 2028, wins the nomination easily, and Ossoff remains a rising-star senator who doesn't challenge an incumbent VP from his own party.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "A different Democratic heavyweight like Josh Shapiro, Roy Cooper, or Andy Beshear enters the race late and outmaneuverers Ossoff in delegate count.",
+        "story": "Harris struggles or declines to run, but Newsom, Shapiro, and Whitmer all enter the race, splintering the progressive lane and leaving Ossoff as a respected also-ran who peaks at 12% in Iowa.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "Ossoff wins Iowa and New Hampshire as the media-anointed outsider challenger, but loses momentum to an establishment moderate in South Carolina and Super Tuesday.",
+        "story": "A major scandal or misstep by Ossoff in 2026\u20132027 (fundraising, personal, or legislative) drops him from national conversation entirely before primary season.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "A contested convention emerges after no candidate wins outright, and party elders draft Ossoff as a compromise choice between Harris and other factions.",
+        "story": "Harris falters early in 2028 primaries, centrist candidates split moderate vote, and Ossoff emerges as a compromise progressive choice who consolidates enough delegates to win.",
         "resolves": "YES",
         "agent": "base rates"
        }
@@ -1563,62 +1566,62 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting senators almost never become nominees (last was Obama 2008); Ossoff's recent media surge is real but thin\u2014headlines cluster around speculation, not structural delegate/donor buildup",
+      "reason": "Fresh coverage is notably thick and positive, but base rate for sitting senators becoming nominees is under 20%, and Harris's 2028 intentions remain the dominant variable\u2014the 16% price seems reasonabl",
       "futures": [
        {
-        "story": "Ossoff builds on 2026 midterm visibility, wins Georgia re-election in 2026, enters 2028 race and emerges as compromise progressive nominee after Harris and Newsom battle.",
+        "story": "Ossoff builds on 2026 midterm momentum, wins Georgia reelection decisively, enters 2028 as a top-tier moderate candidate and secures the nomination.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "Harris runs in 2028, consolidates Democratic establishment and donor support, and Ossoff stays in Senate focusing on legislation rather than compete in crowded primary.",
+        "story": "Harris decides to run in 2028, consolidates the Democratic establishment and donor networks, leaving Ossoff as a regional figure who doesn't make it past Iowa.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Ossoff runs in 2028 primary but loses Georgia Senate seat in 2026 to Republican, damaging his viability and he withdraws from presidential consideration.",
+        "story": "Ossoff campaigns aggressively through 2027 but finishes third or worse in early states; party coalesces around a different fresh face or establishment veteran.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Media buzz around Ossoff peaks in 2025-2026 but donor money and serious grassroots organization go to Shapiro, Beshear, or Newsom instead, leaving him as a fringe candidate.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "Harris declines to run, Ossoff enters as a strong progressive outsider option, wins Iowa and New Hampshire momentum carries him to nomination.",
+        "story": "A recession in 2027 creates opening for outsider Democrats; Ossoff's youth and media profile propel him to surprise second-place finishes, making him a viable VP or dark horse nominee.",
         "resolves": "YES",
+        "agent": "fresh news"
+       },
+       {
+        "story": "Ossoff faces unexpected scandal or primary challenger at home in 2026, struggles to retain Senate seat, becomes damaged goods for national stage by 2028.",
+        "resolves": "NO",
         "agent": "fresh news"
        }
       ],
       "agent": "fresh news"
      },
      {
-      "probability": 0.2,
-      "reason": "16% is reasonable because Ossoff has real advantages (young, charismatic, winnable state) but faces structural headwinds: sitting senators rarely win nominations, governors dominate recent fields, and",
+      "probability": 0.4,
+      "reason": "Historically, sitting U.S. Senators rarely become nominees without being frontrunners early; Ossoff has media buzz and momentum but faces structural headwinds from Harris's incumbent advantage and the",
       "futures": [
        {
-        "story": "Ossoff builds national profile through 2026 midterms, emerges as consensus moderate candidate when Harris stumbles, and wins nomination as fresh face.",
+        "story": "Ossoff builds on 2026 midterm momentum, Harris struggles with approval ratings, and party insiders coalesce around him as a fresh alternative in 2028.",
         "resolves": "YES",
         "agent": "market logic"
        },
        {
-        "story": "Harris runs for 2028, consolidates early support among party establishment and base, and Ossoff stays in Senate focusing on reelection in Georgia.",
+        "story": "Harris remains popular enough to secure the nomination despite early challengers, and Ossoff's national profile plateaus after the midterms.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Ossoff enters primary but gets outflanked by better-known governors and national figures, finishing fourth or worse and dropping out by Iowa.",
+        "story": "A recession or major foreign crisis in 2027 prompts Democrats to draft an established national figure like Newsom or Shapiro instead of betting on Ossoff.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Multiple candidates split the moderate lane including Shapiro and Beshear, Ossoff runs but party coalesces around one of them instead.",
-        "resolves": "NO",
+        "story": "Ossoff wins reelection to the Senate in 2026 with record margins, becomes a top-tier candidate, and earns enough delegate support to win the nomination.",
+        "resolves": "YES",
         "agent": "market logic"
        },
        {
-        "story": "Ossoff becomes Georgia Democratic powerhouse and gets tapped as VP nominee or cabinet pick instead of pursuing presidency.",
+        "story": "A stronger challenger emerges from a swing state governor, Ossoff splits progressive support, and he exits the primary by March 2028.",
         "resolves": "NO",
         "agent": "market logic"
        }
@@ -1627,30 +1630,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate of senators becoming nominees is ~5-8% per cycle; Ossoff has real media momentum and Harris vulnerability, but Senate career focus and lack of proven campaign machine suggest most paths end ",
+      "reason": "Smart money (16% odds) reflects that Ossoff has real momentum and media/donor interest but faces the structural headwind that U.S. senators rarely become nominees without establishment coronation, and",
       "futures": [
        {
-        "story": "Ossoff runs a strong 2026 midterm campaign, builds national profile, enters 2028 primary as fresh alternative to Harris/Newsom, and wins nomination on second ballot.",
+        "story": "Ossoff builds on 2026 midterm visibility, wins Georgia reelection in 2026, and enters 2028 as a fresh moderate face that party establishment backs over other candidates.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "Harris consolidates Democratic establishment support by late 2027, Ossoff stays focused on Senate reelection in Georgia where he faces a competitive race, and doesn't mount a serious 2028 bid.",
+        "story": "Harris declares early 2027 and consolidates donor/party support so thoroughly that Ossoff never launches a serious campaign despite media buzz.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "Ossoff launches exploratory committee in 2027 but drops out after Iowa/New Hampshire when he finishes fourth, unable to convert media buzz into actual delegate support.",
+        "story": "Ossoff runs a credible primary campaign but loses to Harris or another establishment favorite by double digits in early contests, drops out by March 2028.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "Harris stumbles on economy/foreign policy in 2027, Ossoff emerges as progressive favorite and outsider option, wins early states, and becomes surprise nominee.",
+        "story": "A major Democratic donor network quietly signals Ossoff as their pick in late 2027, he raises $40M+ in Q4, and wins Iowa/New Hampshire with insurgent momentum.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "Ossoff runs but finishes third in delegate count, gets offered VP slot or cabinet position, and accepts rather than pursue contested convention fight.",
+        "story": "Media attention fades after 2026 midterms, Ossoff becomes a credible dark horse but never gets serious institutional backing, finishes third in first three contests.",
         "resolves": "NO",
         "agent": "smart money"
        }
@@ -1659,62 +1662,62 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting senators rarely become nominees without massive establishment backing; Ossoff has media buzz but insiders typically consolidate behind proven generals\u2014the 16% price reflects real lo",
+      "reason": "Sitting senators rarely become nominees without party establishment backing; Harris controls the DNC apparatus and donor base, making her the heavy favorite unless she explicitly fails\u2014Ossoff's media ",
       "futures": [
        {
-        "story": "Ossoff builds a strong 2026 midterm profile, establishes himself as a top-tier candidate, but party insiders ultimately coalesce behind a more nationally established figure like Newsom or Shapiro who ",
-        "resolves": "NO",
-        "agent": "insider logic"
-       },
-       {
-        "story": "Harris stumbles in early 2028, moderate Democrats panic and recruit Ossoff as their consensus candidate to stop a progressive or establishment rival.",
+        "story": "Harris stumbles in 2026 midterms, party insiders recruit Ossoff as fresh face who polls well against Republicans and he wins the nomination.",
         "resolves": "YES",
         "agent": "insider logic"
        },
        {
-        "story": "Ossoff runs in the primary, gains traction among younger voters, but lacks the donor network and establishment backing to survive Super Tuesday against better-funded rivals.",
+        "story": "Harris runs strong in 2026, consolidates party support, and blocks primary challengers through DNC leverage and donor networks.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "Harris dominates early primaries and the Democratic machine rallies behind her, freezing out challengers like Ossoff before serious campaigns materialize.",
+        "story": "Ossoff builds national profile through 2026-2027 but party establishment backs established moderate like Shapiro or Newsom who have governors' records.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "Ossoff becomes a serious finalist alongside one establishment figure, wins Iowa/New Hampshire momentum, and party elites decide a young, fresh nominee is their best path to victory.",
+        "story": "Multiple candidates fragment the non-Harris lane and Ossoff's grassroots momentum plus media darling status carries him through early states to win.",
         "resolves": "YES",
+        "agent": "insider logic"
+       },
+       {
+        "story": "Ossoff remains a valuable Senate asset, party leadership discourages his presidential run to protect Georgia seat, he defers and endorses Harris.",
+        "resolves": "NO",
         "agent": "insider logic"
        }
       ],
       "agent": "insider logic"
      },
      {
-      "probability": 0.4,
-      "reason": "Consensus underestimates how rarely junior senators actually win nominations (base rate ~5-10% for any given candidate), but overestimates Ossoff's odds given he lacks Obama's 2008-style insurgent adv",
+      "probability": 0.2,
+      "reason": "Base rates show US senators rarely become nominees without prior national infrastructure or inherited advantage; Ossoff has media buzz but faces entrenched competition, making 16% plausible but likely",
       "futures": [
        {
-        "story": "Ossoff runs a strong primary campaign but loses decisively to Harris or another establishment favorite who consolidates early donor/delegate support.",
+        "story": "Ossoff's early momentum fades as national Democrats coalesce around an incumbent VP or established governor with deeper networks, leaving him as a regional favorite who never breaks through.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "Harris stumbles badly in 2026 midterms, Democrats fracture, and Ossoff emerges as compromise young progressive candidate winning the nomination.",
-        "resolves": "YES",
-        "agent": "skeptic"
-       },
-       {
-        "story": "Ossoff explores a run but withdraws by mid-2027 to focus on his Senate seat and avoid damaging a likely Democratic nominee.",
+        "story": "A scandal or major misstep in 2026-2027 derails Ossoff's trajectory before he can build sufficient delegate support at the convention.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "A major scandal or health issue derails Harris's campaign entirely, and Ossoff consolidates the under-40 progressive lane against centrist competitors.",
+        "story": "Harris runs for re-election in 2028 or a heavyweight like Shapiro/Whitmer dominates early primaries, and Ossoff finishes third or lower in Iowa/New Hampshire, eliminating his path.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "Ossoff wins Georgia re-election decisively in 2026, generates genuine grassroots momentum, and catches lightning in a divided primary where no clear frontrunner emerges, securing the nomination.",
         "resolves": "YES",
         "agent": "skeptic"
        },
        {
-        "story": "Ossoff runs but finishes fourth or fifth in Iowa/New Hampshire, loses momentum, and drops out before Super Tuesday.",
+        "story": "Ossoff becomes a serious VP or cabinet prospect instead, leveraging 2028 ambitions into a power position within a Democratic administration rather than pursuing the top job himself.",
         "resolves": "NO",
         "agent": "skeptic"
        }
@@ -1723,30 +1726,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting U.S. senators rarely become nominees (only 3 in last 50 years), party usually nominates sitting VP or governor; Ossoff's media buzz is real but headlines typically precede actual ca",
+      "reason": "Base rate: U.S. senators become major party nominees ~5-8% of the time, and sitting presidents' party nominees even less often unless there's intra-party chaos; 16% assumes significant Harris weakness",
       "futures": [
        {
-        "story": "Ossoff runs a strong 2026 midterm campaign, builds national profile, but establishes himself as valuable Senate leader and declines 2028 to protect his seat.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Harris wins reelection in 2024, runs for second term in 2028, and Democratic primary coalesces around her despite weak polling.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Ossoff enters 2028 primary but finishes fourth or worse, splits moderate vote, and nominee is Shapiro, Newsom, or establishment figure.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Harris stumbles badly in first term, party fractures, and Ossoff as young Georgia Democrat wins competitive open primary against 6+ candidates.",
+        "story": "Ossoff builds on 2026 midterm momentum, Harris stumbles on economy/foreign policy, and Democratic primary fractures between her moderate wing and progressive challengers who recruit Ossoff as their un",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Ossoff builds enough momentum through 2026 midterms that he consolidates moderate lane early and secures nomination by Super Tuesday.",
+        "story": "Harris consolidates Democratic support by 2027, Ossoff remains a respected senator but lacks the national profile or donor network to overcome an incumbent president's advantages in a primary.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "A major scandal involving Ossoff emerges (ethics investigation, personal controversy, or past statement), immediately disqualifying him from serious 2028 consideration.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "Harris faces a primary challenge and Ossoff enters as a compromise second-term alternative after Harris narrowly wins Iowa/New Hampshire, positioning him as a younger running mate or backup instead of",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "Unexpected 2027 Democratic implosion (major legislative defeat, recession, foreign crisis) creates opening for fresh faces; Ossoff's youth, Georgia roots, and media savvy make him viable nominee over ",
         "resolves": "YES",
         "agent": "base rates"
        }
@@ -1755,30 +1758,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting senators rarely become nominees (roughly 5-10% succeed); fresh news shows real momentum and media comparisons to Obama, but this is thin\u2014headlines generate when candidates are merel",
+      "reason": "The fresh news showing sustained national attention and polling strength is real, but base rates heavily favor sitting presidents or established national figures\u2014Ossoff has never run nationally and fa",
       "futures": [
        {
-        "story": "Ossoff builds national profile through 2026 midterms and 2027, wins early primary support, and becomes Democratic nominee.",
+        "story": "Ossoff wins Georgia reelection in 2026 with massive margins, becomes national Democratic star, and secures enough early delegate commitments to win the 2028 nomination.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "Harris runs for 2028 and secures nomination, blocking outsider senators like Ossoff from serious contention.",
+        "story": "Harris decides to run for reelection in 2028, consolidates Democratic establishment support, and Ossoff remains a rising star but doesn't mount a serious primary challenge.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Ossoff gains momentum but stumbles on executive experience question; establishment coalesces around a governor instead.",
+        "story": "Ossoff faces unexpectedly strong 2026 reelection pressure in Georgia, survives narrowly, and lacks the political capital or national profile to mount a credible 2028 presidential bid.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Ossoff emerges as leading progressive alternative to Harris in a contested primary and wins the nomination.",
+        "story": "Harris stumbles badly in 2025-2026, multiple candidates splinter the moderate/progressive vote in 2028 primaries, and Ossoff emerges as a compromise nominee from a contested convention.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "Multiple strong candidates split the field; Ossoff places second or third and never becomes nominee.",
+        "story": "Ossoff runs in 2028 but finishes fourth or worse in early states, dropping out before securing significant delegates as older establishment candidates consolidate.",
         "resolves": "NO",
         "agent": "fresh news"
        }
@@ -1788,202 +1791,202 @@
     ],
     "futures": [
      {
-      "story": "Ossoff builds a strong progressive coalition, wins early primaries in 2028, and becomes the Democratic nominee as Harris struggles with approval ratings.",
+      "story": "Ossoff wins Georgia reelection in 2026 with massive margins, becomes the obvious next-generation Democratic standard-bearer, and secures the nomination on the first ballot.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Harris runs for president in 2028, consolidates party support as the incumbent administration's chosen successor, and wins the nomination on a first ballot.",
+      "story": "Harris runs for reelection in 2028, wins the nomination easily, and Ossoff remains a rising-star senator who doesn't challenge an incumbent VP from his own party.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "A different Democratic heavyweight like Josh Shapiro, Roy Cooper, or Andy Beshear enters the race late and outmaneuverers Ossoff in delegate count.",
+      "story": "Harris struggles or declines to run, but Newsom, Shapiro, and Whitmer all enter the race, splintering the progressive lane and leaving Ossoff as a respected also-ran who peaks at 12% in Iowa.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Ossoff wins Iowa and New Hampshire as the media-anointed outsider challenger, but loses momentum to an establishment moderate in South Carolina and Super Tuesday.",
+      "story": "A major scandal or misstep by Ossoff in 2026\u20132027 (fundraising, personal, or legislative) drops him from national conversation entirely before primary season.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "A contested convention emerges after no candidate wins outright, and party elders draft Ossoff as a compromise choice between Harris and other factions.",
+      "story": "Harris falters early in 2028 primaries, centrist candidates split moderate vote, and Ossoff emerges as a compromise progressive choice who consolidates enough delegates to win.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Ossoff builds on 2026 midterm visibility, wins Georgia re-election in 2026, enters 2028 race and emerges as compromise progressive nominee after Harris and Newsom battle.",
+      "story": "Ossoff builds on 2026 midterm momentum, wins Georgia reelection decisively, enters 2028 as a top-tier moderate candidate and secures the nomination.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Harris runs in 2028, consolidates Democratic establishment and donor support, and Ossoff stays in Senate focusing on legislation rather than compete in crowded primary.",
+      "story": "Harris decides to run in 2028, consolidates the Democratic establishment and donor networks, leaving Ossoff as a regional figure who doesn't make it past Iowa.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Ossoff runs in 2028 primary but loses Georgia Senate seat in 2026 to Republican, damaging his viability and he withdraws from presidential consideration.",
+      "story": "Ossoff campaigns aggressively through 2027 but finishes third or worse in early states; party coalesces around a different fresh face or establishment veteran.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Media buzz around Ossoff peaks in 2025-2026 but donor money and serious grassroots organization go to Shapiro, Beshear, or Newsom instead, leaving him as a fringe candidate.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "Harris declines to run, Ossoff enters as a strong progressive outsider option, wins Iowa and New Hampshire momentum carries him to nomination.",
+      "story": "A recession in 2027 creates opening for outsider Democrats; Ossoff's youth and media profile propel him to surprise second-place finishes, making him a viable VP or dark horse nominee.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Ossoff builds national profile through 2026 midterms, emerges as consensus moderate candidate when Harris stumbles, and wins nomination as fresh face.",
+      "story": "Ossoff faces unexpected scandal or primary challenger at home in 2026, struggles to retain Senate seat, becomes damaged goods for national stage by 2028.",
+      "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "Ossoff builds on 2026 midterm momentum, Harris struggles with approval ratings, and party insiders coalesce around him as a fresh alternative in 2028.",
       "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "Harris runs for 2028, consolidates early support among party establishment and base, and Ossoff stays in Senate focusing on reelection in Georgia.",
+      "story": "Harris remains popular enough to secure the nomination despite early challengers, and Ossoff's national profile plateaus after the midterms.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Ossoff enters primary but gets outflanked by better-known governors and national figures, finishing fourth or worse and dropping out by Iowa.",
+      "story": "A recession or major foreign crisis in 2027 prompts Democrats to draft an established national figure like Newsom or Shapiro instead of betting on Ossoff.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Multiple candidates split the moderate lane including Shapiro and Beshear, Ossoff runs but party coalesces around one of them instead.",
+      "story": "Ossoff wins reelection to the Senate in 2026 with record margins, becomes a top-tier candidate, and earns enough delegate support to win the nomination.",
+      "resolves": "YES",
+      "agent": "market logic"
+     },
+     {
+      "story": "A stronger challenger emerges from a swing state governor, Ossoff splits progressive support, and he exits the primary by March 2028.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Ossoff becomes Georgia Democratic powerhouse and gets tapped as VP nominee or cabinet pick instead of pursuing presidency.",
-      "resolves": "NO",
-      "agent": "market logic"
-     },
-     {
-      "story": "Ossoff runs a strong 2026 midterm campaign, builds national profile, enters 2028 primary as fresh alternative to Harris/Newsom, and wins nomination on second ballot.",
+      "story": "Ossoff builds on 2026 midterm visibility, wins Georgia reelection in 2026, and enters 2028 as a fresh moderate face that party establishment backs over other candidates.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "Harris consolidates Democratic establishment support by late 2027, Ossoff stays focused on Senate reelection in Georgia where he faces a competitive race, and doesn't mount a serious 2028 bid.",
+      "story": "Harris declares early 2027 and consolidates donor/party support so thoroughly that Ossoff never launches a serious campaign despite media buzz.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Ossoff launches exploratory committee in 2027 but drops out after Iowa/New Hampshire when he finishes fourth, unable to convert media buzz into actual delegate support.",
+      "story": "Ossoff runs a credible primary campaign but loses to Harris or another establishment favorite by double digits in early contests, drops out by March 2028.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Harris stumbles on economy/foreign policy in 2027, Ossoff emerges as progressive favorite and outsider option, wins early states, and becomes surprise nominee.",
+      "story": "A major Democratic donor network quietly signals Ossoff as their pick in late 2027, he raises $40M+ in Q4, and wins Iowa/New Hampshire with insurgent momentum.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "Ossoff runs but finishes third in delegate count, gets offered VP slot or cabinet position, and accepts rather than pursue contested convention fight.",
+      "story": "Media attention fades after 2026 midterms, Ossoff becomes a credible dark horse but never gets serious institutional backing, finishes third in first three contests.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Ossoff builds a strong 2026 midterm profile, establishes himself as a top-tier candidate, but party insiders ultimately coalesce behind a more nationally established figure like Newsom or Shapiro who ",
-      "resolves": "NO",
-      "agent": "insider logic"
-     },
-     {
-      "story": "Harris stumbles in early 2028, moderate Democrats panic and recruit Ossoff as their consensus candidate to stop a progressive or establishment rival.",
+      "story": "Harris stumbles in 2026 midterms, party insiders recruit Ossoff as fresh face who polls well against Republicans and he wins the nomination.",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "Ossoff runs in the primary, gains traction among younger voters, but lacks the donor network and establishment backing to survive Super Tuesday against better-funded rivals.",
+      "story": "Harris runs strong in 2026, consolidates party support, and blocks primary challengers through DNC leverage and donor networks.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Harris dominates early primaries and the Democratic machine rallies behind her, freezing out challengers like Ossoff before serious campaigns materialize.",
+      "story": "Ossoff builds national profile through 2026-2027 but party establishment backs established moderate like Shapiro or Newsom who have governors' records.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Ossoff becomes a serious finalist alongside one establishment figure, wins Iowa/New Hampshire momentum, and party elites decide a young, fresh nominee is their best path to victory.",
+      "story": "Multiple candidates fragment the non-Harris lane and Ossoff's grassroots momentum plus media darling status carries him through early states to win.",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "Ossoff runs a strong primary campaign but loses decisively to Harris or another establishment favorite who consolidates early donor/delegate support.",
+      "story": "Ossoff remains a valuable Senate asset, party leadership discourages his presidential run to protect Georgia seat, he defers and endorses Harris.",
+      "resolves": "NO",
+      "agent": "insider logic"
+     },
+     {
+      "story": "Ossoff's early momentum fades as national Democrats coalesce around an incumbent VP or established governor with deeper networks, leaving him as a regional favorite who never breaks through.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "Harris stumbles badly in 2026 midterms, Democrats fracture, and Ossoff emerges as compromise young progressive candidate winning the nomination.",
+      "story": "A scandal or major misstep in 2026-2027 derails Ossoff's trajectory before he can build sufficient delegate support at the convention.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "Harris runs for re-election in 2028 or a heavyweight like Shapiro/Whitmer dominates early primaries, and Ossoff finishes third or lower in Iowa/New Hampshire, eliminating his path.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "Ossoff wins Georgia re-election decisively in 2026, generates genuine grassroots momentum, and catches lightning in a divided primary where no clear frontrunner emerges, securing the nomination.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "Ossoff explores a run but withdraws by mid-2027 to focus on his Senate seat and avoid damaging a likely Democratic nominee.",
+      "story": "Ossoff becomes a serious VP or cabinet prospect instead, leveraging 2028 ambitions into a power position within a Democratic administration rather than pursuing the top job himself.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "A major scandal or health issue derails Harris's campaign entirely, and Ossoff consolidates the under-40 progressive lane against centrist competitors.",
-      "resolves": "YES",
-      "agent": "skeptic"
-     },
-     {
-      "story": "Ossoff runs but finishes fourth or fifth in Iowa/New Hampshire, loses momentum, and drops out before Super Tuesday.",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "Ossoff runs a strong 2026 midterm campaign, builds national profile, but establishes himself as valuable Senate leader and declines 2028 to protect his seat.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Harris wins reelection in 2024, runs for second term in 2028, and Democratic primary coalesces around her despite weak polling.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Ossoff enters 2028 primary but finishes fourth or worse, splits moderate vote, and nominee is Shapiro, Newsom, or establishment figure.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Harris stumbles badly in first term, party fractures, and Ossoff as young Georgia Democrat wins competitive open primary against 6+ candidates.",
+      "story": "Ossoff builds on 2026 midterm momentum, Harris stumbles on economy/foreign policy, and Democratic primary fractures between her moderate wing and progressive challengers who recruit Ossoff as their un",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Ossoff builds enough momentum through 2026 midterms that he consolidates moderate lane early and secures nomination by Super Tuesday.",
+      "story": "Harris consolidates Democratic support by 2027, Ossoff remains a respected senator but lacks the national profile or donor network to overcome an incumbent president's advantages in a primary.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "A major scandal involving Ossoff emerges (ethics investigation, personal controversy, or past statement), immediately disqualifying him from serious 2028 consideration.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "Harris faces a primary challenge and Ossoff enters as a compromise second-term alternative after Harris narrowly wins Iowa/New Hampshire, positioning him as a younger running mate or backup instead of",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "Unexpected 2027 Democratic implosion (major legislative defeat, recession, foreign crisis) creates opening for fresh faces; Ossoff's youth, Georgia roots, and media savvy make him viable nominee over ",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Ossoff builds national profile through 2026 midterms and 2027, wins early primary support, and becomes Democratic nominee.",
+      "story": "Ossoff wins Georgia reelection in 2026 with massive margins, becomes national Democratic star, and secures enough early delegate commitments to win the 2028 nomination.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Harris runs for 2028 and secures nomination, blocking outsider senators like Ossoff from serious contention.",
+      "story": "Harris decides to run for reelection in 2028, consolidates Democratic establishment support, and Ossoff remains a rising star but doesn't mount a serious primary challenge.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Ossoff gains momentum but stumbles on executive experience question; establishment coalesces around a governor instead.",
+      "story": "Ossoff faces unexpectedly strong 2026 reelection pressure in Georgia, survives narrowly, and lacks the political capital or national profile to mount a credible 2028 presidential bid.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Ossoff emerges as leading progressive alternative to Harris in a contested primary and wins the nomination.",
+      "story": "Harris stumbles badly in 2025-2026, multiple candidates splinter the moderate/progressive vote in 2028 primaries, and Ossoff emerges as a compromise nominee from a contested convention.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Multiple strong candidates split the field; Ossoff places second or third and never becomes nominee.",
+      "story": "Ossoff runs in 2028 but finishes fourth or worse in early states, dropping out before securing significant delegates as older establishment candidates consolidate.",
       "resolves": "NO",
       "agent": "fresh news"
      }
@@ -1999,36 +2002,36 @@
     "category": "Elections",
     "mid": 7,
     "probability": 0.4,
-    "spread": 0.0661,
+    "spread": 0.0,
     "skipped": 0,
     "votes": [
      {
       "probability": 0.4,
-      "reason": "Incumbent VPs historically become nominees when they choose to run (~60-70% success rate), but Harris faces unusual headwinds from 2024 perception issues, making 7% too low but suggesting she's the un",
+      "reason": "Sitting VPs seeking renomination after a difficult term rarely succeed (base rate ~15\u201320%); Harris's weak approval and multiple credible alternatives (Newsom, Shapiro) push the true probability closer",
       "futures": [
        {
-        "story": "Harris runs in 2028, wins the primary decisively as the incumbent VP, and becomes the nominee.",
+        "story": "Harris wins Iowa and New Hampshire in early 2028, consolidates moderate support, and becomes the clear frontrunner by Super Tuesday despite Newsom's California base.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "Harris faces a primary challenge from a popular governor or senator, loses momentum after early contests, and endorses the winner by Super Tuesday.",
+        "story": "Newsom, Shapiro, and two other governors splinter the moderate lane in early states, Harris finishes third, and a fresh candidate emerges from the chaos at the convention.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "Harris decides not to run in 2027, citing focus on her role as VP, clearing the field for another Democrat.",
+        "story": "Harris's 2024 approval ratings remain underwater through 2027, she withdraws from consideration in late 2027, and the party unites behind Newsom or another figure.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "Harris runs but finishes second in Iowa/New Hampshire to a charismatic challenger; party pressure mounts and she drops out before the convention.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Harris wins early primaries, consolidates support as the moderate/establishment choice, and clinches nomination with majority of delegates.",
+        "story": "Harris builds grassroots momentum in Iowa and Nevada through 2027, wins both, and captures the nomination as the establishment consolidates behind her over fractured alternatives.",
         "resolves": "YES",
+        "agent": "base rates"
+       },
+       {
+        "story": "A recession in 2027 and anti-incumbent sentiment make Harris's path nearly impossible; Democratic delegates opt for a fresh face with no ties to the Biden-Harris record.",
+        "resolves": "NO",
         "agent": "base rates"
        }
       ],
@@ -2036,63 +2039,63 @@
      },
      {
       "probability": 0.4,
-      "reason": "Fresh news shows Harris actively campaigning for 2028, but the thin headlines lack concrete primary polling, delegate commitments, or challenger emergence data\u2014historical base rates suggest sitting VP",
+      "reason": "Base rate: sitting VPs rarely win their party's nomination after a loss (~15-20% historically), fresh polling shows Newsom significantly ahead in California Democrats, but Harris's recent midterm camp",
       "futures": [
        {
-        "story": "Harris builds strong primary momentum through 2026 midterm campaigning, consolidates party establishment support, and wins the nomination as the incumbent VP with name recognition and fundraising adva",
+        "story": "Harris rebuilds her brand through 2026 midterm campaigning, proves competitive in early polls, and consolidates moderate/incumbent support to win the nomination.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "A fresh Democratic challenger emerges from the 2026 midterms with stronger anti-incumbent energy, Harris struggles with Biden-era baggage, and the party opts for a generational reset.",
+        "story": "Newsom enters the race, siphons away Harris's California base and moderate donors, and Harris quietly withdraws to avoid a bruising primary loss.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Harris faces significant primary challengers but secures the nomination through delegate math and remaining the default establishment choice when no candidate achieves consensus.",
+        "story": "Harris faces persistent polling weakness vs Republicans, party coalesces around a fresher candidate (Newsom, Shapiro, or Whitmer) by 2027, she doesn't run.",
+        "resolves": "NO",
+        "agent": "fresh news"
+       },
+       {
+        "story": "Harris announces a run, wins Iowa/New Hampshire on organization, but loses Super Tuesday to a more popular candidate and drops out.",
+        "resolves": "NO",
+        "agent": "fresh news"
+       },
+       {
+        "story": "Harris runs and wins a competitive primary against multiple challengers, leveraging institutional Democratic support and avoiding a single strong rival.",
         "resolves": "YES",
-        "agent": "fresh news"
-       },
-       {
-        "story": "Harris declines to run, citing desire to focus on other projects or political winds shifting unfavorably enough that she withdraws before Iowa.",
-        "resolves": "NO",
-        "agent": "fresh news"
-       },
-       {
-        "story": "A labor or progressive faction fractures the primary, Harris finishes second or third, and Democrats coalesce around a different nominee at a contested convention.",
-        "resolves": "NO",
         "agent": "fresh news"
        }
       ],
       "agent": "fresh news"
      },
      {
-      "probability": 0.2,
-      "reason": "Sitting presidents seeking renomination succeed ~85% of the time historically, but Harris faces the compounding liability of being an unpopular VP-turned-president if she wins 2024, making 7% too low ",
+      "probability": 0.4,
+      "reason": "A sitting VP facing a restless party and preferred alternatives (Newsom) typically loses renomination; 7% is actually too high given historical precedent that sitting VPs without strong loyalty win ~4",
       "futures": [
        {
-        "story": "Harris wins 2024, governs competently through 2028, and secures the nomination as the incumbent party favorite despite primary challengers.",
+        "story": "Harris wins Iowa and New Hampshire early, consolidates moderate lane support, and secures delegates before a fractured progressive field coalesces around anyone else.",
         "resolves": "YES",
         "agent": "market logic"
        },
        {
-        "story": "Harris loses 2024, becomes a former one-term VP, and party moves toward fresh faces rather than a rematch candidate in 2028.",
+        "story": "Newsom enters the race, splits the California establishment vote with Harris, then either beats her in early states or forces her out before Super Tuesday.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Harris wins 2024 but faces significant primary challenge from a popular governor or senator who consolidates anti-incumbent support and wins the nomination.",
+        "story": "Harris faces a stronger-than-expected challenger emerge from outside the current polling (Pennsylvania governor, new senator, or dark horse), fragmenting the field such that Harris finishes third or f",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Harris wins 2024 but unpopular approval ratings and economic headwinds force her to withdraw before Iowa/New Hampshire, leaving nominee field open.",
+        "story": "Harris stays in the race through Super Tuesday with modest support but no clear path, then withdraws to endorse the frontrunner and preserve her political standing.",
         "resolves": "NO",
         "agent": "market logic"
        },
        {
-        "story": "Harris wins 2024, runs strong in early primaries, but loses Iowa or New Hampshire to a surging rival despite White House resources and name recognition.",
-        "resolves": "NO",
+        "story": "Harris runs a cautious primary campaign, underperforms expectations in early states, but benefits from a crowded field narrowing and emerges as acceptable compromise nominee at convention.",
+        "resolves": "YES",
         "agent": "market logic"
        }
       ],
@@ -2100,30 +2103,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Incumbent or sitting VP nominees historically win primaries ~70% of the time when they run, but Harris's current 7% market price reflects genuine weaknesses (unpopularity, primary challengers likely e",
+      "reason": "Smart money at 7% reflects that sitting VPs rarely become nominees after one term (historical base rate ~15%), Newsom is actively positioning as the alternative, and recent polling shows California De",
       "futures": [
        {
-        "story": "Harris runs in 2028, wins the primary by consolidating establishment support, and becomes the nominee despite underwhelming polling.",
+        "story": "Harris rebuilds political capital through 2026 midterms, consolidates institutional Democratic support, and enters 2028 as frontrunner despite polling headwinds.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "Harris faces a primary challenger who captures progressive energy (similar to 2016/2020 dynamics), loses decisively, and withdraws before Iowa.",
+        "story": "Newsom outflanks Harris in early states, California Democrats defect, and she withdraws before Iowa/New Hampshire to avoid humiliation.",
         "resolves": "NO",
         "agent": "smart money"
        },
        {
-        "story": "Harris voluntarily steps back from 2028 to avoid damaging the party after a difficult midterm cycle, endorses a fresh candidate instead.",
-        "resolves": "NO",
-        "agent": "smart money"
-       },
-       {
-        "story": "Harris runs and performs surprisingly well in early states, neutralizing challengers and securing the nomination through superior delegate math by March.",
+        "story": "A major economic downturn or foreign crisis in 2027 makes Democrats desperate for an incumbent-adjacent candidate, rallying behind Harris as safer than untested alternatives.",
         "resolves": "YES",
         "agent": "smart money"
        },
        {
-        "story": "A stronger Democratic candidate emerges (Newsom, Shapiro, or similar), splits the moderate lane, and a fractured field deadlocks at a brokered convention favoring someone else.",
+        "story": "A younger generation candidate (Whitmer, Shapiro, Beshear) gains momentum and splinters the moderate lane, leaving Harris without a clear path even if she runs.",
+        "resolves": "NO",
+        "agent": "smart money"
+       },
+       {
+        "story": "Harris stays in the race through Super Tuesday but loses decisively to Newsom or another rival, failing to secure the nomination.",
         "resolves": "NO",
         "agent": "smart money"
        }
@@ -2132,31 +2135,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Incumbent VP or sitting president nominees are historically very common (base rate ~70-80% when seeking nomination), but Harris's weak approval ratings and primary vulnerability are real; the 7% price",
+      "reason": "Sitting VPs get nominated ~40% historically (base rate), but Harris faces unusual headwinds (low approval, strong alternative in Newsom with donor backing, party uncertainty); insiders likely prefer s",
       "futures": [
        {
-        "story": "Harris builds dominant frontrunner status through 2026 midterms visibility and party establishment support, faces only token primary opposition, and secures nomination on first ballot.",
+        "story": "Harris wins Iowa and New Hampshire decisively in early 2028, party insiders coalesce around her as the incumbent VP, she secures nomination on first ballot.",
         "resolves": "YES",
         "agent": "insider logic"
        },
        {
-        "story": "A popular Democratic governor (Shapiro, Beshear, or similar) enters the race, splinters the party's moderate lane, and emerges as compromise nominee at contested convention after Harris stumbles.",
+        "story": "Newsom dominates early primaries with massive funding and media support from California donors, Harris finishes third in Iowa, she withdraws and endorses him by March 2028.",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "Harris decides against running to focus on her presidency (having become president by 2028 via succession or election), making the question moot as she's already president, not nominee.",
+        "story": "A third major Democrat (Whitmer, Shapiro, or similar) surges in polls during 2027, Harris lacks dominant early state operation, convention becomes contested with her as spoiler candidate eliminated ro",
         "resolves": "NO",
         "agent": "insider logic"
        },
        {
-        "story": "Progressive wing coalesces behind a younger senator or congresswoman on climate/healthcare grounds, Harris finishes second in early states, and withdraws before Super Tuesday.",
-        "resolves": "NO",
-        "agent": "insider logic"
-       },
-       {
-        "story": "Harris faces primary challenge but consolidates Black voters, union support, and endorsements from Biden-allied delegates, winning Iowa/New Hampshire decisively and clearing the field by March.",
+        "story": "Harris stays disciplined, builds machine in key states during 2027, faces Newsom in brutal primary but her institutional DNC support and Black voter coalition carry her to narrow Super Tuesday victory",
         "resolves": "YES",
+        "agent": "insider logic"
+       },
+       {
+        "story": "Democratic Party establishment fears Harris polling poorly vs Republican nominee, private donor pressure mounts for alternative, she faces coordinated primary challengers and drops out before Super Tu",
+        "resolves": "NO",
         "agent": "insider logic"
        }
       ],
@@ -2164,30 +2167,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "The 7% price seems too low given that sitting VPs historically secure nominations when they run (Ford, Mondale, HW Bush, Gore attempted, Biden succeeded); the skeptical case rests on Harris being uniq",
+      "reason": "7% underprices incumbent VPs who stay in the race\u2014historically they win their party's nomination ~60% of the time when they actively contest it, though 2028's low current polling and Newsom alternativ",
       "futures": [
        {
-        "story": "Harris builds strong name recognition and donor network through 2026 midterm campaigning, consolidates party establishment support early, and faces a fractured primary field with no dominant challenge",
+        "story": "Harris wins Iowa and New Hampshire early, momentum carries her through Super Tuesday despite low current polling, and she secures the nomination by July 2028.",
         "resolves": "YES",
         "agent": "skeptic"
        },
        {
-        "story": "A popular governor (Newsom, Shapiro, or Beshear) enters the race in 2027, consolidates the 'fresh start' lane that Democrats are hungry for after 2024's loss, and Harris struggles to overcome the hist",
+        "story": "Newsom enters the race, splits the moderate lane with Harris, a progressive candidate wins the primary, and Harris finishes third or worse.",
         "resolves": "NO",
         "agent": "skeptic"
        },
        {
-        "story": "Harris's approval ratings remain underwater through 2026, she quietly signals reluctance to run, and the Democratic Party leadership quietly coalesces around a younger alternative to avoid a primary b",
-        "resolves": "NO",
-        "agent": "skeptic"
-       },
-       {
-        "story": "The Democratic bench proves shallower than expected, no consensus alternative emerges by late 2027, Harris's disciplined positioning and institutional support default her into the nomination as the sa",
+        "story": "Harris faces a primary challenge but consolidates endorsements as the establishment favorite, wins narrowly with ~35% in a crowded field, becoming the nominee.",
         "resolves": "YES",
         "agent": "skeptic"
        },
        {
-        "story": "Harris faces a sustained primary challenge from a rising progressive or populist Democrat (Sanders-aligned or new face) who wins Iowa/New Hampshire, exposing weakness and forcing her to withdraw befor",
+        "story": "Economic recession hits in 2027, Harris is blamed as incumbent party VP, and Democrats choose a fresh face like Shapiro or Beshear to reset the ticket.",
+        "resolves": "NO",
+        "agent": "skeptic"
+       },
+       {
+        "story": "Harris doesn't run at all, citing focus on her presidential duties or personal reasons, opening the field entirely to other candidates.",
         "resolves": "NO",
         "agent": "skeptic"
        }
@@ -2196,31 +2199,31 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting VPs rarely win their party's next nomination after a single term (roughly 10-15% historically), but Harris has significant institutional backing; the 7% market price seems underweig",
+      "reason": "Incumbent VPs who lose reelection rarely win their party's next nomination (base rate ~5-10%), but Harris has structural advantages (name recognition, fundraising, establishment ties) that push her to",
       "futures": [
        {
-        "story": "Harris wins the 2026 midterms messaging campaign, consolidates party support, and runs as the incumbent-aligned candidate in 2028, securing the nomination.",
+        "story": "Harris rebuilds her political brand through 2026 midterm campaigning, overcomes early primary skepticism, and secures the nomination as the party establishment consolidates behind her.",
         "resolves": "YES",
         "agent": "base rates"
        },
        {
-        "story": "A popular governor or senator emerges as a fresher alternative during the primary season, fracturing the Biden-aligned vote and defeating Harris in key early states.",
+        "story": "Newsom enters the race, splits the moderate lane with Harris, and wins the nomination as Democrats prefer a candidate without her 2024 baggage.",
         "resolves": "NO",
         "agent": "base rates"
        },
        {
-        "story": "Harris faces significant primary challenges but wins enough delegates through superior organization and establishment backing to secure the nomination narrowly.",
+        "story": "Harris stays in the race through early primaries but finishes third in Iowa and New Hampshire, then withdraws and endorses another candidate.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "Harris faces such persistent polling deficits and donor reluctance that she announces before Iowa she won't seek the nomination, clearing the field for others.",
+        "resolves": "NO",
+        "agent": "base rates"
+       },
+       {
+        "story": "Harris survives a crowded primary by consolidating Black and women voters in South Carolina, then wins key Super Tuesday contests to clinch the nomination.",
         "resolves": "YES",
-        "agent": "base rates"
-       },
-       {
-        "story": "The party collectively decides to move past the Biden-Harris era after 2024 losses and consolidates behind a new generational candidate by 2027.",
-        "resolves": "NO",
-        "agent": "base rates"
-       },
-       {
-        "story": "Harris withdraws from the race in late 2027 citing family reasons or shifting political calculus, handing the nomination to another Democrat.",
-        "resolves": "NO",
         "agent": "base rates"
        }
       ],
@@ -2228,30 +2231,30 @@
      },
      {
       "probability": 0.4,
-      "reason": "Base rate: sitting VPs rarely become nominees after losing (roughly 10-15% historically), but fresh reporting shows Harris actively campaigning and considering 2028, which pushes probability above bas",
+      "reason": "Fresh news shows Harris actively campaigning and media treating her as serious contender, but very recent California polling suggesting Newsom is preferred within her home state is a real warning sign",
       "futures": [
        {
-        "story": "Harris runs in 2028, wins a competitive primary against younger challengers, and becomes the nominee despite lingering 2024 fatigue.",
+        "story": "Harris runs in 2028, wins a competitive primary against Newsom and Shapiro by consolidating Black voters and incumbency advantage, then becomes nominee.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "Harris decides not to run after midterm campaigning reveals deep party fractures, clearing the field for a fresh face.",
+        "story": "Harris decides against running in late 2027 after midterm polling shows her unpopular nationally, clearing the field for Newsom or another Democrat.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Harris enters the primary but loses early contests to a charismatic governor or senator who better embodies party renewal.",
+        "story": "Harris enters the primary but finishes third behind Newsom and a surprise candidate, then withdraws before Super Tuesday.",
         "resolves": "NO",
         "agent": "fresh news"
        },
        {
-        "story": "Harris faces a serious primary challenger but consolidates establishment support and donor backing to secure the nomination.",
+        "story": "Harris faces a brokered convention after a fractured primary, emerges as compromise nominee despite not winning most delegates.",
         "resolves": "YES",
         "agent": "fresh news"
        },
        {
-        "story": "A recession or major foreign crisis in 2027 prompts Democratic pressure on Harris to skip 2028 and focus on governing.",
+        "story": "Harris runs but loses Iowa and New Hampshire badly to Newsom, who then dominates through Super Tuesday and secures early nomination.",
         "resolves": "NO",
         "agent": "fresh news"
        }
@@ -2261,202 +2264,202 @@
     ],
     "futures": [
      {
-      "story": "Harris runs in 2028, wins the primary decisively as the incumbent VP, and becomes the nominee.",
+      "story": "Harris wins Iowa and New Hampshire in early 2028, consolidates moderate support, and becomes the clear frontrunner by Super Tuesday despite Newsom's California base.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Harris faces a primary challenge from a popular governor or senator, loses momentum after early contests, and endorses the winner by Super Tuesday.",
+      "story": "Newsom, Shapiro, and two other governors splinter the moderate lane in early states, Harris finishes third, and a fresh candidate emerges from the chaos at the convention.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Harris decides not to run in 2027, citing focus on her role as VP, clearing the field for another Democrat.",
+      "story": "Harris's 2024 approval ratings remain underwater through 2027, she withdraws from consideration in late 2027, and the party unites behind Newsom or another figure.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Harris runs but finishes second in Iowa/New Hampshire to a charismatic challenger; party pressure mounts and she drops out before the convention.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Harris wins early primaries, consolidates support as the moderate/establishment choice, and clinches nomination with majority of delegates.",
+      "story": "Harris builds grassroots momentum in Iowa and Nevada through 2027, wins both, and captures the nomination as the establishment consolidates behind her over fractured alternatives.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "Harris builds strong primary momentum through 2026 midterm campaigning, consolidates party establishment support, and wins the nomination as the incumbent VP with name recognition and fundraising adva",
+      "story": "A recession in 2027 and anti-incumbent sentiment make Harris's path nearly impossible; Democratic delegates opt for a fresh face with no ties to the Biden-Harris record.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "Harris rebuilds her brand through 2026 midterm campaigning, proves competitive in early polls, and consolidates moderate/incumbent support to win the nomination.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "A fresh Democratic challenger emerges from the 2026 midterms with stronger anti-incumbent energy, Harris struggles with Biden-era baggage, and the party opts for a generational reset.",
+      "story": "Newsom enters the race, siphons away Harris's California base and moderate donors, and Harris quietly withdraws to avoid a bruising primary loss.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Harris faces significant primary challengers but secures the nomination through delegate math and remaining the default establishment choice when no candidate achieves consensus.",
+      "story": "Harris faces persistent polling weakness vs Republicans, party coalesces around a fresher candidate (Newsom, Shapiro, or Whitmer) by 2027, she doesn't run.",
+      "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "Harris announces a run, wins Iowa/New Hampshire on organization, but loses Super Tuesday to a more popular candidate and drops out.",
+      "resolves": "NO",
+      "agent": "fresh news"
+     },
+     {
+      "story": "Harris runs and wins a competitive primary against multiple challengers, leveraging institutional Democratic support and avoiding a single strong rival.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Harris declines to run, citing desire to focus on other projects or political winds shifting unfavorably enough that she withdraws before Iowa.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "A labor or progressive faction fractures the primary, Harris finishes second or third, and Democrats coalesce around a different nominee at a contested convention.",
-      "resolves": "NO",
-      "agent": "fresh news"
-     },
-     {
-      "story": "Harris wins 2024, governs competently through 2028, and secures the nomination as the incumbent party favorite despite primary challengers.",
+      "story": "Harris wins Iowa and New Hampshire early, consolidates moderate lane support, and secures delegates before a fractured progressive field coalesces around anyone else.",
       "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "Harris loses 2024, becomes a former one-term VP, and party moves toward fresh faces rather than a rematch candidate in 2028.",
+      "story": "Newsom enters the race, splits the California establishment vote with Harris, then either beats her in early states or forces her out before Super Tuesday.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Harris wins 2024 but faces significant primary challenge from a popular governor or senator who consolidates anti-incumbent support and wins the nomination.",
+      "story": "Harris faces a stronger-than-expected challenger emerge from outside the current polling (Pennsylvania governor, new senator, or dark horse), fragmenting the field such that Harris finishes third or f",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Harris wins 2024 but unpopular approval ratings and economic headwinds force her to withdraw before Iowa/New Hampshire, leaving nominee field open.",
+      "story": "Harris stays in the race through Super Tuesday with modest support but no clear path, then withdraws to endorse the frontrunner and preserve her political standing.",
       "resolves": "NO",
       "agent": "market logic"
      },
      {
-      "story": "Harris wins 2024, runs strong in early primaries, but loses Iowa or New Hampshire to a surging rival despite White House resources and name recognition.",
-      "resolves": "NO",
+      "story": "Harris runs a cautious primary campaign, underperforms expectations in early states, but benefits from a crowded field narrowing and emerges as acceptable compromise nominee at convention.",
+      "resolves": "YES",
       "agent": "market logic"
      },
      {
-      "story": "Harris runs in 2028, wins the primary by consolidating establishment support, and becomes the nominee despite underwhelming polling.",
+      "story": "Harris rebuilds political capital through 2026 midterms, consolidates institutional Democratic support, and enters 2028 as frontrunner despite polling headwinds.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "Harris faces a primary challenger who captures progressive energy (similar to 2016/2020 dynamics), loses decisively, and withdraws before Iowa.",
+      "story": "Newsom outflanks Harris in early states, California Democrats defect, and she withdraws before Iowa/New Hampshire to avoid humiliation.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Harris voluntarily steps back from 2028 to avoid damaging the party after a difficult midterm cycle, endorses a fresh candidate instead.",
-      "resolves": "NO",
-      "agent": "smart money"
-     },
-     {
-      "story": "Harris runs and performs surprisingly well in early states, neutralizing challengers and securing the nomination through superior delegate math by March.",
+      "story": "A major economic downturn or foreign crisis in 2027 makes Democrats desperate for an incumbent-adjacent candidate, rallying behind Harris as safer than untested alternatives.",
       "resolves": "YES",
       "agent": "smart money"
      },
      {
-      "story": "A stronger Democratic candidate emerges (Newsom, Shapiro, or similar), splits the moderate lane, and a fractured field deadlocks at a brokered convention favoring someone else.",
+      "story": "A younger generation candidate (Whitmer, Shapiro, Beshear) gains momentum and splinters the moderate lane, leaving Harris without a clear path even if she runs.",
       "resolves": "NO",
       "agent": "smart money"
      },
      {
-      "story": "Harris builds dominant frontrunner status through 2026 midterms visibility and party establishment support, faces only token primary opposition, and secures nomination on first ballot.",
+      "story": "Harris stays in the race through Super Tuesday but loses decisively to Newsom or another rival, failing to secure the nomination.",
+      "resolves": "NO",
+      "agent": "smart money"
+     },
+     {
+      "story": "Harris wins Iowa and New Hampshire decisively in early 2028, party insiders coalesce around her as the incumbent VP, she secures nomination on first ballot.",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "A popular Democratic governor (Shapiro, Beshear, or similar) enters the race, splinters the party's moderate lane, and emerges as compromise nominee at contested convention after Harris stumbles.",
+      "story": "Newsom dominates early primaries with massive funding and media support from California donors, Harris finishes third in Iowa, she withdraws and endorses him by March 2028.",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Harris decides against running to focus on her presidency (having become president by 2028 via succession or election), making the question moot as she's already president, not nominee.",
+      "story": "A third major Democrat (Whitmer, Shapiro, or similar) surges in polls during 2027, Harris lacks dominant early state operation, convention becomes contested with her as spoiler candidate eliminated ro",
       "resolves": "NO",
       "agent": "insider logic"
      },
      {
-      "story": "Progressive wing coalesces behind a younger senator or congresswoman on climate/healthcare grounds, Harris finishes second in early states, and withdraws before Super Tuesday.",
-      "resolves": "NO",
-      "agent": "insider logic"
-     },
-     {
-      "story": "Harris faces primary challenge but consolidates Black voters, union support, and endorsements from Biden-allied delegates, winning Iowa/New Hampshire decisively and clearing the field by March.",
+      "story": "Harris stays disciplined, builds machine in key states during 2027, faces Newsom in brutal primary but her institutional DNC support and Black voter coalition carry her to narrow Super Tuesday victory",
       "resolves": "YES",
       "agent": "insider logic"
      },
      {
-      "story": "Harris builds strong name recognition and donor network through 2026 midterm campaigning, consolidates party establishment support early, and faces a fractured primary field with no dominant challenge",
+      "story": "Democratic Party establishment fears Harris polling poorly vs Republican nominee, private donor pressure mounts for alternative, she faces coordinated primary challengers and drops out before Super Tu",
+      "resolves": "NO",
+      "agent": "insider logic"
+     },
+     {
+      "story": "Harris wins Iowa and New Hampshire early, momentum carries her through Super Tuesday despite low current polling, and she secures the nomination by July 2028.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "A popular governor (Newsom, Shapiro, or Beshear) enters the race in 2027, consolidates the 'fresh start' lane that Democrats are hungry for after 2024's loss, and Harris struggles to overcome the hist",
+      "story": "Newsom enters the race, splits the moderate lane with Harris, a progressive candidate wins the primary, and Harris finishes third or worse.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "Harris's approval ratings remain underwater through 2026, she quietly signals reluctance to run, and the Democratic Party leadership quietly coalesces around a younger alternative to avoid a primary b",
-      "resolves": "NO",
-      "agent": "skeptic"
-     },
-     {
-      "story": "The Democratic bench proves shallower than expected, no consensus alternative emerges by late 2027, Harris's disciplined positioning and institutional support default her into the nomination as the sa",
+      "story": "Harris faces a primary challenge but consolidates endorsements as the establishment favorite, wins narrowly with ~35% in a crowded field, becoming the nominee.",
       "resolves": "YES",
       "agent": "skeptic"
      },
      {
-      "story": "Harris faces a sustained primary challenge from a rising progressive or populist Democrat (Sanders-aligned or new face) who wins Iowa/New Hampshire, exposing weakness and forcing her to withdraw befor",
+      "story": "Economic recession hits in 2027, Harris is blamed as incumbent party VP, and Democrats choose a fresh face like Shapiro or Beshear to reset the ticket.",
       "resolves": "NO",
       "agent": "skeptic"
      },
      {
-      "story": "Harris wins the 2026 midterms messaging campaign, consolidates party support, and runs as the incumbent-aligned candidate in 2028, securing the nomination.",
+      "story": "Harris doesn't run at all, citing focus on her presidential duties or personal reasons, opening the field entirely to other candidates.",
+      "resolves": "NO",
+      "agent": "skeptic"
+     },
+     {
+      "story": "Harris rebuilds her political brand through 2026 midterm campaigning, overcomes early primary skepticism, and secures the nomination as the party establishment consolidates behind her.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "A popular governor or senator emerges as a fresher alternative during the primary season, fracturing the Biden-aligned vote and defeating Harris in key early states.",
+      "story": "Newsom enters the race, splits the moderate lane with Harris, and wins the nomination as Democrats prefer a candidate without her 2024 baggage.",
       "resolves": "NO",
       "agent": "base rates"
      },
      {
-      "story": "Harris faces significant primary challenges but wins enough delegates through superior organization and establishment backing to secure the nomination narrowly.",
+      "story": "Harris stays in the race through early primaries but finishes third in Iowa and New Hampshire, then withdraws and endorses another candidate.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "Harris faces such persistent polling deficits and donor reluctance that she announces before Iowa she won't seek the nomination, clearing the field for others.",
+      "resolves": "NO",
+      "agent": "base rates"
+     },
+     {
+      "story": "Harris survives a crowded primary by consolidating Black and women voters in South Carolina, then wins key Super Tuesday contests to clinch the nomination.",
       "resolves": "YES",
       "agent": "base rates"
      },
      {
-      "story": "The party collectively decides to move past the Biden-Harris era after 2024 losses and consolidates behind a new generational candidate by 2027.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Harris withdraws from the race in late 2027 citing family reasons or shifting political calculus, handing the nomination to another Democrat.",
-      "resolves": "NO",
-      "agent": "base rates"
-     },
-     {
-      "story": "Harris runs in 2028, wins a competitive primary against younger challengers, and becomes the nominee despite lingering 2024 fatigue.",
+      "story": "Harris runs in 2028, wins a competitive primary against Newsom and Shapiro by consolidating Black voters and incumbency advantage, then becomes nominee.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "Harris decides not to run after midterm campaigning reveals deep party fractures, clearing the field for a fresh face.",
+      "story": "Harris decides against running in late 2027 after midterm polling shows her unpopular nationally, clearing the field for Newsom or another Democrat.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Harris enters the primary but loses early contests to a charismatic governor or senator who better embodies party renewal.",
+      "story": "Harris enters the primary but finishes third behind Newsom and a surprise candidate, then withdraws before Super Tuesday.",
       "resolves": "NO",
       "agent": "fresh news"
      },
      {
-      "story": "Harris faces a serious primary challenger but consolidates establishment support and donor backing to secure the nomination.",
+      "story": "Harris faces a brokered convention after a fractured primary, emerges as compromise nominee despite not winning most delegates.",
       "resolves": "YES",
       "agent": "fresh news"
      },
      {
-      "story": "A recession or major foreign crisis in 2027 prompts Democratic pressure on Harris to skip 2028 and focus on governing.",
+      "story": "Harris runs but loses Iowa and New Hampshire badly to Newsom, who then dominates through Super Tuesday and secures early nomination.",
       "resolves": "NO",
       "agent": "fresh news"
      }
