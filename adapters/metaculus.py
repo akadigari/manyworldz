@@ -37,6 +37,7 @@ never a retry storm.
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
@@ -55,6 +56,10 @@ def _headers(token: str) -> dict:
 
 
 SUPPORTED_TYPES = {"binary", "multiple_choice", "numeric", "discrete"}
+# Not a question type but a post type: the listing's forecast_type
+# filter drops group posts entirely unless this is asked for too
+# (forecasting-tools appends it exactly when it unpacks groups).
+GROUP_POST_TYPE = "group_of_questions"
 
 
 def _criteria_text(question: dict) -> str:
@@ -74,13 +79,124 @@ def _criteria_text(question: dict) -> str:
     return "\n".join(parts)
 
 
+def _forecast_time_iso(latest) -> str | None:
+    """When this account last forecast a question, as an ISO string.
+
+    my_forecasts.latest.start_time has been seen both as an ISO string
+    (our own fixture, written from an early live payload) and as a unix
+    epoch number (what the API's forecast history uses). Either is
+    accepted; anything else reads as "unknown", never a guess.
+    """
+    if not isinstance(latest, dict):
+        return None
+    start = latest.get("start_time")
+    if isinstance(start, bool):
+        return None
+    if isinstance(start, (int, float)):
+        try:
+            return datetime.fromtimestamp(float(start), timezone.utc).isoformat()
+        except (OverflowError, OSError, ValueError):
+            return None
+    if isinstance(start, str) and start.strip():
+        return start.strip()
+    return None
+
+
+def _card(post_id, question: dict, title: str, criteria: str) -> dict | None:
+    """One question card, shared by plain posts and group subquestions.
+
+    Returns None for anything this bot does not answer: an unsupported
+    type, a question that is not open, or one missing its id or title.
+    """
+    # A missing "type" key is treated as binary (the listing filter
+    # already narrows types); an unsupported type is skipped.
+    qtype = question.get("type", "binary")
+    if qtype not in SUPPORTED_TYPES:
+        return None
+    if question.get("status") not in (None, "open"):
+        return None
+    qid = question.get("id")
+    if qid is None or post_id is None or not title:
+        return None           # missing what we actually need: skip, don't guess
+    my = question.get("my_forecasts") or {}
+    latest = my.get("latest") if isinstance(my, dict) else None
+    card = {
+        "qid": qid,
+        "post_id": post_id,
+        "qtype": qtype,
+        "question": title,
+        "criteria": criteria,
+        "close_time": question.get("scheduled_close_time", ""),
+        "url": f"https://www.metaculus.com/questions/{post_id}/",
+        "already_forecast": bool(latest),
+        "last_forecast_at": _forecast_time_iso(latest),
+    }
+    if qtype == "multiple_choice":
+        card["options"] = question.get("options") or []
+    if qtype in ("numeric", "discrete"):
+        card["scaling"] = question.get("scaling") or {}
+        card["open_lower_bound"] = bool(question.get("open_lower_bound"))
+        card["open_upper_bound"] = bool(question.get("open_upper_bound"))
+        card["unit"] = question.get("unit", "")
+    return card
+
+
+def _group_cards(post: dict) -> list[dict]:
+    """Expand a group post into one card per answerable subquestion.
+
+    Market Pulse asks its questions as "numeric groups": one post, one
+    shared set of rules, several numeric rows (one per stock, say),
+    each its own question with its own id, forecast and score. The
+    shape followed here is the one Metaculus's own forecasting-tools
+    library unpacks (MetaculusClient._unpack_group_question, read
+    2026-09-27): post["group_of_questions"] holds description,
+    resolution_criteria, fine_print and a "questions" list, and each
+    subquestion's "label" names its row.
+
+    Each card keeps the PARENT post's id (comments and the page URL
+    live on the post) and the SUBQUESTION's id (forecasts are posted
+    per subquestion). The title is the group title with the row label
+    in parentheses, because the label alone ("AAPL") is not a question.
+    The group's rules apply to every row; a rule a subquestion states
+    for itself wins over the group's. A subquestion with no label and
+    no title of its own has nothing telling it apart from its siblings,
+    so it is skipped rather than forecast blind.
+    """
+    group = post.get("group_of_questions")
+    if not isinstance(group, dict):
+        return []
+    subs = group.get("questions")
+    if not isinstance(subs, list):
+        return []
+    group_title = (post.get("title") or group.get("title") or "").strip()
+    cards = []
+    for sub in subs:
+        if not isinstance(sub, dict):
+            continue
+        label = (sub.get("label") or "").strip()
+        sub_title = (sub.get("title") or "").strip()
+        if not label and sub_title != group_title:
+            label = sub_title
+        if not label or not group_title:
+            continue
+        merged = {key: sub.get(key) or group.get(key)
+                  for key in ("description", "resolution_criteria", "fine_print")}
+        card = _card(post.get("id"), sub, f"{group_title} ({label})",
+                     _criteria_text(merged))
+        if card is not None:
+            cards.append({**card, "group_label": label})
+    return cards
+
+
 def parse_questions(payload: dict) -> list[dict]:
     """Turn Metaculus's raw /posts/ response into simple question cards.
 
     A "post" wraps one question most of the time, but it can also wrap
     a group of questions, or carry no question at all (an article, a
-    discussion thread). Group posts get skipped (FutureEval currently
-    has none). All four tournament question types come through: binary,
+    discussion thread). Group posts (post["group_of_questions"]) are
+    expanded into one card per subquestion, see _group_cards; that is
+    how Market Pulse asks everything. A post with neither shape is
+    skipped. All four tournament question types come through: binary,
     multiple choice, numeric, and discrete. A post missing the fields
     we actually need (an id, a title) is skipped too, never guessed at.
 
@@ -88,8 +204,10 @@ def parse_questions(payload: dict) -> list[dict]:
     "criteria" (background + resolution criteria + fine print),
     "close_time", "url", "already_forecast" (from the API's own
     my_forecasts record, so a fresh checkout can't re-answer),
-    and for multiple choice "options", for numeric/discrete "scaling",
-    "open_lower_bound", "open_upper_bound", "unit"}.
+    "last_forecast_at" (ISO time of that record, or None), and for
+    multiple choice "options", for numeric/discrete "scaling",
+    "open_lower_bound", "open_upper_bound", "unit"}. Group cards add
+    "group_label".
     """
     cards = []
     for post in payload.get("results", []) or []:
@@ -97,38 +215,12 @@ def parse_questions(payload: dict) -> list[dict]:
             continue
         question = post.get("question")
         if not isinstance(question, dict):
-            continue          # a group/multi-question post, or no question attached
-        # A missing "type" key is treated as binary (the listing filter
-        # already narrows types); an unsupported type is skipped.
-        qtype = question.get("type", "binary")
-        if qtype not in SUPPORTED_TYPES:
+            cards.extend(_group_cards(post))   # a group post, or no question at all
             continue
-        if question.get("status") not in (None, "open"):
-            continue
-        qid = question.get("id")
-        post_id = post.get("id")
         title = question.get("title") or post.get("title") or ""
-        if qid is None or post_id is None or not title:
-            continue          # missing what we actually need: skip, don't guess
-        my = question.get("my_forecasts") or {}
-        card = {
-            "qid": qid,
-            "post_id": post_id,
-            "qtype": qtype,
-            "question": title,
-            "criteria": _criteria_text(question),
-            "close_time": question.get("scheduled_close_time", ""),
-            "url": f"https://www.metaculus.com/questions/{post_id}/",
-            "already_forecast": bool(my.get("latest")),
-        }
-        if qtype == "multiple_choice":
-            card["options"] = question.get("options") or []
-        if qtype in ("numeric", "discrete"):
-            card["scaling"] = question.get("scaling") or {}
-            card["open_lower_bound"] = bool(question.get("open_lower_bound"))
-            card["open_upper_bound"] = bool(question.get("open_upper_bound"))
-            card["unit"] = question.get("unit", "")
-        cards.append(card)
+        card = _card(post.get("id"), question, title, _criteria_text(question))
+        if card is not None:
+            cards.append(card)
     return cards
 
 
@@ -141,7 +233,7 @@ def _get_posts(tournament, token: str, offset: int) -> dict:
         "limit": PAGE_SIZE, "offset": offset, "order_by": "-hotness",
         # Comma-joined, not a repeated query param: that is the exact
         # shape the official template sends (see the module docstring).
-        "forecast_type": ",".join(sorted(SUPPORTED_TYPES)),
+        "forecast_type": ",".join(sorted(SUPPORTED_TYPES | {GROUP_POST_TYPE})),
         "tournaments": [tournament],
         "statuses": "open", "include_description": "true",
     }

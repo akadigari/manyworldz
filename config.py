@@ -139,6 +139,46 @@ METACULUS_TOURNAMENTS = [slug.strip() for slug in _tournament_env.split(",")
 # and one_cycle's default when called without an explicit tournament.
 METACULUS_TOURNAMENT = METACULUS_TOURNAMENTS[0]
 
+# ---- re-forecasting (spot-scored tournaments like Market Pulse) ----
+# FutureEval and MiniBench want ONE forecast per question, and every
+# tournament not named below keeps that strict rule. Market Pulse is
+# different: it is quarterly (~$7.5k), asks "numeric groups" about
+# markets and company performance, and scores the forecast standing AT
+# CLOSE (spot scoring). A forecast made on day one and never touched is
+# scored on day-one information, so for the tournaments listed here the
+# "already answered" skip becomes "answered recently":
+#   - a question is re-answered once its last forecast (the newer of the
+#     local log row and the API's my_forecasts time) is at least
+#     REFORECAST_MIN_INTERVAL_H hours old, and
+#   - once more when it enters the last REFORECAST_FINAL_WINDOW_H hours
+#     before scheduled_close_time, if its last forecast predates that
+#     window. The cron fires every ~20 minutes, so any window over an
+#     hour is always hit.
+# Never-answered questions still go first in every cycle; refreshes
+# fill the remaining TOURNAMENT_QUESTIONS_PER_RUN slots, final-window
+# ones before merely stale ones.
+#
+# Market Pulse is deliberately NOT in the default tournament list: 26Q3
+# (tournament ID 33066) resolves by 2026-09-30, and the 26Q4 slug/ID was
+# not announced as of 2026-09-27. Its rules also allow entering only
+# once, as a bot OR a human: do not enable it if the owner is entering
+# Market Pulse by hand. To turn it on once 26Q4 is announced, set two
+# repository variables (Settings -> Secrets and variables -> Actions ->
+# Variables), no code change:
+#   METACULUS_TOURNAMENTS            = minibench,fall-futureeval-2026,<26Q4 slug or ID>
+#   METACULUS_REFORECAST_TOURNAMENTS = <the same 26Q4 slug or ID>
+# (spelled exactly the same way in both: the match is on the string).
+# Optional: REFORECAST_MIN_INTERVAL_HOURS (default 24) and
+# REFORECAST_FINAL_WINDOW_HOURS (default 3).
+METACULUS_REFORECAST_TOURNAMENTS = [
+    slug.strip() for slug in
+    _os.environ.get("METACULUS_REFORECAST_TOURNAMENTS", "").split(",")
+    if slug.strip()]
+REFORECAST_MIN_INTERVAL_H = float(
+    _os.environ.get("REFORECAST_MIN_INTERVAL_HOURS") or "24")
+REFORECAST_FINAL_WINDOW_H = float(
+    _os.environ.get("REFORECAST_FINAL_WINDOW_HOURS") or "3")
+
 # Arm-by date. An unset METACULUS_TOKEN is tolerated (exit 0) until this
 # date, then the cycle fails loudly. Fall FutureEval opens in September and
 # the Summer season was lost to a quiet, unarmed schedule.

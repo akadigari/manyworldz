@@ -105,6 +105,15 @@ jobs:
           OPENROUTER_MODEL_MAP: ${{ vars.OPENROUTER_MODEL_MAP }}
           ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
           ASKNEWS_CLIENT_SECRET: ${{ secrets.ASKNEWS_CLIENT_SECRET }}
+          # Optional repository VARIABLES (not secrets). Unset means an
+          # empty string, which config.py treats as "use the default":
+          # the minibench + fall-futureeval list, and no tournament
+          # re-forecasting. See config.py's re-forecasting block for how
+          # to enable Market Pulse once its 26Q4 slug is announced.
+          METACULUS_TOURNAMENTS: ${{ vars.METACULUS_TOURNAMENTS }}
+          METACULUS_REFORECAST_TOURNAMENTS: ${{ vars.METACULUS_REFORECAST_TOURNAMENTS }}
+          REFORECAST_MIN_INTERVAL_HOURS: ${{ vars.REFORECAST_MIN_INTERVAL_HOURS }}
+          REFORECAST_FINAL_WINDOW_HOURS: ${{ vars.REFORECAST_FINAL_WINDOW_HOURS }}
         run: python3 tournament.py
 
       - name: save the submission log back to the repo

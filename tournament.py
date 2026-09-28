@@ -40,6 +40,9 @@ below all serve that one goal:
    makers should only submit one forecast per question, so an already
    answered question is left alone, whether the record of it comes
    from the local log or from the API's own my_forecasts flag.
+   Spot-scored tournaments (Market Pulse) are the one opt-in exception:
+   only those named in config.METACULUS_REFORECAST_TOURNAMENTS refresh
+   a stale forecast, see _select_targets.
 4. A per-question deadline (config.QUESTION_DEADLINE_S). The questions
    are only open 1.5 to 3 hours; a hung call degrades to the ladder
    instead of eating the window.
@@ -61,7 +64,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -123,9 +126,9 @@ def _log_history(log_path: Path) -> dict:
     """Every question this log has ever answered, mapped to its most
     recent submission's "at" timestamp string.
 
-    A qid can now show up on more than one row: the refresh pass (see
-    _pick_refresh_targets) resubmits a stale, soon-to-close question, so
-    later rows for the same qid always win, since csv rows are appended
+    A qid can show up on more than one row: a re-forecast tournament
+    (see _select_targets) resubmits a stale question, so later rows for
+    the same qid always win, since csv rows are appended
     in time order and never rewritten.
     """
     history: dict = {}
@@ -143,15 +146,85 @@ def _log_history(log_path: Path) -> dict:
     return history
 
 
-def _already_answered(log_path: Path) -> set:
-    """Question ids this log already has a submission for, so a rerun
-    never re-answers the same question twice in a row. (Metaculus lets
-    you update a forecast any time; a fresh run is just meant to visit
-    each open question once, same spirit as ledger.log_pick's
-    one-open-position rule. The refresh pass is the one deliberate
-    exception: see _pick_refresh_targets.)
+def _reforecasts(tournament) -> bool:
+    """Whether this tournament allows updating a standing forecast.
+
+    Only the tournaments named in config.METACULUS_REFORECAST_TOURNAMENTS
+    (empty by default) do; everything else keeps the strict one-forecast
+    rule. Compared as strings so an int ID (33066) matches the env
+    var's "33066".
     """
-    return set(_log_history(log_path).keys())
+    allowed = {str(t) for t in config.METACULUS_REFORECAST_TOURNAMENTS}
+    return str(tournament) in allowed
+
+
+def _last_forecast(card: dict, history: dict) -> datetime | None:
+    """The newest known forecast time for this question: the local log's
+    row or the API's my_forecasts time, whichever is later. None when
+    neither is known or parseable."""
+    times = [t for t in (_parse_iso(history.get(card.get("qid"))),
+                         _parse_iso(card.get("last_forecast_at")))
+             if t is not None]
+    times = [t if t.tzinfo else t.replace(tzinfo=timezone.utc) for t in times]
+    return max(times) if times else None
+
+
+def _refresh_rank(card: dict, last: datetime | None,
+                  now: datetime) -> tuple | None:
+    """Sort key for an answered question in a re-forecast tournament,
+    or None if it was answered recently enough to leave alone.
+
+    Due when the last forecast is REFORECAST_MIN_INTERVAL_H old, or when
+    the question has entered its final REFORECAST_FINAL_WINDOW_H before
+    close and the last forecast predates that window (the one update
+    spot scoring rewards most). A forecast whose time is unknown is
+    treated as due: the new log row makes it known from then on.
+    Final-window updates rank before merely stale ones, stalest first.
+    """
+    if last is None:
+        return (1, 0.0)
+    close = _parse_iso(card.get("close_time"))
+    if close is not None and close.tzinfo is None:
+        close = close.replace(tzinfo=timezone.utc)
+    window = timedelta(hours=config.REFORECAST_FINAL_WINDOW_H)
+    if close is not None and now < close and close - now <= window \
+            and last < close - window:
+        return (0, last.timestamp())
+    if now - last >= timedelta(hours=config.REFORECAST_MIN_INTERVAL_H):
+        return (1, last.timestamp())
+    return None
+
+
+def _select_targets(cards: list[dict], tournament, log_path: Path,
+                    now_iso: str) -> list[dict]:
+    """Which open questions this cycle answers, in order, capped at
+    config.TOURNAMENT_QUESTIONS_PER_RUN.
+
+    Strict tournaments (the default, FutureEval and MiniBench): only
+    questions neither the local log nor the API's my_forecasts flag has
+    an answer for, in listing order. Re-forecast tournaments (see
+    _reforecasts): those same never-answered questions first, then
+    answered questions whose forecast has gone stale, per _refresh_rank.
+    """
+    history = _log_history(log_path)
+    fresh = [c for c in cards
+             if c.get("qid") not in history and not c.get("already_forecast")]
+    cap = config.TOURNAMENT_QUESTIONS_PER_RUN
+    if not _reforecasts(tournament):
+        return fresh[:cap]
+    now = _parse_iso(now_iso) or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    fresh_ids = {id(c) for c in fresh}
+    ranked = []
+    for card in cards:
+        if id(card) in fresh_ids:
+            continue
+        rank = _refresh_rank(card, _last_forecast(card, history), now)
+        if rank is not None:
+            ranked.append((rank, card))
+    ranked.sort(key=lambda pair: pair[0])
+    return (fresh + [card for _, card in ranked])[:cap]
 
 
 def _append_log(row: dict, log_path: Path) -> None:
@@ -676,7 +749,10 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
 
     One forecast per question, per the tournament rules: a question is
     skipped when the local log has it OR the API's own my_forecasts
-    flag says this account already answered it. Binary questions go
+    flag says this account already answered it. The exception is a
+    tournament named in config.METACULUS_REFORECAST_TOURNAMENTS (spot
+    scored, like Market Pulse), where an answered question is updated
+    once its forecast goes stale; see _select_targets. Binary questions go
     through the fallback ladder in _answer_one under a per-question
     deadline; multiple choice and numeric/discrete get one direct call
     each with an honest uniform fallback. A budget RuntimeError from
@@ -712,11 +788,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         except Exception as exc:
             print(f'post count probe failed ({exc}); receipt goes without it')
 
-    already = _already_answered(log_path)
-    pending = [c for c in cards
-               if c.get("qid") not in already
-               and not c.get("already_forecast")]
-    targets = pending[:config.TOURNAMENT_QUESTIONS_PER_RUN]
+    targets = _select_targets(cards, tournament, log_path, now)
 
     crowd = build_crowd_for()
     counts = {"answered": 0, "submitted": 0, "fallbacks": 0, "escalated": 0}
