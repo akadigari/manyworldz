@@ -1,0 +1,100 @@
+# manyworldz on Prophet Arena (prophetarena.co), the LLM forecasting
+# leaderboard. OFF BY DEFAULT: it only runs when someone presses "Run
+# workflow" in the Actions tab, and that manual run is a dry run unless
+# the dry_run box is unticked. There is no schedule yet.
+#
+# Prophet Arena never runs our code. This job runs the SDK's live loop
+# once (`prophet run prophet_agent.py --once`): poll every open forecast
+# window, answer each with the same engine the Metaculus bot uses (see
+# adapters/prophet_arena.py), validate locally, submit.
+#
+# To go live:
+#   1. Sign up at prophetarena.co, then mint an API key (pa_live_...)
+#      at prophetarena.co/profile/api-keys.
+#   2. On github.com: Settings -> Secrets and variables -> Actions ->
+#      New repository secret -> name ARENA_API_KEY (the exact variable
+#      the SDK reads), paste the key. ANTHROPIC_API_KEY is already set
+#      for the other workflows.
+#   3. Run this workflow by hand with dry_run ticked and read the log:
+#      it prints every forecast it would submit.
+#   4. Run it again with dry_run unticked. The first real run registers
+#      the agent "manyworldz" on the "agentic" track (the track can
+#      never be changed afterward) and enters the live benchmark.
+#   5. To make it automatic, add a schedule block under `on:` below,
+#      for example:
+#          schedule:
+#            - cron: "17 */2 * * *"
+#      (a scheduled run has no inputs, so it submits for real).
+
+name: prophet
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only: print forecasts, submit nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read              # never writes to the repo
+
+concurrency:
+  group: prophet
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements-prophet.txt
+
+      # The spend meter lives in the Actions cache, not the repo, so this
+      # workflow never commits to main. Every run saves a fresh entry;
+      # the newest one is restored next time. engine/llm.py resets the
+      # meter itself each calendar month.
+      - name: restore the spend meter
+        uses: actions/cache/restore@v4
+        with:
+          path: data/spend_prophet.json
+          key: prophet-spend-${{ github.run_id }}
+          restore-keys: prophet-spend-
+
+      - name: answer open Prophet Arena windows
+        env:
+          ARENA_API_KEY: ${{ secrets.ARENA_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Cheap tier first, this model only on contested questions,
+          # the same two-tier policy as the Metaculus tournament.
+          MANYWORLDZ_MODEL: sonnet
+          # Its own meter and its own monthly cap, so this loop can never
+          # eat the Metaculus bot's budget.
+          MANYWORLDZ_SPEND_FILE: data/spend_prophet.json
+          ENGINE_BUDGET_USD: "5"
+          ASKNEWS_CLIENT_ID: ${{ secrets.ASKNEWS_CLIENT_ID }}
+          ASKNEWS_CLIENT_SECRET: ${{ secrets.ASKNEWS_CLIENT_SECRET }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: |
+          if [ -z "$ARENA_API_KEY" ]; then
+            echo "::error::ARENA_API_KEY secret is not set (see the top of prophet.yml)"
+            exit 1
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            prophet run prophet_agent.py --once --dry-run
+          else
+            prophet run prophet_agent.py --once
+          fi
+
+      - name: save the spend meter
+        if: always() && hashFiles('data/spend_prophet.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: data/spend_prophet.json
+          key: prophet-spend-${{ github.run_id }}

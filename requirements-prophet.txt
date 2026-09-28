@@ -1,0 +1,5 @@
+# Everything the Metaculus bot needs, plus the Prophet Arena SDK
+# (prophet_agent.py). Pinned: adapters/prophet_arena.py was checked
+# against this exact version's Event/Forecast contract.
+-r requirements.txt
+prophet-arena==0.5.2
