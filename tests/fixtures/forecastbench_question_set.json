@@ -1,0 +1,87 @@
+{
+ "forecast_due_date": "2026-09-27",
+ "question_set": "2026-09-27-llm.json",
+ "questions": [
+  {
+   "id": "11045",
+   "source": "metaculus",
+   "question": "Will a Democrat win the 2028 US presidential election?",
+   "resolution_criteria": "Resolves to the outcome of the question found at https://www.metaculus.com/questions/11045.",
+   "background": "Every 4 years, the United States elects a president with its unique system of [the Electoral College](https://en.wikipedia.org/wiki/United_States_Electoral_College).  A candidate must secure the majority of Electoral College votes, following the process outlined in the [Twelfth Amendment](https://en",
+   "market_info_open_datetime": "2023-05-07T17:26:00+00:00",
+   "market_info_close_datetime": "2026-11-03T04:59:00+00:00",
+   "market_info_resolution_criteria": "This question will resolve as **Yes** if a candidate from the [Democratic](https://en.wikipedia.org/wiki/Democratic_Party_\\(United_States\\)) Party receives the most votes in the [Electoral College](https://en.wikipedia.org/wiki/Electoral_College_\\(United_States\\)) in the 2028 US Presidential Election.  It will resolve on the date Congress certifies the votes, or when Congress selects the President in the case a candidate does not receive a majority.",
+   "url": "https://www.metaculus.com/questions/11045",
+   "freeze_datetime": "2026-09-23T00:00:00+00:00",
+   "freeze_datetime_value": "0.6",
+   "freeze_datetime_value_explanation": "The community prediction.",
+   "source_intro": "We would like you to predict the outcome of a prediction market. A prediction market, in this context, is the aggregate of predictions submitted by users on the website Metaculus. You're going to pred",
+   "resolution_dates": "N/A"
+  },
+  {
+   "id": "0x9f94a3f64e8db20bf9d1766643b3bf4c345e3439d282d779775e171c780e9ddf",
+   "source": "polymarket",
+   "question": "Yoon out of custody before 2027?",
+   "resolution_criteria": "Resolves to the outcome of the question found at https://polymarket.com/market/yoon-out-of-custody-before-2027.",
+   "background": "This market will resolve to \"Yes\" if President of South Korea Yoon Suk Yeol is released from custody by December 31, 2026, 11:59 PM ET. Otherwise, this market will resolve to \"No\".\n\nIf Yoon is released but remains under house arrest, the market will still resolve to \"Yes\".\n\nIf Yoon is released on pa",
+   "market_info_open_datetime": "2025-11-05",
+   "market_info_close_datetime": "2027-01-01T04:59:00+00:00",
+   "market_info_resolution_criteria": "N/A",
+   "url": "https://polymarket.com/market/yoon-out-of-custody-before-2027",
+   "freeze_datetime": "2026-09-23T00:00:00+00:00",
+   "freeze_datetime_value": "0.073",
+   "freeze_datetime_value_explanation": "The market price.",
+   "source_intro": "We would like you to predict the outcome of a prediction market. A prediction market, in this context, is the aggregate of predictions submitted by users on the website Polymarket. You're going to pre",
+   "resolution_dates": "N/A"
+  },
+  {
+   "id": "IHLIDXUS",
+   "source": "fred",
+   "question": "Will the number of US job postings on Indeed have increased by {resolution_date} as compared to its value on {forecast_due_date}?",
+   "resolution_criteria": "Resolves to the value found at https://fred.stlouisfed.org/series/IHLIDXUS once the data is published.",
+   "background": "The notes from the release: Indeed calculates the percentage change in seasonally-adjusted job postings since February 1, 2020, using a 7-day trailing average. February 1, 2020, is the pre-pandemic baseline. Indeed seasonally adjusts each series based on historical patterns in 2017, 2018, and 2019. ",
+   "market_info_open_datetime": "N/A",
+   "market_info_close_datetime": "N/A",
+   "market_info_resolution_criteria": "N/A",
+   "url": "https://fred.stlouisfed.org/series/IHLIDXUS",
+   "freeze_datetime": "2026-09-23T00:00:00+00:00",
+   "freeze_datetime_value": "103.15",
+   "freeze_datetime_value_explanation": "The latest value released in Job Postings on Indeed in the United States from the release Job Postings on Indeed.",
+   "source_intro": "The Federal Reserve Economic Data database (FRED) provides economic data from national, international, public, and private sources.You're going to predict how questions based on this data will resolve",
+   "resolution_dates": [
+    "2026-10-04",
+    "2026-10-27",
+    "2026-12-26",
+    "2027-03-26",
+    "2027-09-27",
+    "2029-09-26",
+    "2031-09-26",
+    "2036-09-24"
+   ]
+  },
+  {
+   "id": "EXPINF10YR",
+   "source": "fred",
+   "question": "Will the Federal Reserve Bank of Cleveland's 10-year expected inflation rate have increased by {resolution_date} as compared to its value on {forecast_due_date}?",
+   "resolution_criteria": "Resolves to the value found at https://fred.stlouisfed.org/series/EXPINF10YR once the data is published.",
+   "background": "The notes from the release: N/A.  The notes from the series: The Federal Reserve Bank of Cleveland estimates the expected rate of inflation over the next 30 years along with the inflation risk premium, the real risk premium, and the real interest rate.\n\nTheir estimates are calculated with a model th",
+   "market_info_open_datetime": "N/A",
+   "market_info_close_datetime": "N/A",
+   "market_info_resolution_criteria": "N/A",
+   "url": "https://fred.stlouisfed.org/series/EXPINF10YR",
+   "freeze_datetime": "2026-09-23T00:00:00+00:00",
+   "freeze_datetime_value": "2.57264358",
+   "freeze_datetime_value_explanation": "The latest value released in 10-Year Expected Inflation from the release Inflation Expectations.",
+   "source_intro": "The Federal Reserve Economic Data database (FRED) provides economic data from national, international, public, and private sources.You're going to predict how questions based on this data will resolve",
+   "resolution_dates": [
+    "2026-10-27",
+    "2026-12-26",
+    "2027-03-26",
+    "2027-09-27",
+    "2029-09-26",
+    "2031-09-26",
+    "2036-09-24"
+   ]
+  }
+ ]
+}
