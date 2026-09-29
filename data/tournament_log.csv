@@ -122,3 +122,4 @@ qid,question,qtype,raw_prob,prob,at,source
 45981,"How many orbital launches will SpaceX conduct between October 1 and October 3, 2026 (inclusive)?",discrete,"{""0.05"": 1.0, ""0.25"": 2.0, ""0.5"": 3.0, ""0.75"": 4.0, ""0.95"": 6.0}",cdf:8,2026-09-23T23:50:26.111835+00:00,numeric
 46022,What will be the margin of seats won by Labour over National in the 2026 New Zealand general election?,discrete,"{""0.05"": -18.0, ""0.25"": -8.0, ""0.5"": -1.0, ""0.75"": 6.0, ""0.95"": 16.0}",cdf:32,2026-09-28T14:03:04.950157+00:00,numeric
 46019,"Will Trump demolish the Kennedy Center before January 1, 2027?",binary,0.0733,0.0733,2026-09-29T14:01:14.459071+00:00,crowd
+46023,Will any country other than the DRC have more than 100 confirmed cases of Bundibugyo ebolavirus during 2026?,binary,0.1067,0.1067,2026-09-29T21:02:10.839728+00:00,crowd+esc
