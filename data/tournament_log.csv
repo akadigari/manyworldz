@@ -123,3 +123,5 @@ qid,question,qtype,raw_prob,prob,at,source
 46022,What will be the margin of seats won by Labour over National in the 2026 New Zealand general election?,discrete,"{""0.05"": -18.0, ""0.25"": -8.0, ""0.5"": -1.0, ""0.75"": 6.0, ""0.95"": 16.0}",cdf:32,2026-09-28T14:03:04.950157+00:00,numeric
 46019,"Will Trump demolish the Kennedy Center before January 1, 2027?",binary,0.0733,0.0733,2026-09-29T14:01:14.459071+00:00,crowd
 46023,Will any country other than the DRC have more than 100 confirmed cases of Bundibugyo ebolavirus during 2026?,binary,0.1067,0.1067,2026-09-29T21:02:10.839728+00:00,crowd+esc
+46020,How many politicians will leave their cabinet positions in the UK government before 2027?,multiple_choice,"{""0"": 0.35, ""1"": 0.3, ""2"": 0.2, ""3 or more"": 0.15}","{""0"": 0.35, ""1"": 0.3, ""2"": 0.2, ""3 or more"": 0.15}",2026-09-30T14:00:44.377454+00:00,mc
+46043,"What will be the highest intraday value of the VIX between October 1 and December 24, 2026?",numeric,"{""0.05"": 16.0, ""0.25"": 20.0, ""0.5"": 25.0, ""0.75"": 32.0, ""0.95"": 45.0}",cdf:201,2026-09-30T14:00:44.377454+00:00,numeric
