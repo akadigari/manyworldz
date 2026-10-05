@@ -136,3 +136,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46079,"As of October 15, 2026, will TEPCO report that the Unit 2 robotic arm operation at Fukushima Daiichi is suspended due to a problem?",binary,0.5,0.5,2026-10-05T02:36:40.690663+00:00,fallback
 46080,"Will a new federal lawsuit over the 2025–2026 Texas DPS voter-registration transmission failure be on file as of October 15, 2026?",binary,0.5,0.5,2026-10-05T02:45:32.995554+00:00,fallback
 46081,"What will CBOT December 2026 wheat futures settle at on October 15, 2026?",numeric,"{""0.05"": 5.91, ""0.25"": 6.35, ""0.5"": 6.9, ""0.75"": 7.45, ""0.95"": 7.89}",cdf:201,2026-10-05T03:00:32.434710+00:00,fallback
+46082,"Will the number of ERM 2026 candidate homicides reported in Peru exceed two by October 15, 2026?",binary,0.5,0.5,2026-10-05T03:11:25.916202+00:00,fallback
