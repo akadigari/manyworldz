@@ -166,3 +166,5 @@ qid,question,qtype,raw_prob,prob,at,source
 46108,"Will the S&P 500 set a new record closing high on October 15 or October 16, 2026?",binary,0.5,0.5,2026-10-05T17:56:14.544689+00:00,fallback
 46109,Will MSCI's non-operating company consultation results identify Strategy (MSTR) as a company to be made ineligible for its Global Investable Market Indexes?,binary,0.5,0.5,2026-10-05T18:32:18.709818+00:00,fallback
 46110,"Will Osaka Metropolitan University's online classes have officially resumed as of October 15, 2026?",binary,0.5,0.5,2026-10-05T18:37:54.419064+00:00,fallback
+46111,"Will Delta Air Lines (DAL) stock close above $85.00 on October 15, 2026?",binary,0.5,0.5,2026-10-05T21:11:42.934618+00:00,fallback
+46112,"How many of Peru's 25 regions will show no gubernatorial ticket at 30%+ of valid votes in ONPE's official count as of October 15, 2026?",discrete,"{""0.05"": 0.8, ""0.25"": 6.0, ""0.5"": 12.5, ""0.75"": 19.0, ""0.95"": 24.2}",cdf:27,2026-10-05T21:11:42.934618+00:00,fallback
