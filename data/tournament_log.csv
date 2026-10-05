@@ -171,3 +171,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46113,"Will the Verkhovna Rada vote to extend martial law or general mobilization between October 15 and 17, 2026?",binary,0.5,0.5,2026-10-05T21:35:44.719269+00:00,fallback
 46114,"Will Bo Nix throw for at least 250 passing yards against the Seahawks on October 15, 2026?",binary,0.5,0.5,2026-10-05T21:51:06.989226+00:00,fallback
 46115,"What will be the closing price of Xtend AI Robotics (XTND) on October 15, 2026?",numeric,"{""0.05"": 1.725, ""0.25"": 2.625, ""0.5"": 3.75, ""0.75"": 4.875, ""0.95"": 5.7749999999999995}",cdf:201,2026-10-05T22:25:40.214353+00:00,fallback
+46116,"Will PJM have announced a new start date for its Reliability Backstop Procurement auction as of October 15, 2026?",binary,0.5,0.5,2026-10-05T22:44:24.069651+00:00,fallback
