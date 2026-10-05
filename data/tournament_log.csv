@@ -164,3 +164,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46107,"Will Bolivia's Supreme Decree 5716 (the diesel subsidy cut) be abrogated or suspended by October 17, 2026?",binary,0.5,0.5,2026-10-05T17:20:27.778029+00:00,fallback
 46056,"Will Gavin Newsom call a special session of the California Legislature on AI before January 1, 2027?",binary,0.5,0.5,2026-10-05T17:20:33.072024+00:00,fallback
 46108,"Will the S&P 500 set a new record closing high on October 15 or October 16, 2026?",binary,0.5,0.5,2026-10-05T17:56:14.544689+00:00,fallback
+46109,Will MSCI's non-operating company consultation results identify Strategy (MSTR) as a company to be made ineligible for its Global Investable Market Indexes?,binary,0.5,0.5,2026-10-05T18:32:18.709818+00:00,fallback
