@@ -157,3 +157,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46100,"What will Zcash (ZEC) close at on October 15, 2026?",numeric,"{""0.05"": 785.0, ""0.25"": 1125.0, ""0.5"": 1550.0, ""0.75"": 1975.0, ""0.95"": 2315.0}",cdf:201,2026-10-05T12:00:56.543284+00:00,fallback
 46101,"Will anyone besides Gianni Infantino have publicly declared a candidacy for the 2027 FIFA presidency as of October 15, 2026?",binary,0.5,0.5,2026-10-05T13:34:07.100075+00:00,fallback
 46102,How many confirmed human West Nile virus cases will RIVM report in the Netherlands for 2026 as of its mid-October update?,discrete,"{""0.05"": 57.5, ""0.25"": 65.5, ""0.5"": 75.5, ""0.75"": 85.5, ""0.95"": 93.5}",cdf:41,2026-10-05T14:38:00.804692+00:00,fallback
+46103,"How many total points will be scored in the Seahawks–Broncos Thursday Night Football game on October 15, 2026?",discrete,"{""0.05"": 21.85, ""0.25"": 31.25, ""0.5"": 43.0, ""0.75"": 54.75, ""0.95"": 64.15}",cdf:48,2026-10-05T15:41:25.653213+00:00,fallback
