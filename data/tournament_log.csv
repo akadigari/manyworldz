@@ -159,3 +159,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46102,How many confirmed human West Nile virus cases will RIVM report in the Netherlands for 2026 as of its mid-October update?,discrete,"{""0.05"": 57.5, ""0.25"": 65.5, ""0.5"": 75.5, ""0.75"": 85.5, ""0.95"": 93.5}",cdf:41,2026-10-05T14:38:00.804692+00:00,fallback
 46103,"How many total points will be scored in the Seahawks–Broncos Thursday Night Football game on October 15, 2026?",discrete,"{""0.05"": 21.85, ""0.25"": 31.25, ""0.5"": 43.0, ""0.75"": 54.75, ""0.95"": 64.15}",cdf:48,2026-10-05T15:41:25.653213+00:00,fallback
 46104,"Will Zcash (ZEC) be ranked in the top 10 cryptocurrencies by market capitalization on CoinGecko on October 15, 2026?",binary,0.5,0.5,2026-10-05T16:30:31.699662+00:00,fallback
+46105,"Will the Seahawks beat the Broncos on Thursday Night Football in Week 6 (October 15, 2026)?",binary,0.5,0.5,2026-10-05T16:46:00.214133+00:00,fallback
