@@ -161,3 +161,5 @@ qid,question,qtype,raw_prob,prob,at,source
 46104,"Will Zcash (ZEC) be ranked in the top 10 cryptocurrencies by market capitalization on CoinGecko on October 15, 2026?",binary,0.5,0.5,2026-10-05T16:30:31.699662+00:00,fallback
 46105,"Will the Seahawks beat the Broncos on Thursday Night Football in Week 6 (October 15, 2026)?",binary,0.5,0.5,2026-10-05T16:46:00.214133+00:00,fallback
 46106,"Will Piura's cumulative 2026 dengue death toll exceed 8 by October 15, 2026?",binary,0.5,0.5,2026-10-05T17:00:35.213283+00:00,fallback
+46107,"Will Bolivia's Supreme Decree 5716 (the diesel subsidy cut) be abrogated or suspended by October 17, 2026?",binary,0.5,0.5,2026-10-05T17:20:27.778029+00:00,fallback
+46056,"Will Gavin Newsom call a special session of the California Legislature on AI before January 1, 2027?",binary,0.5,0.5,2026-10-05T17:20:33.072024+00:00,fallback
