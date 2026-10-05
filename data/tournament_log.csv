@@ -139,3 +139,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46082,"Will the number of ERM 2026 candidate homicides reported in Peru exceed two by October 15, 2026?",binary,0.5,0.5,2026-10-05T03:11:25.916202+00:00,fallback
 46083,"Will the Belfast Court of Appeal deliver its judgment on the Garvaghy Road Residents' Coalition appeal before October 16, 2026?",binary,0.5,0.5,2026-10-05T04:04:02.922204+00:00,fallback
 46084,"What will U.S. spot Bitcoin ETFs' cumulative net inflow be as of the October 15, 2026 session?",numeric,"{""0.05"": 54.35, ""0.25"": 55.75, ""0.5"": 57.5, ""0.75"": 59.25, ""0.95"": 60.65}",cdf:201,2026-10-05T04:04:02.922204+00:00,fallback
+46085,"Will the National Assembly confirmation hearing for SCIA chief nominee Kim Ji-yong be held on October 15 or 16, 2026?",binary,0.5,0.5,2026-10-05T04:23:49.077783+00:00,fallback
