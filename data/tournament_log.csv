@@ -145,3 +145,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46088,"Will in-person school classes be officially suspended in the city of Valencia, Spain on any day during October 15–16, 2026?",binary,0.5,0.5,2026-10-05T05:50:37.883895+00:00,fallback
 46089,"What will the Alternative.me Crypto Fear & Greed Index value be on October 16, 2026?",discrete,"{""0.05"": 42.05, ""0.25"": 52.25, ""0.5"": 65.0, ""0.75"": 77.75, ""0.95"": 87.94999999999999}",cdf:52,2026-10-05T06:05:36.470842+00:00,fallback
 46090,"Will the U.S. naval blockade halting Iran's seaborne crude oil exports still be in effect on October 15, 2026?",binary,0.5,0.5,2026-10-05T06:11:18.034444+00:00,fallback
+46091,"Will La Jolla's tide gauge record an observed water level above 6.0 ft MLLW on October 15 or 16, 2026?",binary,0.5,0.5,2026-10-05T06:15:28.908641+00:00,fallback
