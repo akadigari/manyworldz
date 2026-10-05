@@ -132,3 +132,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46075,"What will the BIST 100 index closing level be on October 16, 2026?",numeric,"{""0.05"": 10675.0, ""0.25"": 11375.0, ""0.5"": 12250.0, ""0.75"": 13125.0, ""0.95"": 13825.0}",cdf:201,2026-10-05T00:39:27.791377+00:00,fallback
 46076,"Will the Supreme Court of India have at least three sitting women judges by October 17, 2026?",binary,0.5,0.5,2026-10-05T00:39:27.791377+00:00,fallback
 46077,"How many bitcoin will Strategy report buying for the week ending October 11, 2026?",numeric,"{""0.05"": 1250.0, ""0.25"": 6250.0, ""0.5"": 12500.0, ""0.75"": 18750.0, ""0.95"": 23750.0}",cdf:201,2026-10-05T01:21:04.384206+00:00,fallback
+46078,"Will OpenAI publicly release or announce a new GPT model on October 15 or 16, 2026?",binary,0.5,0.5,2026-10-05T01:30:29.032420+00:00,fallback
