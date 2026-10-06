@@ -177,3 +177,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46119,"Will Judge McCaslin order the State to produce additional discovery at the October 16, 2026 Murdaugh retrial hearing?",binary,0.5,0.5,2026-10-06T04:45:28.407700+00:00,fallback
 46120,"Will Ukraine's Zaporizhzhia Nuclear Power Plant be connected to offsite grid power on October 17, 2026?",binary,0.5,0.5,2026-10-06T05:25:28.880695+00:00,fallback
 46121,"Will Russian, Ukrainian, and US officials hold a trilateral negotiation meeting between October 15 and 17, 2026?",binary,0.5,0.5,2026-10-06T06:45:52.417357+00:00,fallback
+46122,"Will Texas have filed a notice of appeal of Judge Pitman's prison air-conditioning injunction as of October 16, 2026?",binary,0.5,0.5,2026-10-06T08:53:13.177153+00:00,fallback
