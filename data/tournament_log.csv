@@ -175,3 +175,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46117,"Will the housing-protest encampment at Madrid's Puerta del Sol still be physically present on October 15, 2026?",binary,0.5,0.5,2026-10-05T23:11:24.276118+00:00,fallback
 46118,"What will Trump's net approval (approve minus disapprove) be in the RealClearPolitics average on October 15, 2026?",numeric,"{""0.05"": -27.3, ""0.25"": -24.5, ""0.5"": -21.0, ""0.75"": -17.5, ""0.95"": -14.700000000000001}",cdf:201,2026-10-06T00:06:09.019260+00:00,fallback
 46119,"Will Judge McCaslin order the State to produce additional discovery at the October 16, 2026 Murdaugh retrial hearing?",binary,0.5,0.5,2026-10-06T04:45:28.407700+00:00,fallback
+46120,"Will Ukraine's Zaporizhzhia Nuclear Power Plant be connected to offsite grid power on October 17, 2026?",binary,0.5,0.5,2026-10-06T05:25:28.880695+00:00,fallback
