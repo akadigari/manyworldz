@@ -187,3 +187,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46128,"Will a hurricane be active in the Eastern Pacific at any point between October 15 and October 17, 2026?",binary,0.5,0.5,2026-10-07T06:09:34.293681+00:00,fallback
 46129,"What will Bitcoin's price (USD) be on October 17, 2026?",numeric,"{""0.05"": 62500.0, ""0.25"": 72500.0, ""0.5"": 85000.0, ""0.75"": 97500.0, ""0.95"": 107500.0}",cdf:201,2026-10-07T08:35:31.980917+00:00,fallback
 46130,"Will Russian and Ukrainian officials hold a round of negotiations on an energy-infrastructure ceasefire between October 15 and October 17, 2026?",binary,0.5,0.5,2026-10-07T16:51:18.855518+00:00,fallback
+46133,"Will the winning pumpkin at the 2026 Terminator weigh-off be greater than or equal to 2,000 pounds?",binary,0.5,0.5,2026-10-07T18:01:45.017182+00:00,fallback
