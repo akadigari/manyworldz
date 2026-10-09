@@ -193,3 +193,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46185,What will be the winning margin in Brazil’s 2026 presidential election runoff?,numeric,"{""0.05"": 0.4, ""0.25"": 2.0, ""0.5"": 4.0, ""0.75"": 6.0, ""0.95"": 7.6}",cdf:201,2026-10-08T14:00:31.670455+00:00,fallback
 46135,Will Donald Trump's approval rating reach a new low in the second half of October 2026?,binary,0.5,0.5,2026-10-08T15:03:33.888074+00:00,fallback
 46065,"Will Donald Trump and Vladimir Putin meet in person before December 1, 2026?",binary,0.5,0.5,2026-10-09T09:00:43.897155+00:00,fallback
+46186,Will the US approve a $10B exchange stabilisation facility for Pakistan before 2027?,binary,0.5,0.5,2026-10-09T11:40:49.912122+00:00,fallback
