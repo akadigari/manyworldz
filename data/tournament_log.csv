@@ -219,3 +219,5 @@ qid,question,qtype,raw_prob,prob,at,source
 46291,"Will under 58% of the contiguous U.S. be in drought on October 27, 2026?",binary,0.5,0.5,2026-10-14T18:00:41.062074+00:00,fallback
 46292,"Will Ken Paxton lead James Talarico in the Texas Senate race polling on October 31, 2026?",binary,0.5,0.5,2026-10-15T00:00:51.100775+00:00,fallback
 46293,Will SpaceX successfully catch a booster with its tower chopsticks before 2027?,binary,0.5,0.5,2026-10-15T03:01:47.319906+00:00,fallback
+46281,How many executions will be carried out in the US in 2026?,multiple_choice,"{""Fewer than 39"": 0.2, ""39"": 0.2, ""40"": 0.2, ""41"": 0.2, ""More than 41"": 0.2}","{""Fewer than 39"": 0.2, ""39"": 0.2, ""40"": 0.2, ""41"": 0.2, ""More than 41"": 0.2}",2026-10-15T14:01:12.536538+00:00,fallback
+46333,Will the Trump administration or a GOP state governor deploy armed officers or troops to a polling or early voting site in 2026?,binary,0.5,0.5,2026-10-15T14:01:12.536538+00:00,fallback
