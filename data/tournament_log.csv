@@ -222,3 +222,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46281,How many executions will be carried out in the US in 2026?,multiple_choice,"{""Fewer than 39"": 0.2, ""39"": 0.2, ""40"": 0.2, ""41"": 0.2, ""More than 41"": 0.2}","{""Fewer than 39"": 0.2, ""39"": 0.2, ""40"": 0.2, ""41"": 0.2, ""More than 41"": 0.2}",2026-10-15T14:01:12.536538+00:00,fallback
 46333,Will the Trump administration or a GOP state governor deploy armed officers or troops to a polling or early voting site in 2026?,binary,0.5,0.5,2026-10-15T14:01:12.536538+00:00,fallback
 46294,Will there be a Florida gubernatorial debate before election day 2026?,binary,0.5,0.5,2026-10-16T06:01:49.502709+00:00,fallback
+46295,"Will the price of regular unleaded gas in the U.S. reach $5 a gallon before election day 2026, according to AAA?",binary,0.5,0.5,2026-10-16T09:00:28.723537+00:00,fallback
