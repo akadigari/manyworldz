@@ -224,3 +224,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46294,Will there be a Florida gubernatorial debate before election day 2026?,binary,0.5,0.5,2026-10-16T06:01:49.502709+00:00,fallback
 46295,"Will the price of regular unleaded gas in the U.S. reach $5 a gallon before election day 2026, according to AAA?",binary,0.5,0.5,2026-10-16T09:00:28.723537+00:00,fallback
 46282,"Will Israel withdraw behind the original Yellow Line in Gaza before January 1, 2027?",binary,0.5,0.5,2026-10-16T14:00:41.976136+00:00,fallback
+46296,"Will the United States resume its air campaign against Iran before November 10, 2026?",binary,0.5,0.5,2026-10-16T18:00:30.407975+00:00,fallback
