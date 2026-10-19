@@ -240,3 +240,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46358,"How many Florida counties will be listed as reporting locally acquired dengue in 2026 in the FDOH Arbovirus Surveillance Report published on or around October 29, 2026?",discrete,"{""0.05"": 7.85, ""0.25"": 9.25, ""0.5"": 11.0, ""0.75"": 12.75, ""0.95"": 14.149999999999999}",cdf:8,2026-10-19T03:04:39.028472+00:00,fallback
 46359,"Will Brent crude close above $104 per barrel on October 29, 2026?",binary,0.5,0.5,2026-10-19T03:04:39.028472+00:00,fallback
 46301,"What will be the total number of people killed in US strikes on alleged drug boats as of December 1, 2026?",discrete,"{""0.05"": 236.55, ""0.25"": 248.75, ""0.5"": 264.0, ""0.75"": 279.25, ""0.95"": 291.45}",cdf:62,2026-10-19T03:04:45.864686+00:00,fallback
+46360,"Will the openai/math repository's history log show more than three total withdrawn manuscripts as of October 29, 2026?",binary,0.5,0.5,2026-10-19T03:28:44.130845+00:00,fallback
