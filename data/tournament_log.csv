@@ -251,3 +251,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46366,"Will the White House have a named permanent press secretary succeeding Katie Zacharia as of October 30, 2026?",binary,0.5,0.5,2026-10-19T11:40:34.153111+00:00,fallback
 46367,What year-over-year revenue growth rate will Amazon report for its AWS segment in Q3 2026?,numeric,"{""0.05"": 26.5, ""0.25"": 32.5, ""0.5"": 40.0, ""0.75"": 47.5, ""0.95"": 53.5}",cdf:201,2026-10-19T11:46:17.189105+00:00,fallback
 46368,"What will Argentina's country risk (riesgo país, JP Morgan EMBI+) be at the close on October 29, 2026?",numeric,"{""0.05"": 470.0, ""0.25"": 550.0, ""0.5"": 650.0, ""0.75"": 750.0, ""0.95"": 830.0}",cdf:201,2026-10-19T11:46:17.189105+00:00,fallback
+46304,"Will any of the Magnificent 7 make an acquisition valued at $10B or more before January 1, 2027?",binary,0.5,0.5,2026-10-19T12:00:55.318958+00:00,fallback
