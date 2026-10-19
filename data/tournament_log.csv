@@ -262,3 +262,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46376,"Will the Supreme Court of India order a halt to the Special Intensive Revision of electoral rolls before October 30, 2026?",binary,0.5,0.5,2026-10-19T16:15:47.580271+00:00,fallback
 46377,"How many attack drones will Russia launch at Ukraine on the night of October 29–30, 2026?",numeric,"{""0.05"": 73.0, ""0.25"": 205.0, ""0.5"": 370.0, ""0.75"": 535.0, ""0.95"": 667.0}",cdf:201,2026-10-19T16:30:33.774959+00:00,fallback
 46378,"Will the openai/math repository report more than 300 top-line results formalized in Lean as of October 29, 2026?",binary,0.5,0.5,2026-10-19T17:00:23.799834+00:00,fallback
+46379,"Will Russia and Ukraine have a Black Sea maritime ceasefire or safe-passage agreement in effect as of October 30, 2026?",binary,0.5,0.5,2026-10-19T17:50:23.470928+00:00,fallback
