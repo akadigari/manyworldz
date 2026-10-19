@@ -270,3 +270,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46383,"What will the official BCRA wholesale USD/ARS reference exchange rate (dólar mayorista, Comunicación A 3500) be on October 29, 2026?",numeric,"{""0.05"": 1417.5, ""0.25"": 1487.5, ""0.5"": 1575.0, ""0.75"": 1662.5, ""0.95"": 1732.5}",cdf:201,2026-10-19T19:32:36.449894+00:00,fallback
 46384,"Will Israel or the United States conduct a military strike on Iranian territory between October 29 and October 30, 2026?",binary,0.5,0.5,2026-10-19T19:40:31.458938+00:00,fallback
 46385,"Will the South Korean won close weaker than 1,340 per US dollar on October 29, 2026?",binary,0.5,0.5,2026-10-19T20:01:41.083338+00:00,fallback
+46386,"Will the United States authorize the transfer of Tomahawk cruise missiles to Ukraine by October 30, 2026?",binary,0.5,0.5,2026-10-19T21:46:34.858602+00:00,fallback
