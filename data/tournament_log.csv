@@ -248,3 +248,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46364,"Will Trump and Zelensky speak directly — by phone or in person — on October 29 or 30, 2026?",binary,0.5,0.5,2026-10-19T08:11:57.624257+00:00,fallback
 46303,"Will the U.S. Supreme Court grant certiorari in Nathan v. Alamo Heights Independent School District before January 1, 2027?",binary,0.5,0.5,2026-10-19T09:00:31.462421+00:00,fallback
 46365,How many 'red alert' dengue clusters (10+ cases) will Singapore's NEA list as active on 29 October 2026?,discrete,"{""0.05"": -0.04999999999999999, ""0.25"": 1.75, ""0.5"": 4.0, ""0.75"": 6.25, ""0.95"": 8.049999999999999}",cdf:10,2026-10-19T11:15:53.265368+00:00,fallback
+46366,"Will the White House have a named permanent press secretary succeeding Katie Zacharia as of October 30, 2026?",binary,0.5,0.5,2026-10-19T11:40:34.153111+00:00,fallback
