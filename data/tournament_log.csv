@@ -275,3 +275,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46306,What will the total domestic (US/Canada) box office gross be for Q4 2026?,numeric,"{""0.05"": 1625000000.0, ""0.25"": 2125000000.0, ""0.5"": 2750000000.0, ""0.75"": 3375000000.0, ""0.95"": 3875000000.0}",cdf:201,2026-10-20T00:00:31.056712+00:00,fallback
 46388,"Will a US halt of Ukraine arms deliveries under NATO's PURL mechanism be confirmed before November 1, 2026?",binary,0.5,0.5,2026-10-20T00:05:45.090328+00:00,fallback
 46389,"Will another merchant vessel be attacked in the Black Sea off Bulgaria or Romania on October 29, 2026?",binary,0.5,0.5,2026-10-20T01:07:39.778903+00:00,fallback
+46390,"How many AIS-visible commercial ships will the hormuz.now tracker count crossing the Strait of Hormuz on October 29, 2026?",discrete,"{""0.05"": 0.75, ""0.25"": 5.75, ""0.5"": 12.0, ""0.75"": 18.25, ""0.95"": 23.25}",cdf:26,2026-10-20T02:10:33.119814+00:00,fallback
