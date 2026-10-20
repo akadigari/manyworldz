@@ -288,3 +288,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46400,"Will Lee Hwa-young's legal team have filed a retrial petition in the Ssangbangwool North Korea remittance case with the Suwon High Court as of October 31, 2026?",binary,0.5,0.5,2026-10-20T09:30:33.573311+00:00,fallback
 46307,Will the FAA type-certify the Boeing 737 MAX 10 before 2027?,binary,0.5,0.5,2026-10-20T12:02:04.592097+00:00,fallback
 46401,Will New Zealand beat Fiji by more than 12 points in their 2026 Rugby League World Cup pool match?,binary,0.5,0.5,2026-10-20T15:34:12.441879+00:00,fallback
+46402,Will the Milwaukee Brewers win the 2026 World Series?,binary,0.5,0.5,2026-10-20T16:42:44.675059+00:00,fallback
