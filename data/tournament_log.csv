@@ -282,3 +282,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46394,"Will the Ohio Supreme Court dispose of the appeal in Borovicanin v. NCAA (No. 2026-1353) on the merits by October 30, 2026?",binary,0.5,0.5,2026-10-20T05:15:25.320259+00:00,fallback
 46395,"What will be the Cali Fund's total deposits received, in US dollars, as shown on the UNDP MPTF portal on October 31, 2026?",numeric,"{""0.05"": 106730.75, ""0.25"": 505313.75, ""0.5"": 1003542.5, ""0.75"": 1501771.25, ""0.95"": 1900354.25}",cdf:201,2026-10-20T06:10:30.425277+00:00,fallback
 46396,"Will CNA-represented Kaiser Permanente nurses in California be on strike on October 29 or 30, 2026?",binary,0.5,0.5,2026-10-20T06:10:30.425277+00:00,fallback
+46397,"Will the FDA approve INOVIO's INO-3107 for recurrent respiratory papillomatosis on or before October 30, 2026?",binary,0.5,0.5,2026-10-20T06:31:35.823909+00:00,fallback
