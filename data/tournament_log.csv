@@ -304,3 +304,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46422,"How many Swiss regions will be classified as ""Extremely Dry"" according to the Swiss drought platform on November 8, 2026?",discrete,"{""0.05"": 2.7, ""0.25"": 7.5, ""0.5"": 13.5, ""0.75"": 19.5, ""0.95"": 24.299999999999997}",cdf:25,2026-10-22T15:00:36.976200+00:00,fallback
 46423,Will exhausted ballots exceed the winning margin in the 2026 US Senate election in Alaska?,binary,0.5,0.5,2026-10-23T00:00:52.850848+00:00,fallback
 46412,"What will be the all-time highest close price of NVDA before January 1, 2027?",numeric,"{""0.05"": 237.95, ""0.25"": 245.75, ""0.5"": 255.5, ""0.75"": 265.25, ""0.95"": 273.05}",cdf:201,2026-10-23T14:00:45.386142+00:00,fallback
+46424,"Will California avoid the ""highest vote rule"" with its 2026 billionaire's tax referendum?",binary,0.5,0.5,2026-10-24T09:00:32.535606+00:00,fallback
