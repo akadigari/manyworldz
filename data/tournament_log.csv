@@ -321,3 +321,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46431,"What will be the Powerball Advertised Jackpot on December 31, 2026?",numeric,"{""0.05"": 100000000.0, ""0.25"": 500000000.0, ""0.5"": 1000000000.0, ""0.75"": 1500000000.0, ""0.95"": 1900000000.0}",cdf:201,2026-10-27T03:02:47.571916+00:00,fallback
 46432,Will the SPARC tokamak announce it has achieved first plasma before 2027?,binary,0.5,0.5,2026-10-27T09:00:53.319347+00:00,fallback
 46433,"Will Argentina's Senate pass the 'Super RIGI' bill before January 1, 2027?",binary,0.5,0.5,2026-10-27T12:00:45.818581+00:00,fallback
+46434,Will the Brent crude futures price reach at least $130 per barrel in the final quarter of 2026?,binary,0.5,0.5,2026-10-27T15:00:32.912144+00:00,fallback
