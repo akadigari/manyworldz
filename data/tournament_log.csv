@@ -323,3 +323,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46433,"Will Argentina's Senate pass the 'Super RIGI' bill before January 1, 2027?",binary,0.5,0.5,2026-10-27T12:00:45.818581+00:00,fallback
 46434,Will the Brent crude futures price reach at least $130 per barrel in the final quarter of 2026?,binary,0.5,0.5,2026-10-27T15:00:32.912144+00:00,fallback
 46435,How many US banks will fail in November or December 2026?,multiple_choice,"{""0"": 0.25, ""1"": 0.25, ""2"": 0.25, ""3+"": 0.25}","{""0"": 0.25, ""1"": 0.25, ""2"": 0.25, ""3+"": 0.25}",2026-10-28T06:14:20.929507+00:00,fallback
+46436,Will the Japanese Diet enact a law reducing the number of seats in the House of Representatives before 2027?,binary,0.5,0.5,2026-10-28T09:00:59.467904+00:00,fallback
