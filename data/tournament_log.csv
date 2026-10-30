@@ -333,3 +333,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46513,What will be the 2-party Gallagher disproportionality index for North Carolina's House races in 2026?,numeric,"{""0.05"": 6.25, ""0.25"": 11.25, ""0.5"": 17.5, ""0.75"": 23.75, ""0.95"": 28.75}",cdf:201,2026-10-29T21:07:24.774534+00:00,fallback
 46514,What will be the largest difference in margin among swing seats in the 2026 United States Senate election?,numeric,"{""0.05"": 1.0, ""0.25"": 5.0, ""0.5"": 10.0, ""0.75"": 15.0, ""0.95"": 19.0}",cdf:201,2026-10-30T00:01:06.224359+00:00,fallback
 46515,"Will any of these AI companies (Lovable, DeepSeek, or Perplexity) have a funding round in November 2026?",binary,0.5,0.5,2026-10-30T09:00:39.070822+00:00,fallback
+46516,"Will November 2026 be the warmest November on record, according to Copernicus?",binary,0.5,0.5,2026-10-30T12:03:34.602826+00:00,fallback
