@@ -377,3 +377,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46634,"How many Washington dairy herds will WSDA have confirmed H5N1-positive as of November 12, 2026?",discrete,"{""0.05"": 32.8, ""0.25"": 46.0, ""0.5"": 62.5, ""0.75"": 79.0, ""0.95"": 92.19999999999999}",cdf:67,2026-11-02T14:00:35.704268+00:00,fallback
 46635,"Will Judge McFadden have granted Comey's motion to dismiss the D.C. criminal information by November 13, 2026?",binary,0.5,0.5,2026-11-02T14:27:04.204240+00:00,fallback
 46636,Will Applied Materials' Q1 FY2027 revenue guidance midpoint be at or above $11.0 billion?,binary,0.5,0.5,2026-11-02T14:40:29.518509+00:00,fallback
+46637,Will the winner of the 2026 American League MVP Award be a unanimous selection?,binary,0.5,0.5,2026-11-02T15:35:46.803917+00:00,fallback
