@@ -2,6 +2,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import config
 import ledger
@@ -143,3 +145,63 @@ def test_one_cycle_default_simulate_mode_logs_a_pick(tmp_path, monkeypatch):
     assert out["picks"] >= 1
     rows = ledger.load(tmp_path / "ledger.csv")
     assert rows and rows[0]["mode"] == "simulate"
+
+
+# -- an account-level API failure fails the run with a readable reason -----
+#
+# Found 2026-11-02. Since the Anthropic account ran out of credits on
+# 2026-10-01, every Kalshi run crashed on its first model call with a
+# raw traceback, and the reason was only in logs that need a GitHub
+# sign-in. Now main() prints a ::error:: line, which shows on the run
+# page itself, and still exits 1.
+
+def test_main_prints_an_error_line_and_exits_1_when_api_access_is_off(
+        tmp_path, monkeypatch, capsys):
+    import functools
+
+    import anthropic
+    import httpx
+
+    from engine import llm
+    monkeypatch.setattr(ledger, "_DEFAULT", tmp_path / "ledger.csv")
+    monkeypatch.setattr(llm, "SPEND_FILE", tmp_path / "spend.json")
+    monkeypatch.setattr(llm, "CACHE_DIR", tmp_path / "cache")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    message = ("Your credit balance is too low to access the Anthropic API. "
+               "Please go to Plans & Billing to upgrade or purchase credits.")
+    body = {"type": "error",
+            "error": {"type": "invalid_request_error", "message": message}}
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    credits_gone = anthropic.BadRequestError(
+        f"Error code: 400 - {body}",
+        response=httpx.Response(400, request=request), body=body)
+
+    def broken_api(*args, **kwargs):
+        raise credits_gone
+    monkeypatch.setattr(llm, "_call_api", broken_api)
+    # The real cycle and the real llm.ask, fed fixture markets instead
+    # of a live Kalshi fetch.
+    cards = parse_events(json.loads(FIXTURE.read_text()))
+    monkeypatch.setattr(runner, "one_cycle", functools.partial(
+        runner.one_cycle, cards=cards, now_iso="2026-07-15T00:00:00Z",
+        snapshot_path=tmp_path / "snap.json"))
+
+    with pytest.raises(SystemExit) as excinfo:
+        runner.main()
+    assert excinfo.value.code == 1
+    out = capsys.readouterr().out
+    assert out.count("::error::") == 1
+    line = next(l for l in out.splitlines() if l.startswith("::error::"))
+    assert line.startswith("::error::Anthropic API access is off "
+                           "(out of credits or bad key).")
+    assert "credit balance is too low" in line       # the plain reason
+
+
+def test_main_leaves_other_crashes_alone(monkeypatch):
+    """Only the account-level error gets the friendly line. Any other
+    crash keeps its full traceback, exactly as before."""
+    def boom():
+        raise ValueError("a real bug")
+    monkeypatch.setattr(runner, "one_cycle", boom)
+    with pytest.raises(ValueError, match="a real bug"):
+        runner.main()

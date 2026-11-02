@@ -201,3 +201,155 @@ def test_spend_file_defaults_to_the_shared_meter(tmp_path, monkeypatch):
     import engine.llm as llm_mod
     importlib.reload(llm_mod)
     assert llm_mod.SPEND_FILE.name == "spend.json"
+
+
+# --- account-level API failures -------------------------------------------
+# Found 2026-11-02. The Anthropic account ran out of credits on
+# 2026-10-01 and every call since has failed. The tournament's fallback
+# ladder treated each failure like a one-off blip and submitted the 0.5
+# last-resort answer, so a whole month of forecasts were placeholders.
+# ask() now raises ApiAccessError for failures that mean the account
+# itself cannot be used, so callers can stop loudly. Anything else
+# (timeouts, server errors, rate limits) keeps working the old way.
+
+def _anthropic_error(cls, status, message):
+    import anthropic  # noqa: F401  (cls comes from it)
+    import httpx
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    body = {"type": "error",
+            "error": {"type": "invalid_request_error", "message": message}}
+    return cls(f"Error code: {status} - {body}",
+               response=httpx.Response(status, request=request), body=body)
+
+
+def _openrouter_error(status, message):
+    import json as _json
+    import requests
+    response = requests.Response()
+    response.status_code = status
+    response._content = _json.dumps(
+        {"error": {"message": message, "code": status}}).encode()
+    return requests.HTTPError(f"{status} Client Error", response=response)
+
+
+def _isolated(tmp_path, monkeypatch):
+    monkeypatch.setattr(llm, "SPEND_FILE", tmp_path / "spend.json")
+    monkeypatch.setattr(llm, "CACHE_DIR", tmp_path / "cache")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+
+
+def _raise(exc):
+    def _fake(*args, **kwargs):
+        raise exc
+    return _fake
+
+
+CREDITS_GONE = ("Your credit balance is too low to access the Anthropic "
+                "API. Please go to Plans & Billing to upgrade or purchase "
+                "credits.")
+
+
+def _access_cases():
+    import anthropic
+    return [
+        (anthropic.AuthenticationError, 401, "invalid x-api-key"),
+        (anthropic.PermissionDeniedError, 403,
+         "Your API key does not have permission to use the specified resource."),
+        (anthropic.BadRequestError, 400, CREDITS_GONE),
+        (anthropic.BadRequestError, 400,
+         "You have reached your specified API usage limits. You will regain "
+         "access on 2026-12-01 at 00:00 UTC."),
+    ]
+
+
+@pytest.mark.parametrize("cls,status,message", _access_cases())
+def test_account_level_anthropic_failures_raise_api_access_error(
+        tmp_path, monkeypatch, cls, status, message):
+    _isolated(tmp_path, monkeypatch)
+    monkeypatch.setattr(llm, "_call_api",
+                        _raise(_anthropic_error(cls, status, message)))
+    with pytest.raises(llm.ApiAccessError) as excinfo:
+        llm.ask("will it rain?", model="haiku")
+    assert message in str(excinfo.value)         # the plain reason survives
+    assert excinfo.value.provider == "Anthropic"
+    assert isinstance(excinfo.value, RuntimeError)
+
+
+def test_api_access_error_still_releases_the_spend_reservation(tmp_path, monkeypatch):
+    _isolated(tmp_path, monkeypatch)
+    import anthropic
+    monkeypatch.setattr(llm, "_call_api", _raise(
+        _anthropic_error(anthropic.BadRequestError, 400, CREDITS_GONE)))
+    with pytest.raises(llm.ApiAccessError):
+        llm.ask("will it rain?", model="haiku")
+    assert llm.spent_usd() == 0.0
+
+
+def _transient_cases():
+    import anthropic
+    import httpx
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    return [
+        _anthropic_error(anthropic.RateLimitError, 429, "rate limited"),
+        _anthropic_error(anthropic.InternalServerError, 500, "server hiccup"),
+        _anthropic_error(anthropic.BadRequestError, 400, "prompt is too long"),
+        anthropic.APITimeoutError(request=request),
+        TimeoutError("no answer in time"),
+        ValueError("a bad model reply"),
+    ]
+
+
+@pytest.mark.parametrize("exc", _transient_cases(),
+                         ids=lambda e: type(e).__name__)
+def test_other_failures_keep_their_original_type(tmp_path, monkeypatch, exc):
+    _isolated(tmp_path, monkeypatch)
+    monkeypatch.setattr(llm, "_call_api", _raise(exc))
+    with pytest.raises(type(exc)) as excinfo:
+        llm.ask("will it rain?", model="haiku")
+    assert not isinstance(excinfo.value, llm.ApiAccessError)
+    assert llm.spent_usd() == 0.0
+
+
+@pytest.mark.parametrize("status", [401, 402, 403])
+def test_account_level_openrouter_failures_raise_api_access_error(
+        tmp_path, monkeypatch, status):
+    _isolated(tmp_path, monkeypatch)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "or-key")
+    monkeypatch.setattr(llm, "_call_openrouter", _raise(
+        _openrouter_error(status, "Insufficient credits")))
+    with pytest.raises(llm.ApiAccessError) as excinfo:
+        llm.ask("will it rain?", model="haiku")
+    assert "Insufficient credits" in str(excinfo.value)
+    assert excinfo.value.provider == "OpenRouter"
+    assert llm.spent_usd() == 0.0
+
+
+@pytest.mark.parametrize("status,message", [
+    (429, "Rate limit exceeded"),
+    (500, "Internal error"),
+    (502, "Bad gateway"),
+    # OpenRouter also sends 403 when a model's moderation flags one
+    # prompt. That is about the question, not the account, and calling
+    # it an outage would block that same question every cycle forever.
+    (403, "Your chosen model requires moderation and your input was flagged"),
+])
+def test_other_openrouter_failures_keep_their_original_type(
+        tmp_path, monkeypatch, status, message):
+    import requests
+    _isolated(tmp_path, monkeypatch)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "or-key")
+    monkeypatch.setattr(llm, "_call_openrouter", _raise(
+        _openrouter_error(status, message)))
+    with pytest.raises(requests.HTTPError) as excinfo:
+        llm.ask("will it rain?", model="haiku")
+    assert not isinstance(excinfo.value, llm.ApiAccessError)
+
+
+def test_annotation_is_one_github_error_line_with_the_reason():
+    err = llm.ApiAccessError("the account is out of credits\n(try later)")
+    line = err.annotation("No forecasts were submitted this cycle.")
+    assert line.startswith("::error::Anthropic API access is off "
+                           "(out of credits or bad key). "
+                           "No forecasts were submitted this cycle.")
+    assert "the account is out of credits" in line
+    assert "\n" not in line          # a newline would cut the annotation short

@@ -33,7 +33,10 @@ below all serve that one goal:
    plainly with source="fallback", never silently. A question only
    ever gets skipped outright if the crowd ran clean, start to finish,
    and every single answer was honestly unusable: that is not a
-   crash, so there is nothing to retry into being different.
+   crash, so there is nothing to retry into being different. The
+   ladder is for rare blips only. If the API turns the account away
+   (no credits, bad key), the cycle submits nothing more, writes its
+   receipt, prints a ::error:: line, and the run goes red.
 2. config.TOURNAMENT_CLIP. Every submitted probability is clipped a
    bit short of 0% and 100% before it goes out, see _tournament_clip.
 3. One forecast per question, never more. The tournament rules say bot
@@ -219,6 +222,20 @@ def _is_budget_error(exc: Exception) -> bool:
     return "budget cap hit" in str(exc)
 
 
+def _must_stop(exc: Exception) -> bool:
+    """True for the errors that end the whole cycle instead of sending
+    one question down the fallback ladder: the budget cap, and the API
+    turning this account away (no credits, bad key; see engine/llm.py's
+    ApiAccessError). A smaller run or a placeholder answer fixes neither.
+
+    The ladder exists for rare blips. When the account itself is off,
+    every question fails the same way, and a 0.5 on each one looks like
+    a forecast when it is not one. (Found 2026-11-02: all 212 October
+    submissions were placeholders while the workflow stayed green.)
+    """
+    return _is_budget_error(exc) or isinstance(exc, llm.ApiAccessError)
+
+
 def _question_text(card: dict) -> str:
     """The full question the model should forecast: title plus the
     resolution rules. Forecasting the title alone means forecasting a
@@ -360,7 +377,7 @@ def _answer_mc(card: dict, headlines: list[str], ask) -> dict:
             if len(got) == len(options) and all(v >= 0 for v in got.values())                     and sum(got.values()) > 0:
                 probs = got
     except Exception as exc:
-        if _is_budget_error(exc):
+        if _must_stop(exc):
             raise
         print(f'  MC call failed on qid {card["qid"]} ({exc})')
     if probs is None:
@@ -411,7 +428,7 @@ def _answer_numeric(card: dict, headlines: list[str], ask) -> dict:
     try:
         percentiles = cdf_mod.percentiles_from_json(ask(prompt, model=None))
     except Exception as exc:
-        if _is_budget_error(exc):
+        if _must_stop(exc):
             raise
         print(f'  numeric call failed on qid {card["qid"]} ({exc})')
     if percentiles is None:
@@ -468,9 +485,10 @@ def _ladder(card: dict, headlines: list[str], crowd: list[dict], ask) -> dict:
     whenever something actually breaks.
 
     Tries the full crowd first. Any failure that raises an exception
-    and isn't the budget cap (a model error, a timeout, one seat dying)
-    degrades to a single simplified run; if that also raises, it
-    degrades again to the documented LAST_RESORT_PROBABILITY. None of
+    and isn't one of the _must_stop errors (so a model error, a
+    timeout, one seat dying) degrades to a single simplified run; if
+    that also raises, it degrades again to the documented
+    LAST_RESORT_PROBABILITY. None of
     those three outcomes ever comes back as "skipped".
 
     The one case that does come back with prob=None is a real
@@ -486,9 +504,9 @@ def _ladder(card: dict, headlines: list[str], crowd: list[dict], ask) -> dict:
     "fallback" | None, "skipped": int, "spread": float | None}. The
     spread is the crowd's own disagreement (pstdev of the votes), which
     _answer_one's escalation policy reads to decide whether the strong
-    model is worth paying for. A budget RuntimeError is never caught
-    here: it always propagates to the caller, which decides whether a
-    cheap answer is already in hand.
+    model is worth paying for. A budget RuntimeError or an API access
+    error is never caught here: it always propagates to the caller,
+    which decides whether a cheap answer is already in hand.
     """
     market_card = {"ticker": f"META-{card['qid']}",
                    "question": _question_text(card), "mid": None}
@@ -498,7 +516,7 @@ def _ladder(card: dict, headlines: list[str], crowd: list[dict], ask) -> dict:
             lambda: _run_full_crowd(market_card, headlines, crowd, ask),
             config.QUESTION_DEADLINE_S)
     except Exception as exc:
-        if _is_budget_error(exc):
+        if _must_stop(exc):
             raise
         print(f'  crowd run failed on qid {card["qid"]} ({exc}), '
               f'retrying with a single run')
@@ -514,13 +532,14 @@ def _ladder(card: dict, headlines: list[str], crowd: list[dict], ask) -> dict:
 def _answer_with_single_or_fallback(card: dict, headlines: list[str],
                                     crowd: list[dict], ask, market_card: dict) -> dict:
     """The fallback ladder's second and third tiers, called only after
-    the full crowd itself has already raised a non-budget exception."""
+    the full crowd itself has already raised an exception that is not
+    one of the _must_stop errors."""
     try:
         result = _with_deadline(
             lambda: _run_single(market_card, headlines, crowd, ask),
             config.QUESTION_DEADLINE_S)
     except Exception as exc:
-        if _is_budget_error(exc):
+        if _must_stop(exc):
             raise
         print(f'  single run also failed on qid {card["qid"]} ({exc})')
         result = {"votes": [], "skipped": 0}
@@ -681,7 +700,9 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
     deadline; multiple choice and numeric/discrete get one direct call
     each with an honest uniform fallback. A budget RuntimeError from
     engine/llm.py is never caught: it propagates so the cycle stops
-    cleanly.
+    cleanly. An ApiAccessError also stops the cycle, but the receipt is
+    still written first and a ::error:: line is printed before it is
+    raised again.
 
     Returns a small summary: how many open questions were seen, how
     many were answered, how many submissions went out, and how many
@@ -777,7 +798,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
                     lambda: _answer_mc(card, headlines, direct_ask),
                     config.QUESTION_DEADLINE_S)
             except Exception as exc:
-                if _is_budget_error(exc):
+                if _must_stop(exc):
                     raise
                 options = card.get("options") or []
                 outcome = {"probs": {o: 1.0 / len(options) for o in options},
@@ -804,7 +825,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
                     lambda: _answer_numeric(card, headlines, direct_ask),
                     config.QUESTION_DEADLINE_S)
             except Exception as exc:
-                if _is_budget_error(exc):
+                if _must_stop(exc):
                     raise
                 print(f'  numeric path failed on qid {card["qid"]} ({exc}), skipping')
                 return
@@ -851,6 +872,7 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         print(f'  SUBMIT {submit_prob:.2f} (source={outcome["source"]}) '
               f'on qid {card["qid"]} | {card["question"][:60]}')
 
+    access_error = None
     for card in targets:
         reason = _skip_reason(card)
         if reason:
@@ -858,6 +880,12 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
             continue
         try:
             _process(card)
+        except llm.ApiAccessError as exc:
+            # The API turned the account away (no credits, bad key).
+            # Every question left would fail the same way, so stop here,
+            # still write the receipt below, then fail the run loudly.
+            access_error = exc
+            break
         except Exception as exc:
             # One question's failure (a rejected submit, a malformed
             # field) must never zero out the rest of the batch. The
@@ -910,6 +938,9 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
         "fallbacks_this_cycle": counts["fallbacks"],
         "escalated_this_cycle": counts["escalated"],
         "conserving": notes["conserve"],
+        # Text that stays the same from cycle to cycle while the
+        # account is off, so the heartbeat's commit filter is not fooled.
+        "api_access_error": str(access_error) if access_error else None,
         "tournaments": sections,
     }))
     print(f'tournament cycle done: {len(cards)} open, '
@@ -917,6 +948,13 @@ def one_cycle(tournament=None, cards: list[dict] | None = None, ask_fn=None,
          f'{counts["fallbacks"]} fallback(s), '
          f'{all_time_answered} answered all time, '
          f'${llm.spent_usd():.2f} spent')
+    if access_error is not None:
+        sent = counts["submitted"]
+        consequence = ("No forecasts were submitted this cycle." if not sent
+                       else f"Stopped after {sent} forecast(s) went out; "
+                            f"nothing else was submitted this cycle.")
+        print(access_error.annotation(consequence))
+        raise access_error
     return {"considered": len(cards), "answered": counts["answered"],
            "submitted": counts["submitted"], "fallbacks": counts["fallbacks"]}
 
@@ -985,13 +1023,17 @@ def main() -> None:
 
     # One process, every configured tournament in turn (--tournament
     # narrows to a single slug for hand runs). One tournament blowing
-    # up must not zero out the others' cycle, with one exception: the
-    # budget cap means stop spending everywhere, so it propagates.
+    # up must not zero out the others' cycle, with two exceptions: the
+    # budget cap means stop spending everywhere, so it propagates, and an
+    # API access error would hit every slug the same way, so the run
+    # fails now (one_cycle already printed the ::error:: line).
     slugs = [args.tournament] if args.tournament else config.METACULUS_TOURNAMENTS
     failed = []
     for slug in slugs:
         try:
             one_cycle(tournament=slug, dry_run=args.dry_run, token=token)
+        except llm.ApiAccessError:
+            raise SystemExit(1)
         except Exception as exc:
             if _is_budget_error(exc):
                 raise

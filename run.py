@@ -139,5 +139,18 @@ def one_cycle(cards: list[dict] | None = None, ask_fn=None,
     return {"considered": len(targets), "picks": picks, "graded": graded}
 
 
+def main() -> None:
+    """The live run. If the API turns the account away (no credits, bad
+    key), print one GitHub ::error:: line and exit 1. The run still goes
+    red, but the reason shows on the run page itself, so nobody has to
+    sign in and dig through the logs to find it. Any other crash keeps
+    its full traceback."""
+    try:
+        one_cycle()
+    except llm.ApiAccessError as exc:
+        print(exc.annotation("The Kalshi cycle stopped early."))
+        raise SystemExit(1)
+
+
 if __name__ == "__main__":
-    one_cycle()
+    main()

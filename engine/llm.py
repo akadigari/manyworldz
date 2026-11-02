@@ -40,6 +40,94 @@ _PRICES = {
 _DEFAULT_PRICE = (10.00, 50.00)  # unknown model -> assume frontier prices (the safe guess)
 
 
+class ApiAccessError(RuntimeError):
+    """The model provider turned the call away because of the account
+    itself: no credits left, a bad key, or a key that is not allowed in.
+
+    A timeout or a server hiccup might pass on the next try. This will
+    not, so callers should stop loudly instead of falling back to a
+    placeholder answer. (Found 2026-11-02: the account ran dry on
+    2026-10-01 and the tournament quietly sent a month of 0.5s.)
+    """
+
+    def __init__(self, reason: str, provider: str = "Anthropic"):
+        super().__init__(reason)
+        self.provider = provider
+
+    def annotation(self, consequence: str) -> str:
+        """One GitHub Actions ::error:: line. It shows on the run page
+        itself, so the reason is visible without signing in to read the
+        logs. Kept to one line because a newline ends the annotation."""
+        reason = " ".join(str(self).split())
+        return (f"::error::{self.provider} API access is off (out of credits "
+                f"or bad key). {consequence} Reason: {reason}")
+
+
+# Words that mark a 400 from Anthropic as a billing problem rather than a
+# bad prompt. A prompt that is too long is also a 400, and that one is
+# about the question, not the account.
+_BILLING_WORDS = ("credit balance", "billing", "usage limit")
+
+_OPENROUTER_ACCESS = {
+    401: "the OpenRouter key was rejected",
+    402: "the OpenRouter account is out of credits",
+    403: "the OpenRouter key is not allowed to make this call",
+}
+
+
+def _provider_message(body, fallback: str) -> str:
+    """The provider's own plain sentence from an error body, when there
+    is one. Both Anthropic and OpenRouter put it at body.error.message."""
+    error = body.get("error") if isinstance(body, dict) else None
+    if isinstance(error, dict) and error.get("message"):
+        return str(error["message"])
+    return fallback
+
+
+def _anthropic_access_error(exc: Exception) -> ApiAccessError | None:
+    """An ApiAccessError when exc means the Anthropic account cannot be
+    used, or None when it is worth trying again later."""
+    try:
+        import anthropic
+    except ImportError:
+        return None
+    if not isinstance(exc, anthropic.APIStatusError):
+        return None
+    detail = _provider_message(exc.body, str(exc))
+    if isinstance(exc, anthropic.AuthenticationError):
+        return ApiAccessError(f"the API key was rejected ({detail})")
+    if isinstance(exc, anthropic.PermissionDeniedError):
+        return ApiAccessError(f"the API key is not allowed to make this call ({detail})")
+    if isinstance(exc, anthropic.BadRequestError) and any(
+            word in str(exc).lower() for word in _BILLING_WORDS):
+        return ApiAccessError(f"the account is out of credits or past its "
+                              f"usage limit ({detail})")
+    return None
+
+
+def _openrouter_access_error(exc: Exception) -> ApiAccessError | None:
+    """The same check for the OpenRouter path: HTTP 401, 402 or 403."""
+    import requests
+    response = getattr(exc, "response", None)
+    if not isinstance(exc, requests.HTTPError) or response is None:
+        return None
+    reason = _OPENROUTER_ACCESS.get(response.status_code)
+    if reason is None:
+        return None
+    text = response.text or ""
+    # OpenRouter also sends 403 when a model's moderation flags one
+    # prompt. That is about the question, not the account, and calling
+    # it an outage would block that same question every cycle forever.
+    if response.status_code == 403 and "flagged" in text.lower():
+        return None
+    try:
+        body = response.json()
+    except ValueError:
+        body = None
+    detail = _provider_message(body, text[:200] or str(exc))
+    return ApiAccessError(f"{reason} ({detail})", provider="OpenRouter")
+
+
 def resolve_model(name: str | None) -> str:
     """Turn a friendly name ("haiku", "fable") into a full model ID.
 
@@ -191,7 +279,9 @@ def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
     The same prompt+model combo is only ever paid for once. Repeat calls
     return the cached answer instantly and for free. Before any new call,
     this checks the running total against ENGINE_BUDGET_USD and refuses to
-    call the API at all once the budget is used up.
+    call the API at all once the budget is used up. If the provider turns
+    the call away because of the account itself (no credits, bad key),
+    this raises ApiAccessError instead of the provider's own error.
     """
     model = resolve_model(model)
     key = hashlib.sha256(f"{model}\n{prompt}".encode()).hexdigest()
@@ -218,8 +308,11 @@ def ask(prompt: str, model: str | None = None, max_tokens: int = 400) -> str:
             model = or_model
         else:
             text, tokens_in, tokens_out = _call_api(prompt, model, max_tokens)
-    except Exception:
+    except Exception as exc:
         _adjust_spend(-reserved, count_call=False)
+        access = _anthropic_access_error(exc) or _openrouter_access_error(exc)
+        if access is not None:
+            raise access from exc
         raise
     price_in, price_out = _PRICES.get(model.split("/")[-1],
                                       _PRICES.get(model, _DEFAULT_PRICE))

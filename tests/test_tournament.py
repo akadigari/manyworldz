@@ -957,3 +957,186 @@ def test_tournament_binary_mode_defaults_to_vote_and_is_env_overridable(monkeypa
     finally:
         monkeypatch.delenv("MANYWORLDZ_TOURNAMENT_MODE")
         importlib.reload(config)
+
+
+# -- account-level API failures stop the cycle loudly ----------------------
+#
+# Found 2026-11-02. The Anthropic account ran out of credits on
+# 2026-10-01. Every model call failed, the fallback ladder read each
+# failure as a one-off blip, and all 212 October submissions went out
+# as source=fallback placeholders (102 of them a flat 0.5) while the
+# workflow stayed green. The ladder is for rare blips, not for an
+# account that is switched off. Now an ApiAccessError from engine/llm.py
+# stops the cycle before anything is submitted, still writes the
+# receipt, prints a GitHub ::error:: line, and fails the run.
+
+from engine import llm  # noqa: E402
+
+NO_FORECASTS_LINE = ("::error::Anthropic API access is off (out of credits "
+                     "or bad key). No forecasts were submitted this cycle.")
+
+
+def _never(name, sent):
+    def _fn(*args, **kwargs):
+        sent.append(name)
+    return _fn
+
+
+def _access_cycle(tmp_path, cards_in, ask_fn, sent, **kw):
+    return tournament.one_cycle(
+        cards=cards_in, ask_fn=ask_fn, token="tok",
+        log_path=tmp_path / "log.csv", now_iso=NOW_ISO,
+        submit_fn=_never("binary", sent), submit_mc_fn=_never("mc", sent),
+        submit_numeric_fn=_never("numeric", sent),
+        comment_fn=_never("comment", sent), **kw)
+
+
+def _ask_access_off(p, model=None, max_tokens=400):
+    raise llm.ApiAccessError("the account is out of credits or past its "
+                             "usage limit (Your credit balance is too low)")
+
+
+def _anthropic_error(cls, status, message):
+    import httpx
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    body = {"type": "error",
+            "error": {"type": "invalid_request_error", "message": message}}
+    return cls(f"Error code: {status} - {body}",
+               response=httpx.Response(status, request=request), body=body)
+
+
+def _real_ask_with_a_broken_api(tmp_path, monkeypatch, exc):
+    """Leave ask_fn unset so the cycle goes through the real llm.ask,
+    with only the network call itself swapped for one that raises."""
+    monkeypatch.setattr(llm, "SPEND_FILE", tmp_path / "spend.json")
+    monkeypatch.setattr(llm, "CACHE_DIR", tmp_path / "cache")
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+
+    def _broken(*args, **kwargs):
+        raise exc
+    monkeypatch.setattr(llm, "_call_api", _broken)
+
+
+def _access_errors():
+    import anthropic
+    return [
+        _anthropic_error(anthropic.AuthenticationError, 401, "invalid x-api-key"),
+        _anthropic_error(anthropic.PermissionDeniedError, 403,
+                         "Your API key does not have permission"),
+        _anthropic_error(anthropic.BadRequestError, 400,
+                         "Your credit balance is too low to access the "
+                         "Anthropic API."),
+    ]
+
+
+@pytest.mark.parametrize("exc", _access_errors(), ids=lambda e: type(e).__name__)
+def test_api_access_error_submits_nothing_and_stops_the_cycle(
+        tmp_path, monkeypatch, capsys, exc):
+    _real_ask_with_a_broken_api(tmp_path, monkeypatch, exc)
+    sent = []
+    with pytest.raises(llm.ApiAccessError):
+        _access_cycle(tmp_path, cards(3), None, sent)
+    assert sent == []                                # nothing reached Metaculus
+    assert not (tmp_path / "log.csv").exists()       # and nothing was logged
+    assert NO_FORECASTS_LINE in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("card", [MC_CARD, NUM_CARD], ids=["mc", "numeric"])
+def test_api_access_error_skips_the_uniform_fallback_for_mc_and_numeric(
+        tmp_path, card):
+    sent = []
+    with pytest.raises(llm.ApiAccessError):
+        _access_cycle(tmp_path, [dict(card)], _ask_access_off, sent)
+    assert sent == []
+
+
+def test_api_access_error_still_writes_the_receipt(tmp_path):
+    import json
+    with pytest.raises(llm.ApiAccessError):
+        _access_cycle(tmp_path, cards(2), _ask_access_off, [])
+    status = json.loads((tmp_path / "tournament_status.json").read_text())
+    assert status["at"] == NOW_ISO
+    assert status["answered_this_cycle"] == 0
+    assert status["fallbacks_this_cycle"] == 0
+    assert "out of credits" in status["api_access_error"]
+
+
+def test_a_clean_receipt_says_there_was_no_access_error(tmp_path):
+    import json
+    _access_cycle(tmp_path, cards(1), ask_vote, [])
+    status = json.loads((tmp_path / "tournament_status.json").read_text())
+    assert status["api_access_error"] is None
+
+
+def test_api_access_error_mid_cycle_keeps_the_real_forecasts_already_sent(
+        tmp_path, monkeypatch, capsys):
+    """If the credits run out halfway through, the answers that already
+    went out were real crowd answers. They stay logged, and the error
+    line says how many there were instead of claiming none."""
+    import config
+    monkeypatch.setattr(config, "ENGINE_N_AGENTS", 2)   # small, deterministic crowd
+    calls = {"n": 0}
+
+    def ask(p, model=None, max_tokens=400):
+        calls["n"] += 1
+        if calls["n"] > 2:          # first card's whole (2-agent) crowd answers fine
+            _ask_access_off(p)
+        return VOTE
+
+    sent = []
+    with pytest.raises(llm.ApiAccessError):
+        tournament.one_cycle(
+            cards=cards(3), ask_fn=ask, token="tok",
+            log_path=tmp_path / "log.csv", now_iso=NOW_ISO,
+            submit_fn=lambda qid, prob, token: sent.append(qid))
+    assert len(sent) == 1
+    assert sent[0] == 500000
+    rows = list(csv.DictReader(open(tmp_path / "log.csv", newline="")))
+    assert [r["source"] for r in rows] == ["crowd"]
+    out = capsys.readouterr().out
+    assert "::error::Anthropic API access is off" in out
+    assert "Stopped after 1 forecast(s) went out" in out
+    assert NO_FORECASTS_LINE not in out
+
+
+@pytest.mark.parametrize("exc_factory", [
+    lambda: _anthropic_error(__import__("anthropic").InternalServerError, 500,
+                             "server hiccup"),
+    lambda: _anthropic_error(__import__("anthropic").RateLimitError, 429,
+                             "rate limited"),
+    lambda: ConnectionError("simulated blip"),
+], ids=["500", "429", "ConnectionError"])
+def test_a_transient_failure_still_uses_the_fallback_ladder(
+        tmp_path, monkeypatch, exc_factory):
+    """Unchanged behavior: a blip that is not about the account still
+    degrades to the documented last-resort answer and gets submitted."""
+    _real_ask_with_a_broken_api(tmp_path, monkeypatch, exc_factory())
+    sent = []
+    out = tournament.one_cycle(
+        cards=cards(1), token="tok", log_path=tmp_path / "log.csv",
+        now_iso=NOW_ISO,
+        submit_fn=lambda qid, prob, token: sent.append(prob))
+    assert out["fallbacks"] == 1
+    assert out["submitted"] == 1
+    assert sent == [tournament._tournament_clip(tournament.LAST_RESORT_PROBABILITY)]
+    rows = list(csv.DictReader(open(tmp_path / "log.csv", newline="")))
+    assert rows[0]["source"] == "fallback"
+
+
+def test_api_access_error_fails_the_run_and_stops_every_tournament(monkeypatch, capsys):
+    monkeypatch.setenv("METACULUS_TOKEN", "tok")
+    monkeypatch.setattr(tournament.config, "METACULUS_TOURNAMENTS",
+                        ["one", "two"])
+    ran = []
+
+    def cycle(tournament=None, **k):
+        ran.append(tournament)
+        raise llm.ApiAccessError("the API key was rejected (invalid x-api-key)")
+
+    monkeypatch.setattr(tournament, "one_cycle", cycle)
+    monkeypatch.setattr(sys, "argv", ["tournament.py"])
+    with pytest.raises(SystemExit) as excinfo:
+        tournament.main()
+    assert excinfo.value.code == 1
+    assert ran == ["one"]                  # the same key would fail on "two" too
+    assert "::warning::" not in capsys.readouterr().out
