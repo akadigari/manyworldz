@@ -344,3 +344,4 @@ qid,question,qtype,raw_prob,prob,at,source
 46601,What total revenue will Nebius Group report for Q3 2026?,numeric,"{""0.05"": 722.5, ""0.25"": 812.5, ""0.5"": 925.0, ""0.75"": 1037.5, ""0.95"": 1127.5}",cdf:201,2026-11-02T00:45:33.000780+00:00,fallback
 46602,How many people will have applied to Kyrgyzstan's CEC to run in the January 2027 presidential election by the close of nominations (13 November 2026)?,discrete,"{""0.05"": 3.55, ""0.25"": 19.75, ""0.5"": 40.0, ""0.75"": 60.25, ""0.95"": 76.45}",cdf:82,2026-11-02T01:14:22.366127+00:00,fallback
 46603,Will Germany beat Serbia in their UEFA Nations League match on 13 November 2026?,binary,0.5,0.5,2026-11-02T01:24:03.794376+00:00,fallback
+46604,What will the EU aggregate gas storage filling level be for gas day 12 November 2026?,numeric,"{""0.05"": 68.45, ""0.25"": 70.25, ""0.5"": 72.5, ""0.75"": 74.75, ""0.95"": 76.55}",cdf:201,2026-11-02T02:03:42.059417+00:00,fallback
